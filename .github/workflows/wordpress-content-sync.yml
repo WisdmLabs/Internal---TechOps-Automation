@@ -22,6 +22,14 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Debug Environment
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Directory contents:"
+          ls -la
+          echo "Node.js version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+
       - name: Create directory structure
         run: |
           mkdir -p wp-content/plugins
@@ -34,12 +42,24 @@ jobs:
             echo "wp-content/**/*.zip" >> .gitignore
             git add .gitignore
           fi
+          echo "Directory structure created:"
+          ls -R wp-content/
 
       - name: Make scripts executable
         run: |
-          chmod +x ./scripts/download-content.sh
-          chmod +x ./scripts/process-plugins.js
-          chmod +x ./scripts/process-themes.js
+          chmod +x scripts/*.sh
+          chmod +x scripts/*.js
+          echo "Script permissions:"
+          ls -la scripts/
+
+      - name: Verify script contents
+        run: |
+          echo "Content of download-content.sh:"
+          cat scripts/download-content.sh
+          echo -e "\nContent of process-plugins.js:"
+          cat scripts/process-plugins.js
+          echo -e "\nContent of process-themes.js:"
+          cat scripts/process-themes.js
 
       - name: Download and process content
         env:
@@ -48,14 +68,20 @@ jobs:
           WP_AUTH_TOKEN: ${{ secrets.WP_AUTH_TOKEN }}
           SITE_URL: ${{ inputs.site_url }}
         run: |
+          echo "Starting content download with SITE_URL: $SITE_URL"
           bash ./scripts/download-content.sh
+        continue-on-error: true
 
       - name: Cleanup temporary files
+        if: always()
         run: |
           find wp-content -name "*.zip" -type f -delete
           find wp-content -name "*.tmp" -type f -delete
+          echo "Cleanup completed. Current wp-content structure:"
+          ls -R wp-content/
 
       - name: Create Pull Request
+        if: success()
         uses: peter-evans/create-pull-request@v5
         with:
           base: release
