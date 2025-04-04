@@ -69,8 +69,14 @@ jobs:
           SITE_URL: ${{ inputs.site_url }}
         run: |
           echo "Starting content download with SITE_URL: $SITE_URL"
+          echo "Testing API endpoints..."
+          # Test plugins endpoint
+          echo "Testing plugins endpoint..."
+          curl -v -H "Authorization: Basic $WP_AUTH_TOKEN" "$SITE_URL/wp-json/techops/v1/plugins/list"
+          echo -e "\n\nTesting themes endpoint..."
+          curl -v -H "Authorization: Basic $WP_AUTH_TOKEN" "$SITE_URL/wp-json/techops/v1/themes/list"
+          echo -e "\n\nProceeding with content sync..."
           bash ./scripts/download-content.sh
-        continue-on-error: true
 
       - name: Cleanup temporary files
         if: always()
