@@ -8,6 +8,10 @@ on:
         required: true
         default: 'https://wordpress-1000690-5314661.cloudwaysapps.com'
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -17,6 +21,14 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify branch
+        run: |
+          echo "Current branch: $(git rev-parse --abbrev-ref HEAD)"
+          echo "Remote URL: $(git remote get-url origin)"
+          echo "Git status:"
+          git status
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -123,18 +135,33 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
+          
+          # Ensure we're on main and up to date
+          git fetch origin main
+          git checkout main
+          git pull origin main
 
       - name: Check for changes and commit to main
         id: check_changes
         run: |
+          # Add all changes in wp-content
           git add wp-content/
+          
           if [[ -n "$(git status --porcelain)" ]]; then
             echo "Changes detected in wp-content directory"
             echo "has_changes=true" >> $GITHUB_OUTPUT
             
+            echo "Git status before commit:"
+            git status
+            
             # Commit changes to main branch
             git commit -m "feat: Update WordPress content"
+            
+            echo "Pushing changes to main branch..."
             git push origin main
+            
+            echo "Git log of recent commits:"
+            git log -3 --oneline
           else
             echo "No changes detected in wp-content directory"
             echo "has_changes=false" >> $GITHUB_OUTPUT
@@ -154,6 +181,29 @@ jobs:
             - Updated wp-content/themes
             
             Note: All temporary and ZIP files have been cleaned up.
+            
+            ## Changes Summary
+            Branch being merged: `main` → `release`
+            
+            ## Verification
+            - [ ] Changes are present in main branch
+            - [ ] No sensitive files included
+            - [ ] Directory structure is correct
           commit-message: 'feat: Update WordPress content'
           committer: GitHub <noreply@github.com>
-          author: github-actions[bot] <github-actions[bot]@users.noreply.github.com> 
+          author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          
+      - name: Verify final state
+        if: always()
+        run: |
+          echo "Final branch state:"
+          git rev-parse --abbrev-ref HEAD
+          
+          echo "Recent commits in main:"
+          git log -3 --oneline main
+          
+          echo "Recent commits in release:"
+          git log -3 --oneline release
+          
+          echo "Branch difference:"
+          git --no-pager diff main...release --stat 
