@@ -25,32 +25,39 @@ make_api_request() {
     echo "Request headers:"
     echo "Authorization: Basic [REDACTED]"
 
-    # Store response in output file and capture status code separately
-    local response=$(curl -s -H "Authorization: Basic ${AUTH_TOKEN}" \
+    # Make the API request and store response
+    curl -s \
+        -H "Authorization: Basic ${AUTH_TOKEN}" \
         -H "Accept: application/json" \
         -H "Content-Type: application/json" \
-        "${SITE_URL}${endpoint}")
-    local status_code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Basic ${AUTH_TOKEN}" \
+        "${SITE_URL}${endpoint}" > "${output_file}"
+    
+    local status_code=$(curl -s -o /dev/null -w "%{http_code}" \
+        -H "Authorization: Basic ${AUTH_TOKEN}" \
         -H "Accept: application/json" \
         -H "Content-Type: application/json" \
         "${SITE_URL}${endpoint}")
 
     echo "Response status code: ${status_code}"
-    echo "Response headers:"
-    cat "${headers_file}"
     echo "Response body:"
-    echo "${response}"
+    cat "${output_file}"
 
     if [ $? -ne 0 ] || [ "${status_code}" != "200" ]; then
         echo "Error: $description API request failed with status ${status_code}"
         echo "Full response:"
-        echo "${response}"
+        cat "${output_file}"
         rm -f "${output_file}" "${headers_file}"
         return 1
     fi
 
-    # Write only the JSON response to the output file
-    echo "${response}" > "${output_file}"
+    # Validate JSON
+    if ! jq empty "${output_file}" 2>/dev/null; then
+        echo "Error: Invalid JSON response"
+        cat "${output_file}"
+        rm -f "${output_file}" "${headers_file}"
+        return 1
+    fi
+
     echo "${output_file}"
     rm -f "${headers_file}"
 }
@@ -84,11 +91,18 @@ echo "Using site URL: $SITE_URL"
 # Download and process plugins
 echo "Fetching plugins list..."
 PLUGINS_RESPONSE_FILE=$(make_api_request "/wp-json/techops/v1/plugins/list" "plugins list")
+PLUGINS_EXIT_CODE=$?
 
-if [ $? -eq 0 ]; then
+if [ ${PLUGINS_EXIT_CODE} -eq 0 ] && [ -f "${PLUGINS_RESPONSE_FILE}" ]; then
     echo "Processing plugins data..."
-    cat "${PLUGINS_RESPONSE_FILE}" | node scripts/process-plugins.js
+    node scripts/process-plugins.js < "${PLUGINS_RESPONSE_FILE}"
+    PROCESS_EXIT_CODE=$?
     rm -f "${PLUGINS_RESPONSE_FILE}"
+    
+    if [ ${PROCESS_EXIT_CODE} -ne 0 ]; then
+        echo "Error processing plugins data"
+        exit 1
+    fi
 else
     echo "Error fetching plugins list"
     exit 1
@@ -97,11 +111,18 @@ fi
 # Download and process themes
 echo "Fetching themes list..."
 THEMES_RESPONSE_FILE=$(make_api_request "/wp-json/techops/v1/themes/list" "themes list")
+THEMES_EXIT_CODE=$?
 
-if [ $? -eq 0 ]; then
+if [ ${THEMES_EXIT_CODE} -eq 0 ] && [ -f "${THEMES_RESPONSE_FILE}" ]; then
     echo "Processing themes data..."
-    cat "${THEMES_RESPONSE_FILE}" | node scripts/process-themes.js
+    node scripts/process-themes.js < "${THEMES_RESPONSE_FILE}"
+    PROCESS_EXIT_CODE=$?
     rm -f "${THEMES_RESPONSE_FILE}"
+    
+    if [ ${PROCESS_EXIT_CODE} -ne 0 ]; then
+        echo "Error processing themes data"
+        exit 1
+    fi
 else
     echo "Error fetching themes list"
     exit 1
