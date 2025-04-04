@@ -19,6 +19,7 @@ async function processThemes(themesList) {
             try {
                 const themeDir = path.join(BASE_DIR, theme.slug);
                 const zipPath = path.join(BASE_DIR, `${theme.slug}.zip`);
+                const tempDir = path.join(BASE_DIR, '_temp_extract');
 
                 console.log(`\nProcessing theme: ${theme.slug}`);
 
@@ -30,19 +31,38 @@ async function processThemes(themesList) {
                     `--output "${zipPath}" --fail --silent --show-error`
                 );
 
+                // Create temp directory for extraction
+                if (!fs.existsSync(tempDir)) {
+                    fs.mkdirSync(tempDir, { recursive: true });
+                }
+
+                // Extract ZIP to temp directory with force overwrite
+                console.log(`Extracting ${theme.slug}...`);
+                execSync(`unzip -o -q "${zipPath}" -d "${tempDir}"`);
+
                 // Remove existing theme directory if it exists
                 if (fs.existsSync(themeDir)) {
                     console.log(`Removing existing ${theme.slug} directory...`);
                     fs.rmSync(themeDir, { recursive: true, force: true });
                 }
 
-                // Extract ZIP
-                console.log(`Extracting ${theme.slug}...`);
-                execSync(`unzip -q "${zipPath}" -d "${BASE_DIR}"`);
+                // Move from temp directory to final location
+                const extractedFiles = fs.readdirSync(tempDir);
+                if (extractedFiles.length === 1 && fs.statSync(path.join(tempDir, extractedFiles[0])).isDirectory()) {
+                    // If extracted to a single directory, move that directory
+                    fs.renameSync(path.join(tempDir, extractedFiles[0]), themeDir);
+                } else {
+                    // If extracted multiple files, move them all to a new directory
+                    fs.mkdirSync(themeDir, { recursive: true });
+                    extractedFiles.forEach(file => {
+                        fs.renameSync(path.join(tempDir, file), path.join(themeDir, file));
+                    });
+                }
 
-                // Clean up ZIP file
-                console.log(`Cleaning up ${theme.slug} zip file...`);
-                fs.unlinkSync(zipPath);
+                // Clean up
+                console.log(`Cleaning up ${theme.slug}...`);
+                fs.rmSync(zipPath);
+                fs.rmSync(tempDir, { recursive: true, force: true });
 
                 console.log(`Successfully processed ${theme.slug}`);
             } catch (error) {
