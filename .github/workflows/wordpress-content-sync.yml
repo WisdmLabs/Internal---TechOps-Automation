@@ -1,0 +1,53 @@
+name: WordPress Content Sync
+on:
+  workflow_dispatch:
+    inputs:
+      site_url:
+        description: 'WordPress site URL'
+        required: true
+        default: 'https://wordpress-1000690-5314661.cloudwaysapps.com'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Create themes directory if not exists
+        run: mkdir -p wp-content/themes
+
+      - name: Make scripts executable
+        run: |
+          chmod +x ./scripts/download-content.sh
+          chmod +x ./scripts/process-plugins.js
+          chmod +x ./scripts/process-themes.js
+
+      - name: Download and process content
+        env:
+          WP_APP_USERNAME: ${{ secrets.WP_APP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+          WP_AUTH_TOKEN: ${{ secrets.WP_AUTH_TOKEN }}
+          SITE_URL: ${{ inputs.site_url }}
+        run: |
+          bash ./scripts/download-content.sh
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          base: release
+          title: 'feat: Update WordPress content'
+          body: |
+            Automated PR to sync WordPress content:
+            - Updated wp-content/plugins
+            - Updated wp-content/themes
+          branch: feat/wordpress-content-update
+          commit-message: 'feat: Update WordPress content' 
