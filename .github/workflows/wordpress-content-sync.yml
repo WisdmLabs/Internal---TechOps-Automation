@@ -22,8 +22,18 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Create themes directory if not exists
-        run: mkdir -p wp-content/themes
+      - name: Create directory structure
+        run: |
+          mkdir -p wp-content/plugins
+          mkdir -p wp-content/themes
+          # Create .gitignore if it doesn't exist
+          if [ ! -f .gitignore ]; then
+            echo "# Ignore ZIP files and temp files" > .gitignore
+            echo "*.zip" >> .gitignore
+            echo "*.tmp" >> .gitignore
+            echo "wp-content/**/*.zip" >> .gitignore
+            git add .gitignore
+          fi
 
       - name: Make scripts executable
         run: |
@@ -40,6 +50,11 @@ jobs:
         run: |
           bash ./scripts/download-content.sh
 
+      - name: Cleanup temporary files
+        run: |
+          find wp-content -name "*.zip" -type f -delete
+          find wp-content -name "*.tmp" -type f -delete
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
@@ -49,5 +64,7 @@ jobs:
             Automated PR to sync WordPress content:
             - Updated wp-content/plugins
             - Updated wp-content/themes
+            
+            Note: All temporary and ZIP files have been cleaned up.
           branch: feat/wordpress-content-update
           commit-message: 'feat: Update WordPress content' 
