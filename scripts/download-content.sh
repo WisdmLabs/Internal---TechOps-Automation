@@ -13,57 +13,45 @@ THEMES_DIR="$BASE_DIR/themes"
 
 # Function to make API request
 make_api_request() {
-    local endpoint=$1
-    local description=$2
+    local endpoint="$1"
+    local description="$2"
     local output_file=$(mktemp)
     local headers_file=$(mktemp)
-    
-    echo "Making $description API request to: $SITE_URL$endpoint"
+
+    echo "Making $description API request to: ${SITE_URL}${endpoint}"
     echo "Request headers:"
     echo "Authorization: Basic [REDACTED]"
-    
-    # Make the request
-    status_code=$(curl -s -w "%{http_code}" \
-        -H "Authorization: Basic $WP_AUTH_TOKEN" \
+
+    # Store response in output file and capture status code separately
+    local response=$(curl -s -H "Authorization: Basic ${AUTH_TOKEN}" \
         -H "Accept: application/json" \
         -H "Content-Type: application/json" \
-        -D "$headers_file" \
-        "$SITE_URL$endpoint" > "$output_file")
-    
-    echo "Response status code: $status_code"
+        -D "${headers_file}" \
+        "${SITE_URL}${endpoint}")
+    local status_code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Basic ${AUTH_TOKEN}" \
+        -H "Accept: application/json" \
+        -H "Content-Type: application/json" \
+        "${SITE_URL}${endpoint}")
+
+    echo "Response status code: ${status_code}"
     echo "Response headers:"
-    cat "$headers_file"
+    cat "${headers_file}"
     echo "Response body:"
-    cat "$output_file"
-    
-    # Check for curl errors
-    if [ $? -ne 0 ]; then
-        echo "Error: Curl command failed"
-        rm -f "$output_file" "$headers_file"
-        exit 1
-    fi
-    
-    # Check status code
-    if [ "$status_code" != "200" ]; then
-        echo "Error: $description API request failed with status $status_code"
+    echo "${response}"
+
+    # Write response to output file for processing
+    echo "${response}" > "${output_file}"
+
+    if [ $? -ne 0 ] || [ "${status_code}" != "200" ]; then
+        echo "Error: $description API request failed with status ${status_code}"
         echo "Full response:"
-        cat "$output_file"
-        rm -f "$output_file" "$headers_file"
-        exit 1
+        cat "${output_file}"
+        rm -f "${output_file}" "${headers_file}"
+        return 1
     fi
-    
-    # Validate JSON response
-    if ! jq empty "$output_file" > /dev/null 2>&1; then
-        echo "Error: Invalid JSON response from $description endpoint"
-        echo "Response:"
-        cat "$output_file"
-        rm -f "$output_file" "$headers_file"
-        exit 1
-    fi
-    
-    # Return the response
-    cat "$output_file"
-    rm -f "$output_file" "$headers_file"
+
+    echo "${output_file}"
+    rm -f "${headers_file}"
 }
 
 # Ensure directories exist
