@@ -1,0 +1,4 @@
+# Ignore ZIP files and temp files
+*.zip
+*.tmp
+wp-content/**/*.zip
