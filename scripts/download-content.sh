@@ -6,6 +6,9 @@ set -e
 # Enable debug mode
 set -x
 
+# Set AUTH_TOKEN from WP_AUTH_TOKEN
+AUTH_TOKEN="${WP_AUTH_TOKEN}"
+
 # Configuration
 BASE_DIR="wp-content"
 PLUGINS_DIR="$BASE_DIR/plugins"
