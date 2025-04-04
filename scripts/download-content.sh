@@ -21,9 +21,10 @@ make_api_request() {
     local output_file=$(mktemp)
     local headers_file=$(mktemp)
 
-    echo "Making $description API request to: ${SITE_URL}${endpoint}"
-    echo "Request headers:"
-    echo "Authorization: Basic [REDACTED]"
+    # Debug output to stderr instead of stdout
+    >&2 echo "Making $description API request to: ${SITE_URL}${endpoint}"
+    >&2 echo "Request headers:"
+    >&2 echo "Authorization: Basic [REDACTED]"
 
     # Make the API request and store response
     curl -s \
@@ -38,26 +39,27 @@ make_api_request() {
         -H "Content-Type: application/json" \
         "${SITE_URL}${endpoint}")
 
-    echo "Response status code: ${status_code}"
-    echo "Response body:"
-    cat "${output_file}"
+    >&2 echo "Response status code: ${status_code}"
+    >&2 echo "Response body:"
+    >&2 cat "${output_file}"
 
     if [ $? -ne 0 ] || [ "${status_code}" != "200" ]; then
-        echo "Error: $description API request failed with status ${status_code}"
-        echo "Full response:"
-        cat "${output_file}"
+        >&2 echo "Error: $description API request failed with status ${status_code}"
+        >&2 echo "Full response:"
+        >&2 cat "${output_file}"
         rm -f "${output_file}" "${headers_file}"
         return 1
     fi
 
     # Validate JSON
     if ! jq empty "${output_file}" 2>/dev/null; then
-        echo "Error: Invalid JSON response"
-        cat "${output_file}"
+        >&2 echo "Error: Invalid JSON response"
+        >&2 cat "${output_file}"
         rm -f "${output_file}" "${headers_file}"
         return 1
     fi
 
+    # Only output the file path to stdout
     echo "${output_file}"
     rm -f "${headers_file}"
 }
