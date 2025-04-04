@@ -11,20 +11,59 @@ BASE_DIR="wp-content"
 PLUGINS_DIR="$BASE_DIR/plugins"
 THEMES_DIR="$BASE_DIR/themes"
 
-# Function to check if curl request was successful
-check_curl_response() {
-    local status=$1
-    local response=$2
-    local endpoint=$3
+# Function to make API request
+make_api_request() {
+    local endpoint=$1
+    local description=$2
+    local output_file=$(mktemp)
+    local headers_file=$(mktemp)
     
-    echo "Response from $endpoint:"
-    echo "$response"
+    echo "Making $description API request to: $SITE_URL$endpoint"
+    echo "Request headers:"
+    echo "Authorization: Basic [REDACTED]"
     
-    if [ $status -ne 200 ]; then
-        echo "Error: API request to $endpoint failed with status code $status"
-        echo "Response body: $response"
+    # Make the request
+    status_code=$(curl -s -w "%{http_code}" \
+        -H "Authorization: Basic $WP_AUTH_TOKEN" \
+        -H "Accept: application/json" \
+        -H "Content-Type: application/json" \
+        -D "$headers_file" \
+        "$SITE_URL$endpoint" > "$output_file")
+    
+    echo "Response status code: $status_code"
+    echo "Response headers:"
+    cat "$headers_file"
+    echo "Response body:"
+    cat "$output_file"
+    
+    # Check for curl errors
+    if [ $? -ne 0 ]; then
+        echo "Error: Curl command failed"
+        rm -f "$output_file" "$headers_file"
         exit 1
     fi
+    
+    # Check status code
+    if [ "$status_code" != "200" ]; then
+        echo "Error: $description API request failed with status $status_code"
+        echo "Full response:"
+        cat "$output_file"
+        rm -f "$output_file" "$headers_file"
+        exit 1
+    fi
+    
+    # Validate JSON response
+    if ! jq empty "$output_file" > /dev/null 2>&1; then
+        echo "Error: Invalid JSON response from $description endpoint"
+        echo "Response:"
+        cat "$output_file"
+        rm -f "$output_file" "$headers_file"
+        exit 1
+    fi
+    
+    # Return the response
+    cat "$output_file"
+    rm -f "$output_file" "$headers_file"
 }
 
 # Ensure directories exist
@@ -32,7 +71,7 @@ echo "Creating directory structure..."
 mkdir -p "$PLUGINS_DIR"
 mkdir -p "$THEMES_DIR"
 
-# Authentication
+# Authentication checks
 if [ -z "$WP_AUTH_TOKEN" ]; then
     echo "Error: WP_AUTH_TOKEN is not set"
     exit 1
@@ -50,25 +89,12 @@ if ! echo "$WP_AUTH_TOKEN" | base64 -d > /dev/null 2>&1; then
     exit 1
 fi
 
-AUTH_HEADER="Authorization: Basic $WP_AUTH_TOKEN"
-
 echo "Starting WordPress content sync..."
 echo "Using site URL: $SITE_URL"
 
-# Download plugins list
+# Download and process plugins
 echo "Fetching plugins list..."
-PLUGINS_RESPONSE=$(curl -s -w "\n%{http_code}" -H "$AUTH_HEADER" "$SITE_URL/wp-json/techops/v1/plugins/list")
-HTTP_STATUS=$(echo "$PLUGINS_RESPONSE" | tail -n1)
-PLUGINS_DATA=$(echo "$PLUGINS_RESPONSE" | sed '$d')
-
-check_curl_response "$HTTP_STATUS" "$PLUGINS_DATA" "plugins list"
-
-# Validate JSON response
-if ! echo "$PLUGINS_DATA" | jq empty > /dev/null 2>&1; then
-    echo "Error: Invalid JSON response from plugins endpoint"
-    echo "Response: $PLUGINS_DATA"
-    exit 1
-fi
+PLUGINS_DATA=$(make_api_request "/wp-json/techops/v1/plugins/list" "plugins list")
 
 echo "Processing plugins data..."
 echo "$PLUGINS_DATA" | node scripts/process-plugins.js
@@ -78,20 +104,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Download themes list
+# Download and process themes
 echo "Fetching themes list..."
-THEMES_RESPONSE=$(curl -s -w "\n%{http_code}" -H "$AUTH_HEADER" "$SITE_URL/wp-json/techops/v1/themes/list")
-HTTP_STATUS=$(echo "$THEMES_RESPONSE" | tail -n1)
-THEMES_DATA=$(echo "$THEMES_RESPONSE" | sed '$d')
-
-check_curl_response "$HTTP_STATUS" "$THEMES_DATA" "themes list"
-
-# Validate JSON response
-if ! echo "$THEMES_DATA" | jq empty > /dev/null 2>&1; then
-    echo "Error: Invalid JSON response from themes endpoint"
-    echo "Response: $THEMES_DATA"
-    exit 1
-fi
+THEMES_DATA=$(make_api_request "/wp-json/techops/v1/themes/list" "themes list")
 
 echo "Processing themes data..."
 echo "$THEMES_DATA" | node scripts/process-themes.js

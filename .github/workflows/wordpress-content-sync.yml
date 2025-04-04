@@ -52,16 +52,55 @@ jobs:
           echo "Script permissions:"
           ls -la scripts/
 
-      - name: Verify script contents
+      - name: Test API Authentication
+        env:
+          WP_APP_USERNAME: ${{ secrets.WP_APP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+          WP_AUTH_TOKEN: ${{ secrets.WP_AUTH_TOKEN }}
+          SITE_URL: ${{ inputs.site_url }}
         run: |
-          echo "Content of download-content.sh:"
-          cat scripts/download-content.sh
-          echo -e "\nContent of process-plugins.js:"
-          cat scripts/process-plugins.js
-          echo -e "\nContent of process-themes.js:"
-          cat scripts/process-themes.js
+          echo "Testing API endpoints and authentication..."
+          
+          # Function to test endpoint
+          test_endpoint() {
+            local endpoint=$1
+            local description=$2
+            echo "Testing $description endpoint: $SITE_URL$endpoint"
+            echo "Auth token format check..."
+            if ! echo "$WP_AUTH_TOKEN" | base64 -d > /dev/null 2>&1; then
+              echo "Error: WP_AUTH_TOKEN is not valid base64"
+              exit 1
+            fi
+            
+            # Test with curl
+            echo "Making request to $description endpoint..."
+            response=$(curl -s -w "\n%{http_code}" -H "Authorization: Basic $WP_AUTH_TOKEN" "$SITE_URL$endpoint")
+            status_code=$(echo "$response" | tail -n1)
+            body=$(echo "$response" | sed '$d')
+            
+            echo "Status code: $status_code"
+            echo "Response headers:"
+            curl -s -I -H "Authorization: Basic $WP_AUTH_TOKEN" "$SITE_URL$endpoint"
+            echo "Response body:"
+            echo "$body"
+            
+            if [ "$status_code" != "200" ]; then
+              echo "Error: $description endpoint returned status $status_code"
+              exit 1
+            fi
+            
+            echo "$description endpoint test successful"
+            echo "----------------------------------------"
+          }
+          
+          # Test endpoints
+          test_endpoint "/wp-json/techops/v1/plugins/list" "plugins"
+          test_endpoint "/wp-json/techops/v1/themes/list" "themes"
+          
+          echo "API authentication tests completed successfully"
 
       - name: Download and process content
+        if: success()
         env:
           WP_APP_USERNAME: ${{ secrets.WP_APP_USERNAME }}
           WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
@@ -69,13 +108,6 @@ jobs:
           SITE_URL: ${{ inputs.site_url }}
         run: |
           echo "Starting content download with SITE_URL: $SITE_URL"
-          echo "Testing API endpoints..."
-          # Test plugins endpoint
-          echo "Testing plugins endpoint..."
-          curl -v -H "Authorization: Basic $WP_AUTH_TOKEN" "$SITE_URL/wp-json/techops/v1/plugins/list"
-          echo -e "\n\nTesting themes endpoint..."
-          curl -v -H "Authorization: Basic $WP_AUTH_TOKEN" "$SITE_URL/wp-json/techops/v1/themes/list"
-          echo -e "\n\nProceeding with content sync..."
           bash ./scripts/download-content.sh
 
       - name: Cleanup temporary files
