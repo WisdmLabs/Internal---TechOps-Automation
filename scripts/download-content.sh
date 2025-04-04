@@ -29,7 +29,6 @@ make_api_request() {
     local response=$(curl -s -H "Authorization: Basic ${AUTH_TOKEN}" \
         -H "Accept: application/json" \
         -H "Content-Type: application/json" \
-        -D "${headers_file}" \
         "${SITE_URL}${endpoint}")
     local status_code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Basic ${AUTH_TOKEN}" \
         -H "Accept: application/json" \
@@ -42,17 +41,16 @@ make_api_request() {
     echo "Response body:"
     echo "${response}"
 
-    # Write response to output file for processing
-    echo "${response}" > "${output_file}"
-
     if [ $? -ne 0 ] || [ "${status_code}" != "200" ]; then
         echo "Error: $description API request failed with status ${status_code}"
         echo "Full response:"
-        cat "${output_file}"
+        echo "${response}"
         rm -f "${output_file}" "${headers_file}"
         return 1
     fi
 
+    # Write only the JSON response to the output file
+    echo "${response}" > "${output_file}"
     echo "${output_file}"
     rm -f "${headers_file}"
 }
@@ -85,25 +83,27 @@ echo "Using site URL: $SITE_URL"
 
 # Download and process plugins
 echo "Fetching plugins list..."
-PLUGINS_DATA=$(make_api_request "/wp-json/techops/v1/plugins/list" "plugins list")
+PLUGINS_RESPONSE_FILE=$(make_api_request "/wp-json/techops/v1/plugins/list" "plugins list")
 
-echo "Processing plugins data..."
-echo "$PLUGINS_DATA" | node scripts/process-plugins.js
-
-if [ $? -ne 0 ]; then
-    echo "Error processing plugins"
+if [ $? -eq 0 ]; then
+    echo "Processing plugins data..."
+    cat "${PLUGINS_RESPONSE_FILE}" | node scripts/process-plugins.js
+    rm -f "${PLUGINS_RESPONSE_FILE}"
+else
+    echo "Error fetching plugins list"
     exit 1
 fi
 
 # Download and process themes
 echo "Fetching themes list..."
-THEMES_DATA=$(make_api_request "/wp-json/techops/v1/themes/list" "themes list")
+THEMES_RESPONSE_FILE=$(make_api_request "/wp-json/techops/v1/themes/list" "themes list")
 
-echo "Processing themes data..."
-echo "$THEMES_DATA" | node scripts/process-themes.js
-
-if [ $? -ne 0 ]; then
-    echo "Error processing themes"
+if [ $? -eq 0 ]; then
+    echo "Processing themes data..."
+    cat "${THEMES_RESPONSE_FILE}" | node scripts/process-themes.js
+    rm -f "${THEMES_RESPONSE_FILE}"
+else
+    echo "Error fetching themes list"
     exit 1
 fi
 
