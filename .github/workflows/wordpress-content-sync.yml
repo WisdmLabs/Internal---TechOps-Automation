@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: release
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -118,10 +118,28 @@ jobs:
           echo "Cleanup completed. Current wp-content structure:"
           ls -R wp-content/
 
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git add wp-content/
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "Changes detected in wp-content directory"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes detected in wp-content directory"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Pull Request
-        if: success()
+        if: steps.check_changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           base: release
           title: 'feat: Update WordPress content'
           body: |
@@ -131,4 +149,7 @@ jobs:
             
             Note: All temporary and ZIP files have been cleaned up.
           branch: feat/wordpress-content-update
-          commit-message: 'feat: Update WordPress content' 
+          commit-message: 'feat: Update WordPress content'
+          delete-branch: true
+          committer: GitHub <noreply@github.com>
+          author: github-actions[bot] <github-actions[bot]@users.noreply.github.com> 
