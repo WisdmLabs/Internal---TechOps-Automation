@@ -7,6 +7,10 @@ on:
         description: 'WordPress site URL'
         required: true
         default: 'https://wordpress-1000690-5314661.cloudwaysapps.com'
+      staging_url:
+        description: 'Staging site URL'
+        required: true
+        default: 'https://staging-wordpress-1000690-5314661.cloudwaysapps.com'
 
 permissions:
   contents: write
@@ -167,6 +171,43 @@ jobs:
             echo "has_changes=false" >> $GITHUB_OUTPUT
           fi
 
+  sync-activation:
+    needs: sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Sync activation states
+        env:
+          WP_APP_USERNAME: ${{ secrets.WP_APP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+          WP_AUTH_TOKEN: ${{ secrets.WP_AUTH_TOKEN }}
+          STAGING_URL: ${{ inputs.staging_url }}
+        run: |
+          node scripts/sync-activation.js
+
+      - name: Commit sync report
+        if: always()
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          
+          if [[ -f wp-content/plugins/sync-report.json ]]; then
+            git add wp-content/plugins/sync-report.json
+            git commit -m "docs: Add activation sync report"
+            git push origin main
+          fi
+
       - name: Create Pull Request from main to release
         if: steps.check_changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@v5
@@ -179,6 +220,7 @@ jobs:
             Automated PR to sync WordPress content from main to release:
             - Updated wp-content/plugins
             - Updated wp-content/themes
+            - Synchronized plugin activation states
             
             Note: All temporary and ZIP files have been cleaned up.
             
@@ -189,6 +231,7 @@ jobs:
             - [ ] Changes are present in main branch
             - [ ] No sensitive files included
             - [ ] Directory structure is correct
+            - [ ] Plugin activation states are synchronized
           commit-message: 'feat: Update WordPress content'
           committer: GitHub <noreply@github.com>
           author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>

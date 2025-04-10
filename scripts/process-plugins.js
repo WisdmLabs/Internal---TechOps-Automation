@@ -15,6 +15,23 @@ async function processPlugins(pluginsList) {
 
         console.log(`Processing ${pluginsList.length} plugins...`);
 
+        // Create activation states file
+        const activationStates = {
+            plugins: pluginsList.map(plugin => ({
+                slug: plugin.slug,
+                active: plugin.active,
+                version: plugin.version,
+                name: plugin.name
+            })),
+            lastSync: new Date().toISOString()
+        };
+
+        // Save activation states
+        fs.writeFileSync(
+            path.join(BASE_DIR, 'activation-states.json'),
+            JSON.stringify(activationStates, null, 2)
+        );
+
         for (const plugin of pluginsList) {
             try {
                 const pluginDir = path.join(BASE_DIR, plugin.slug);
