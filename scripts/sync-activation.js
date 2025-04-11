@@ -19,6 +19,48 @@ for (const envVar of requiredEnvVars) {
     }
 }
 
+// Function to make API request with retries
+async function makeApiRequest(url, token, method = 'GET', data = null) {
+    const maxRetries = 3;
+    let retryCount = 0;
+    
+    while (retryCount < maxRetries) {
+        try {
+            const command = [
+                'curl -s',
+                `-H "Authorization: Basic ${token}"`,
+                '-H "Content-Type: application/json"',
+                '-H "Accept: application/json"',
+                '--max-time 30'
+            ];
+            
+            if (method === 'POST') {
+                command.push('-X POST');
+                if (data) {
+                    command.push(`-d '${JSON.stringify(data)}'`);
+                }
+            }
+            
+            command.push(`"${url}"`);
+            
+            const response = execSync(command.join(' ')).toString();
+            return JSON.parse(response);
+        } catch (error) {
+            retryCount++;
+            if (retryCount === maxRetries) {
+                throw error;
+            }
+            console.log(`Request failed, retrying in 5 seconds... (Attempt ${retryCount} of ${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+    }
+}
+
+// Function to validate plugin slug
+function validatePluginSlug(slug) {
+    return /^[a-z0-9-]+$/.test(slug);
+}
+
 async function syncActivationStates() {
     try {
         console.log('Starting activation state synchronization...');
@@ -30,17 +72,35 @@ async function syncActivationStates() {
             process.exit(1);
         }
         
-        const liveStates = JSON.parse(fs.readFileSync(liveStatesPath));
+        let liveStates;
+        try {
+            liveStates = JSON.parse(fs.readFileSync(liveStatesPath));
+            if (!liveStates.plugins || !Array.isArray(liveStates.plugins)) {
+                throw new Error('Invalid activation states file format');
+            }
+        } catch (error) {
+            console.error('Error parsing activation states file:', error.message);
+            process.exit(1);
+        }
+        
         console.log(`Found ${liveStates.plugins.length} plugins in live site`);
         
         // Get current activation states from staging
         console.log('Fetching current plugin states from staging site...');
-        const stagingResponse = execSync(
-            `curl -s -H "Authorization: Basic ${process.env.STAGING_SITE_AUTH_TOKEN}" ` +
-            `"${process.env.STAGING_SITE_URL}/wp-json/techops/v1/plugins/list"`
-        ).toString();
+        let stagingPlugins;
+        try {
+            stagingPlugins = await makeApiRequest(
+                `${process.env.STAGING_SITE_URL}/wp-json/techops/v1/plugins/list`,
+                process.env.STAGING_SITE_AUTH_TOKEN
+            );
+            if (!Array.isArray(stagingPlugins)) {
+                throw new Error('Invalid response format from staging site');
+            }
+        } catch (error) {
+            console.error('Error fetching staging plugins:', error.message);
+            process.exit(1);
+        }
         
-        const stagingPlugins = JSON.parse(stagingResponse);
         console.log(`Found ${stagingPlugins.length} plugins in staging site`);
         
         // Track changes for reporting
@@ -52,6 +112,15 @@ async function syncActivationStates() {
         
         // Compare and activate/deactivate plugins
         for (const livePlugin of liveStates.plugins) {
+            if (!validatePluginSlug(livePlugin.slug)) {
+                changes.errors.push({
+                    plugin: livePlugin.slug,
+                    action: 'validate',
+                    error: 'Invalid plugin slug format'
+                });
+                continue;
+            }
+            
             const stagingPlugin = stagingPlugins.find(p => p.slug === livePlugin.slug);
             
             if (stagingPlugin) {
@@ -60,24 +129,23 @@ async function syncActivationStates() {
                     console.log(`${action}ing plugin: ${livePlugin.slug}`);
                     
                     try {
-                        const response = execSync(
-                            `curl -s -X POST -H "Authorization: Basic ${process.env.STAGING_SITE_AUTH_TOKEN}" ` +
-                            `-H "Content-Type: application/json" ` +
-                            `-d '{"plugin":"${livePlugin.slug}"}' ` +
-                            `"${process.env.STAGING_SITE_URL}/wp-json/techops/v1/plugins/${action}"`
-                        ).toString();
+                        const response = await makeApiRequest(
+                            `${process.env.STAGING_SITE_URL}/wp-json/techops/v1/plugins/${action}`,
+                            process.env.STAGING_SITE_AUTH_TOKEN,
+                            'POST',
+                            { plugin: livePlugin.slug }
+                        );
                         
-                        const result = JSON.parse(response);
-                        if (result.success) {
+                        if (response.success) {
                             changes[action + 'd'].push(livePlugin.slug);
                             console.log(`Successfully ${action}d plugin: ${livePlugin.slug}`);
                         } else {
                             changes.errors.push({
                                 plugin: livePlugin.slug,
                                 action: action,
-                                error: result.message || 'Unknown error'
+                                error: response.message || 'Unknown error'
                             });
-                            console.error(`Failed to ${action} plugin ${livePlugin.slug}: ${result.message}`);
+                            console.error(`Failed to ${action} plugin ${livePlugin.slug}: ${response.message}`);
                         }
                     } catch (error) {
                         changes.errors.push({
@@ -90,6 +158,11 @@ async function syncActivationStates() {
                 }
             } else {
                 console.warn(`Plugin ${livePlugin.slug} not found in staging site`);
+                changes.errors.push({
+                    plugin: livePlugin.slug,
+                    action: 'sync',
+                    error: 'Plugin not found in staging site'
+                });
             }
         }
         
@@ -98,7 +171,7 @@ async function syncActivationStates() {
             timestamp: new Date().toISOString(),
             changes: changes,
             summary: {
-                total: liveStates.plugins.length,
+                total_processed: liveStates.plugins.length,
                 activated: changes.activated.length,
                 deactivated: changes.deactivated.length,
                 errors: changes.errors.length
@@ -110,23 +183,16 @@ async function syncActivationStates() {
             JSON.stringify(report, null, 2)
         );
         
-        console.log('\nSync Report:');
-        console.log(`Total plugins processed: ${report.summary.total}`);
-        console.log(`Activated: ${report.summary.activated}`);
-        console.log(`Deactivated: ${report.summary.deactivated}`);
-        console.log(`Errors: ${report.summary.errors}`);
+        console.log('Sync report written to wp-content/plugins/sync-report.json');
         
-        if (report.summary.errors > 0) {
-            console.error('\nErrors encountered:');
-            report.changes.errors.forEach(error => {
-                console.error(`- ${error.plugin}: ${error.error}`);
-            });
+        if (changes.errors.length > 0) {
+            console.warn(`Completed with ${changes.errors.length} errors`);
             process.exit(1);
         }
         
-        console.log('\nActivation states synchronized successfully');
+        console.log('Activation state synchronization completed successfully');
     } catch (error) {
-        console.error('Error syncing activation states:', error.message);
+        console.error('Fatal error during synchronization:', error.message);
         process.exit(1);
     }
 }

@@ -32,6 +32,9 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Create directory structure
         run: |
           mkdir -p wp-content/plugins
@@ -144,7 +147,11 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Sync activation states
+        id: sync_states
         env:
           LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
           STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
@@ -152,21 +159,24 @@ jobs:
           STAGING_SITE_URL: ${{ inputs.staging_url }}
         run: |
           node scripts/sync-activation.js
+          if [[ -f wp-content/plugins/sync-report.json ]]; then
+            echo "sync_successful=true" >> $GITHUB_OUTPUT
+          else
+            echo "sync_successful=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Commit sync report
-        if: always()
+        if: steps.sync_states.outputs.sync_successful == 'true'
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           
-          if [[ -f wp-content/plugins/sync-report.json ]]; then
-            git add wp-content/plugins/sync-report.json
-            git commit -m "docs: Add activation sync report"
-            git push origin main
-          fi
+          git add wp-content/plugins/sync-report.json
+          git commit -m "docs: Add activation sync report"
+          git push origin main
 
       - name: Create Pull Request from main to release
-        if: steps.check_changes.outputs.has_changes == 'true'
+        if: steps.check_changes.outputs.has_changes == 'true' && steps.sync_states.outputs.sync_successful == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
