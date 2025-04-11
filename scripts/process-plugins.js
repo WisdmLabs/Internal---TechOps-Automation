@@ -84,11 +84,18 @@ function validatePluginMetadata(plugin) {
 }
 
 async function processPlugins() {
+    let backupPath = null;
     try {
         logger.info('Starting plugin processing...');
         
+        // Ensure base directory exists
+        if (!fs.existsSync(BASE_DIR)) {
+            logger.info(`Creating directory: ${BASE_DIR}`);
+            fs.mkdirSync(BASE_DIR, { recursive: true });
+        }
+        
         // Create backup
-        const backupPath = await backupManager.createBackup();
+        backupPath = await backupManager.createBackup();
         logger.info(`Created backup at: ${backupPath}`);
         
         // Get plugins list
@@ -124,10 +131,10 @@ async function processPlugins() {
             lastSync: new Date().toISOString()
         };
         
-        fs.writeFileSync(
-            path.join(BASE_DIR, 'activation-states.json'),
-            JSON.stringify(activationStates, null, 2)
-        );
+        // Ensure directory exists before writing file
+        const activationStatesPath = path.join(BASE_DIR, 'activation-states.json');
+        fs.writeFileSync(activationStatesPath, JSON.stringify(activationStates, null, 2));
+        logger.info(`Created activation states file at: ${activationStatesPath}`);
         
         // Process each plugin
         for (const plugin of filteredPlugins) {
@@ -143,6 +150,12 @@ async function processPlugins() {
                     logger.warn(`Plugin ${plugin.slug} has unmet dependencies`, { dependencies });
                 }
                 
+                // Create plugin directory if it doesn't exist
+                const pluginDir = path.join(BASE_DIR, plugin.slug);
+                if (!fs.existsSync(pluginDir)) {
+                    fs.mkdirSync(pluginDir, { recursive: true });
+                }
+                
                 // Download plugin
                 const pluginUrl = `${process.env.LIVE_SITE_URL}/wp-json/techops/v1/plugins/download/${plugin.slug}`;
                 const zipPath = path.join(BASE_DIR, `${plugin.slug}.zip`);
@@ -155,9 +168,8 @@ async function processPlugins() {
                 }
                 
                 // Extract plugin
-                const extractPath = path.join(BASE_DIR, plugin.slug);
                 try {
-                    execSync(`unzip -q -o "${zipPath}" -d "${extractPath}"`);
+                    execSync(`unzip -q -o "${zipPath}" -d "${pluginDir}"`);
                 } catch (error) {
                     logger.error(`Failed to extract plugin ${plugin.slug}`, { error: error.message });
                     fs.unlinkSync(zipPath);
@@ -176,8 +188,15 @@ async function processPlugins() {
         logger.info('Plugin processing completed');
     } catch (error) {
         logger.error('Fatal error during plugin processing', { error: error.message });
-        // Restore from backup
-        await backupManager.restoreBackup(backupPath);
+        // Restore from backup if we have one
+        if (backupPath) {
+            try {
+                await backupManager.restoreBackup(backupPath);
+                logger.info('Successfully restored from backup');
+            } catch (restoreError) {
+                logger.error('Failed to restore from backup', { error: restoreError.message });
+            }
+        }
         process.exit(1);
     }
 }
