@@ -1,0 +1,4 @@
+{"timestamp":"2025-04-11T06:29:19.929Z","level":"error","message":"Failed to get WordPress version","details":{"error":"fetch failed"}}
+{"timestamp":"2025-04-11T06:29:19.929Z","level":"error","message":"Dependency check failed","details":{"error":"fetch failed"}}
+{"timestamp":"2025-04-11T06:29:42.187Z","level":"error","message":"Failed to get WordPress version","details":{"error":"fetch failed"}}
+{"timestamp":"2025-04-11T06:29:42.187Z","level":"error","message":"Dependency check failed","details":{"error":"fetch failed"}}
