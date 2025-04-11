@@ -1,0 +1,78 @@
+{"timestamp":"2025-04-11T08:14:53.246Z","level":"info","message":"Starting plugin processing...","details":{}}
+{"timestamp":"2025-04-11T08:14:55.735Z","level":"info","message":"Created backup at: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/_backups/backup-2025-04-11T08-14-53-249Z","details":{}}
+{"timestamp":"2025-04-11T08:14:55.736Z","level":"info","message":"Fetching plugins list...","details":{}}
+{"timestamp":"2025-04-11T08:14:56.974Z","level":"info","message":"Found 25 plugins to process","details":{}}
+{"timestamp":"2025-04-11T08:14:56.975Z","level":"info","message":"Created activation states file at: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/activation-states.json","details":{}}
+{"timestamp":"2025-04-11T08:14:56.975Z","level":"info","message":"Processing plugin: akismet","details":{}}
+{"timestamp":"2025-04-11T08:15:06.925Z","level":"info","message":"Successfully processed plugin: akismet","details":{}}
+{"timestamp":"2025-04-11T08:15:06.925Z","level":"info","message":"Successfully processed plugin: akismet","details":{}}
+{"timestamp":"2025-04-11T08:15:06.926Z","level":"info","message":"Processing plugin: bbpress","details":{}}
+{"timestamp":"2025-04-11T08:15:14.553Z","level":"info","message":"Successfully processed plugin: bbpress","details":{}}
+{"timestamp":"2025-04-11T08:15:14.553Z","level":"info","message":"Successfully processed plugin: bbpress","details":{}}
+{"timestamp":"2025-04-11T08:15:14.553Z","level":"info","message":"Processing plugin: breeze","details":{}}
+{"timestamp":"2025-04-11T08:15:21.272Z","level":"info","message":"Successfully processed plugin: breeze","details":{}}
+{"timestamp":"2025-04-11T08:15:21.272Z","level":"info","message":"Successfully processed plugin: breeze","details":{}}
+{"timestamp":"2025-04-11T08:15:21.272Z","level":"info","message":"Processing plugin: advanced-nocaptcha-recaptcha","details":{}}
+{"timestamp":"2025-04-11T08:15:27.621Z","level":"info","message":"Successfully processed plugin: advanced-nocaptcha-recaptcha","details":{}}
+{"timestamp":"2025-04-11T08:15:27.622Z","level":"info","message":"Successfully processed plugin: advanced-nocaptcha-recaptcha","details":{}}
+{"timestamp":"2025-04-11T08:15:27.622Z","level":"info","message":"Processing plugin: classic-editor","details":{}}
+{"timestamp":"2025-04-11T08:15:33.718Z","level":"info","message":"Successfully processed plugin: classic-editor","details":{}}
+{"timestamp":"2025-04-11T08:15:33.718Z","level":"info","message":"Successfully processed plugin: classic-editor","details":{}}
+{"timestamp":"2025-04-11T08:15:33.718Z","level":"info","message":"Processing plugin: contact-form-7","details":{}}
+{"timestamp":"2025-04-11T08:15:40.079Z","level":"info","message":"Successfully processed plugin: contact-form-7","details":{}}
+{"timestamp":"2025-04-11T08:15:40.079Z","level":"info","message":"Successfully processed plugin: contact-form-7","details":{}}
+{"timestamp":"2025-04-11T08:15:40.079Z","level":"info","message":"Processing plugin: db-access-adminer","details":{}}
+{"timestamp":"2025-04-11T08:15:46.286Z","level":"info","message":"Successfully processed plugin: db-access-adminer","details":{}}
+{"timestamp":"2025-04-11T08:15:46.286Z","level":"info","message":"Successfully processed plugin: db-access-adminer","details":{}}
+{"timestamp":"2025-04-11T08:15:46.286Z","level":"info","message":"Processing plugin: download-plugins-dashboard","details":{}}
+{"timestamp":"2025-04-11T08:15:52.007Z","level":"info","message":"Successfully processed plugin: download-plugins-dashboard","details":{}}
+{"timestamp":"2025-04-11T08:15:52.007Z","level":"info","message":"Successfully processed plugin: download-plugins-dashboard","details":{}}
+{"timestamp":"2025-04-11T08:15:52.007Z","level":"info","message":"Processing plugin: email-log","details":{}}
+{"timestamp":"2025-04-11T08:15:58.466Z","level":"info","message":"Successfully processed plugin: email-log","details":{}}
+{"timestamp":"2025-04-11T08:15:58.466Z","level":"info","message":"Successfully processed plugin: email-log","details":{}}
+{"timestamp":"2025-04-11T08:15:58.466Z","level":"info","message":"Processing plugin: googleanalytics.php","details":{}}
+{"timestamp":"2025-04-11T08:16:26.951Z","level":"info","message":"Successfully processed plugin: googleanalytics.php","details":{}}
+{"timestamp":"2025-04-11T08:16:26.951Z","level":"info","message":"Successfully processed plugin: googleanalytics.php","details":{}}
+{"timestamp":"2025-04-11T08:16:26.951Z","level":"info","message":"Processing plugin: hcaptcha-for-forms-and-more","details":{}}
+{"timestamp":"2025-04-11T08:16:36.338Z","level":"info","message":"Successfully processed plugin: hcaptcha-for-forms-and-more","details":{}}
+{"timestamp":"2025-04-11T08:16:36.338Z","level":"info","message":"Successfully processed plugin: hcaptcha-for-forms-and-more","details":{}}
+{"timestamp":"2025-04-11T08:16:36.338Z","level":"info","message":"Processing plugin: hello.php","details":{}}
+{"timestamp":"2025-04-11T08:17:05.777Z","level":"info","message":"Successfully processed plugin: hello.php","details":{}}
+{"timestamp":"2025-04-11T08:17:05.777Z","level":"info","message":"Successfully processed plugin: hello.php","details":{}}
+{"timestamp":"2025-04-11T08:17:05.778Z","level":"info","message":"Processing plugin: wp-maintenance-mode","details":{}}
+{"timestamp":"2025-04-11T08:17:19.755Z","level":"info","message":"Successfully processed plugin: wp-maintenance-mode","details":{}}
+{"timestamp":"2025-04-11T08:17:19.756Z","level":"info","message":"Successfully processed plugin: wp-maintenance-mode","details":{}}
+{"timestamp":"2025-04-11T08:17:19.756Z","level":"info","message":"Processing plugin: object-cache-pro","details":{}}
+{"timestamp":"2025-04-11T08:17:31.821Z","level":"info","message":"Successfully processed plugin: object-cache-pro","details":{}}
+{"timestamp":"2025-04-11T08:17:31.821Z","level":"info","message":"Successfully processed plugin: object-cache-pro","details":{}}
+{"timestamp":"2025-04-11T08:17:31.821Z","level":"info","message":"Processing plugin: otter-blocks","details":{}}
+{"timestamp":"2025-04-11T08:17:45.116Z","level":"info","message":"Successfully processed plugin: otter-blocks","details":{}}
+{"timestamp":"2025-04-11T08:17:45.116Z","level":"info","message":"Successfully processed plugin: otter-blocks","details":{}}
+{"timestamp":"2025-04-11T08:17:45.116Z","level":"info","message":"Processing plugin: stop-emails","details":{}}
+{"timestamp":"2025-04-11T08:17:56.921Z","level":"info","message":"Successfully processed plugin: stop-emails","details":{}}
+{"timestamp":"2025-04-11T08:17:56.921Z","level":"info","message":"Successfully processed plugin: stop-emails","details":{}}
+{"timestamp":"2025-04-11T08:17:56.921Z","level":"info","message":"Processing plugin: td-cloud-library","details":{}}
+{"timestamp":"2025-04-11T08:18:09.490Z","level":"info","message":"Successfully processed plugin: td-cloud-library","details":{}}
+{"timestamp":"2025-04-11T08:18:09.491Z","level":"info","message":"Successfully processed plugin: td-cloud-library","details":{}}
+{"timestamp":"2025-04-11T08:18:09.491Z","level":"info","message":"Processing plugin: td-composer","details":{}}
+{"timestamp":"2025-04-11T08:18:24.962Z","level":"info","message":"Successfully processed plugin: td-composer","details":{}}
+{"timestamp":"2025-04-11T08:18:24.962Z","level":"info","message":"Successfully processed plugin: td-composer","details":{}}
+{"timestamp":"2025-04-11T08:18:24.962Z","level":"info","message":"Processing plugin: updraftplus","details":{}}
+{"timestamp":"2025-04-11T08:18:38.698Z","level":"info","message":"Successfully processed plugin: updraftplus","details":{}}
+{"timestamp":"2025-04-11T08:18:38.698Z","level":"info","message":"Successfully processed plugin: updraftplus","details":{}}
+{"timestamp":"2025-04-11T08:18:38.698Z","level":"info","message":"Processing plugin: wordfence","details":{}}
+{"timestamp":"2025-04-11T08:18:55.982Z","level":"info","message":"Successfully processed plugin: wordfence","details":{}}
+{"timestamp":"2025-04-11T08:18:55.983Z","level":"info","message":"Successfully processed plugin: wordfence","details":{}}
+{"timestamp":"2025-04-11T08:18:55.983Z","level":"info","message":"Processing plugin: wp-security-audit-log","details":{}}
+{"timestamp":"2025-04-11T08:19:09.277Z","level":"info","message":"Successfully processed plugin: wp-security-audit-log","details":{}}
+{"timestamp":"2025-04-11T08:19:09.277Z","level":"info","message":"Successfully processed plugin: wp-security-audit-log","details":{}}
+{"timestamp":"2025-04-11T08:19:09.277Z","level":"info","message":"Processing plugin: wpforms-lite","details":{}}
+{"timestamp":"2025-04-11T08:19:24.448Z","level":"info","message":"Successfully processed plugin: wpforms-lite","details":{}}
+{"timestamp":"2025-04-11T08:19:24.448Z","level":"info","message":"Successfully processed plugin: wpforms-lite","details":{}}
+{"timestamp":"2025-04-11T08:19:24.448Z","level":"info","message":"Processing plugin: wp-mail-smtp","details":{}}
+{"timestamp":"2025-04-11T08:19:36.697Z","level":"info","message":"Successfully processed plugin: wp-mail-smtp","details":{}}
+{"timestamp":"2025-04-11T08:19:36.697Z","level":"info","message":"Successfully processed plugin: wp-mail-smtp","details":{}}
+{"timestamp":"2025-04-11T08:19:36.697Z","level":"info","message":"Processing plugin: wordpress-seo","details":{}}
+{"timestamp":"2025-04-11T08:19:49.898Z","level":"info","message":"Successfully processed plugin: wordpress-seo","details":{}}
+{"timestamp":"2025-04-11T08:19:49.898Z","level":"info","message":"Successfully processed plugin: wordpress-seo","details":{}}
+{"timestamp":"2025-04-11T08:19:49.898Z","level":"info","message":"Plugin processing completed","details":{}}
