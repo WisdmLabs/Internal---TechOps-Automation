@@ -1,0 +1,149 @@
+{
+  "plugins": [
+    {
+      "slug": "akismet",
+      "active": false,
+      "version": "5.3.7",
+      "name": "Akismet Anti-spam: Spam Protection"
+    },
+    {
+      "slug": "bbpress",
+      "active": true,
+      "version": "2.6.12",
+      "name": "bbPress"
+    },
+    {
+      "slug": "breeze",
+      "active": false,
+      "version": "2.2.7",
+      "name": "Breeze"
+    },
+    {
+      "slug": "advanced-nocaptcha-recaptcha",
+      "active": false,
+      "version": "7.5.0",
+      "name": "CAPTCHA 4WP"
+    },
+    {
+      "slug": "classic-editor",
+      "active": true,
+      "version": "1.6.7",
+      "name": "Classic Editor"
+    },
+    {
+      "slug": "contact-form-7",
+      "active": true,
+      "version": "6.0.5",
+      "name": "Contact Form 7"
+    },
+    {
+      "slug": "db-access-adminer",
+      "active": true,
+      "version": "2.1.0",
+      "name": "Database Access with Adminer"
+    },
+    {
+      "slug": "download-plugins-dashboard",
+      "active": true,
+      "version": "1.9.4",
+      "name": "Download Plugins and Themes from Dashboard"
+    },
+    {
+      "slug": "email-log",
+      "active": true,
+      "version": "2.4.9",
+      "name": "Email Log"
+    },
+    {
+      "slug": "googleanalytics.php",
+      "active": false,
+      "version": "6.2.0",
+      "name": "Google Analytics for WordPress by MonsterInsights"
+    },
+    {
+      "slug": "hcaptcha-for-forms-and-more",
+      "active": true,
+      "version": "4.11.0",
+      "name": "hCaptcha for WP"
+    },
+    {
+      "slug": "hello.php",
+      "active": false,
+      "version": "1.7.2",
+      "name": "Hello Dolly"
+    },
+    {
+      "slug": "wp-maintenance-mode",
+      "active": true,
+      "version": "2.6.16",
+      "name": "LightStart - Maintenance Mode, Coming Soon and Landing Page Builder"
+    },
+    {
+      "slug": "object-cache-pro",
+      "active": false,
+      "version": "1.22.0",
+      "name": "Object Cache Pro"
+    },
+    {
+      "slug": "otter-blocks",
+      "active": true,
+      "version": "3.0.10",
+      "name": "Otter – Page Builder Blocks & Extensions for Gutenberg"
+    },
+    {
+      "slug": "stop-emails",
+      "active": true,
+      "version": "1.2.1",
+      "name": "Stop Emails"
+    },
+    {
+      "slug": "td-cloud-library",
+      "active": true,
+      "version": "3.7 | built on 26.09.2024 10:39",
+      "name": "tagDiv Cloud Library"
+    },
+    {
+      "slug": "td-composer",
+      "active": true,
+      "version": "5.2 | built on 26.09.2024 10:39",
+      "name": "tagDiv Composer"
+    },
+    {
+      "slug": "updraftplus",
+      "active": false,
+      "version": "2.23.3.26",
+      "name": "UpdraftPlus - Backup/Restore"
+    },
+    {
+      "slug": "wordfence",
+      "active": true,
+      "version": "8.0.3",
+      "name": "Wordfence Security"
+    },
+    {
+      "slug": "wp-security-audit-log",
+      "active": false,
+      "version": "5.3.3",
+      "name": "WP Activity Log"
+    },
+    {
+      "slug": "wpforms-lite",
+      "active": true,
+      "version": "1.9.4.2",
+      "name": "WPForms Lite"
+    },
+    {
+      "slug": "wp-mail-smtp",
+      "active": true,
+      "version": "4.4.0",
+      "name": "WP Mail SMTP"
+    },
+    {
+      "slug": "wordpress-seo",
+      "active": true,
+      "version": "24.6",
+      "name": "Yoast SEO"
+    }
+  ],
+  "lastSync": "2025-04-11T09:10:55.561Z"
+}
