@@ -71,7 +71,7 @@ jobs:
             Please review the changes before merging.
 
   sync-activation:
-    needs: sync
+    needs: sync-content
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -94,8 +94,8 @@ jobs:
         env:
           LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
           STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
-          LIVE_SITE_URL: ${{ inputs.site_url }}
-          STAGING_SITE_URL: ${{ inputs.staging_url }}
+          LIVE_SITE_URL: ${{ github.event.inputs.live_site_url }}
+          STAGING_SITE_URL: ${{ github.event.inputs.staging_site_url }}
         run: |
           node scripts/sync-activation.js
           if [[ -f wp-content/plugins/sync-report.json ]]; then
