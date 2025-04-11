@@ -3,21 +3,14 @@ name: WordPress Content Sync
 on:
   workflow_dispatch:
     inputs:
-      wordpress_site_url:
-        description: 'WordPress Site URL'
-        required: true
-        default: 'https://techopsautomation.wisdmlabs.net'
       live_site_url:
         description: 'Live Site URL'
         required: true
-      live_site_auth_token:
-        description: 'Live Site Auth Token'
+        default: 'https://wordpress-1000690-5314661.cloudwaysapps.com'
+      staging_site_url:
+        description: 'Staging Site URL'
         required: true
-        type: password
-      staging_site_auth_token:
-        description: 'Staging Site Auth Token'
-        required: true
-        type: password
+        default: 'https://techopsautomation.wisdmlabs.net'
 
 permissions:
   contents: write
@@ -47,17 +40,17 @@ jobs:
         
       - name: Test API Authentication
         run: |
-          curl -i -H "Authorization: Basic ${{ github.event.inputs.live_site_auth_token }}" \
+          curl -i -H "Authorization: Basic ${{ secrets.LIVE_SITE_AUTH_TOKEN }}" \
             ${{ github.event.inputs.live_site_url }}/wp-json/techops/v1/plugins/list
-          curl -i -H "Authorization: Basic ${{ github.event.inputs.staging_site_auth_token }}" \
-            ${{ github.event.inputs.wordpress_site_url }}/wp-json/techops/v1/plugins/list
+          curl -i -H "Authorization: Basic ${{ secrets.STAGING_SITE_AUTH_TOKEN }}" \
+            ${{ github.event.inputs.staging_site_url }}/wp-json/techops/v1/plugins/list
             
       - name: Download Content
         env:
           LIVE_SITE_URL: ${{ github.event.inputs.live_site_url }}
-          LIVE_SITE_AUTH_TOKEN: ${{ github.event.inputs.live_site_auth_token }}
-          STAGING_SITE_URL: ${{ github.event.inputs.wordpress_site_url }}
-          STAGING_SITE_AUTH_TOKEN: ${{ github.event.inputs.staging_site_auth_token }}
+          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
+          STAGING_SITE_URL: ${{ github.event.inputs.staging_site_url }}
+          STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
         run: ./scripts/download-content.sh
         
       - name: Create Pull Request
