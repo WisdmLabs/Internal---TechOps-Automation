@@ -26,7 +26,7 @@ const EXCLUDED_PLUGINS = ['techops-content-sync'];
 const LOG_FILE = path.join(BASE_DIR, 'plugin-sync.log');
 
 // Initialize utilities
-const backupManager = new BackupManager();
+const backupManager = new BackupManager(path.join(BASE_DIR, 'wp-content/plugins'));
 const dependencyChecker = new DependencyChecker();
 const logger = new Logger(LOG_FILE);
 
