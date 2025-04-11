@@ -5,7 +5,8 @@ const { execSync } = require('child_process');
 class BackupManager {
     constructor(baseDir) {
         this.baseDir = baseDir;
-        this.backupDir = path.join(baseDir, '_backups');
+        // Create backups directory at the same level as wp-content
+        this.backupDir = path.join(path.dirname(path.dirname(baseDir)), '_backups');
     }
 
     async createBackup() {
@@ -18,7 +19,7 @@ class BackupManager {
         // Copy the entire plugins directory
         fs.cpSync(
             this.baseDir,
-            backupPath,
+            path.join(backupPath, 'plugins'),
             { recursive: true }
         );
         
@@ -28,7 +29,7 @@ class BackupManager {
     async restoreBackup(backupPath) {
         // Restore from backup
         fs.cpSync(
-            backupPath,
+            path.join(backupPath, 'plugins'),
             this.baseDir,
             { recursive: true, force: true }
         );
