@@ -15,16 +15,10 @@ class BackupManager {
         // Create backup directory
         fs.mkdirSync(backupPath, { recursive: true });
         
-        // Copy plugins and themes
+        // Copy the entire plugins directory
         fs.cpSync(
-            path.join(this.baseDir, 'plugins'),
-            path.join(backupPath, 'plugins'),
-            { recursive: true }
-        );
-        
-        fs.cpSync(
-            path.join(this.baseDir, 'themes'),
-            path.join(backupPath, 'themes'),
+            this.baseDir,
+            backupPath,
             { recursive: true }
         );
         
@@ -34,14 +28,8 @@ class BackupManager {
     async restoreBackup(backupPath) {
         // Restore from backup
         fs.cpSync(
-            path.join(backupPath, 'plugins'),
-            path.join(this.baseDir, 'plugins'),
-            { recursive: true, force: true }
-        );
-        
-        fs.cpSync(
-            path.join(backupPath, 'themes'),
-            path.join(this.baseDir, 'themes'),
+            backupPath,
+            this.baseDir,
             { recursive: true, force: true }
         );
     }
