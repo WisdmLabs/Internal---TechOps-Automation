@@ -84,65 +84,120 @@ function validatePluginMetadata(plugin) {
 }
 
 async function processPlugin(plugin) {
-    try {
-        // Skip excluded plugins
-        if (EXCLUDED_PLUGINS.includes(plugin.slug)) {
-            logger.info(`Skipping excluded plugin: ${plugin.slug}`);
-            return true;
-        }
+    const maxRetries = 3;
+    let retryCount = 0;
+    let lastError = null;
 
-        // Validate plugin slug
-        if (!/^[a-z0-9-_.]+$/.test(plugin.slug)) {
-            throw new Error('Invalid plugin slug format');
-        }
-
-        // Check dependencies
-        const dependencies = await dependencyChecker.checkDependencies(
-            plugin,
-            process.env.STAGING_SITE_URL,
-            process.env.STAGING_SITE_AUTH_TOKEN
-        );
-
-        if (!dependencies.areMet) {
-            logger.warn(`Plugin ${plugin.slug} has unmet dependencies`, { dependencies });
-            // Continue processing despite dependencies warning
-        }
-
-        // Create backup
-        const backupPath = await backupManager.createBackup(plugin.slug);
-
+    while (retryCount < maxRetries) {
         try {
-            // Download plugin
-            const pluginUrl = `${process.env.LIVE_SITE_URL}/wp-json/techops/v1/plugins/download/${plugin.slug}`;
-            const zipPath = path.join(BASE_DIR, 'wp-content/plugins', `${plugin.slug}.zip`);
-            
-            // Download with proper headers and error handling
-            execSync(`curl -s -L -H "Authorization: Basic ${process.env.LIVE_SITE_AUTH_TOKEN}" "${pluginUrl}" -o "${zipPath}" --fail`);
-            
-            // Verify download
-            if (!fs.existsSync(zipPath) || fs.statSync(zipPath).size === 0) {
-                throw new Error('Plugin download failed or file is empty');
+            // Skip excluded plugins
+            if (EXCLUDED_PLUGINS.includes(plugin.slug)) {
+                logger.info(`Skipping excluded plugin: ${plugin.slug}`);
+                return true;
             }
 
-            // Extract plugin
-            const pluginDir = path.join(BASE_DIR, 'wp-content/plugins', plugin.slug);
-            execSync(`unzip -q -o "${zipPath}" -d "${pluginDir}"`);
-            
-            // Clean up
-            fs.unlinkSync(zipPath);
-            
-            return true;
-        } catch (error) {
-            // Restore from backup if available
-            if (backupPath) {
-                await backupManager.restoreBackup(backupPath);
+            // Validate plugin slug
+            if (!/^[a-z0-9-_.]+$/.test(plugin.slug)) {
+                throw new Error('Invalid plugin slug format');
             }
-            throw error;
+
+            // Check dependencies
+            const dependencies = await dependencyChecker.checkDependencies(
+                plugin,
+                process.env.STAGING_SITE_URL,
+                process.env.STAGING_SITE_AUTH_TOKEN
+            );
+
+            if (!dependencies.areMet) {
+                logger.warn(`Plugin ${plugin.slug} has unmet dependencies`, { dependencies });
+                // Continue processing despite dependencies warning
+            }
+
+            // Create backup
+            const backupPath = await backupManager.createBackup(plugin.slug);
+
+            try {
+                // Download plugin with retries
+                const pluginUrl = `${process.env.LIVE_SITE_URL}/wp-json/techops/v1/plugins/download/${plugin.slug}`;
+                const zipPath = path.join(BASE_DIR, 'wp-content/plugins', `${plugin.slug}.zip`);
+                
+                // Download with proper headers, retries, and error handling
+                const downloadCommand = [
+                    'curl',
+                    '-s',
+                    '-L',
+                    '-H', `"Authorization: Basic ${process.env.LIVE_SITE_AUTH_TOKEN}"`,
+                    '--retry', '3',
+                    '--retry-delay', '5',
+                    '--retry-max-time', '60',
+                    '--max-time', '300',
+                    '--fail',
+                    `"${pluginUrl}"`,
+                    '-o', `"${zipPath}"`
+                ].join(' ');
+
+                execSync(downloadCommand);
+                
+                // Verify download
+                if (!fs.existsSync(zipPath)) {
+                    throw new Error('Plugin download failed - file not created');
+                }
+
+                const fileSize = fs.statSync(zipPath).size;
+                if (fileSize === 0) {
+                    throw new Error('Plugin download failed - file is empty');
+                }
+
+                // Verify ZIP file integrity
+                try {
+                    execSync(`unzip -t "${zipPath}" > /dev/null`);
+                } catch (error) {
+                    throw new Error('Invalid ZIP file downloaded');
+                }
+
+                // Extract plugin with proper error handling
+                const pluginDir = path.join(BASE_DIR, 'wp-content/plugins', plugin.slug);
+                try {
+                    // Remove existing directory if it exists
+                    if (fs.existsSync(pluginDir)) {
+                        execSync(`rm -rf "${pluginDir}"`);
+                    }
+                    
+                    // Create directory and extract
+                    fs.mkdirSync(pluginDir, { recursive: true });
+                    execSync(`unzip -q -o "${zipPath}" -d "${pluginDir}"`);
+                } catch (error) {
+                    throw new Error(`Failed to extract plugin: ${error.message}`);
+                }
+                
+                // Clean up
+                fs.unlinkSync(zipPath);
+                
+                logger.info(`Successfully processed plugin: ${plugin.slug}`);
+                return true;
+            } catch (error) {
+                // Restore from backup if available
+                if (backupPath) {
+                    await backupManager.restoreBackup(backupPath);
+                }
+                throw error;
+            }
+        } catch (error) {
+            lastError = error;
+            retryCount++;
+            
+            if (retryCount < maxRetries) {
+                logger.warn(`Failed to process plugin ${plugin.slug}, retrying (${retryCount}/${maxRetries})...`, { error: error.message });
+                await new Promise(resolve => setTimeout(resolve, 5000 * retryCount)); // Exponential backoff
+                continue;
+            }
+            
+            logger.error(`Failed to process plugin ${plugin.slug} after ${maxRetries} attempts`, { error: error.message });
+            return false;
         }
-    } catch (error) {
-        logger.error(`Failed to process plugin ${plugin.slug}`, { error: error.message });
-        return false;
     }
+
+    return false;
 }
 
 async function processPlugins() {
