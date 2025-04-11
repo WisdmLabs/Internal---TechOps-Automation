@@ -1,0 +1,15 @@
+{
+  "name": "techops-content-sync",
+  "version": "1.0.0",
+  "description": "WordPress content synchronization tool",
+  "main": "scripts/download-content.sh",
+  "scripts": {
+    "start": "bash scripts/download-content.sh"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "jest": "^27.0.6"
+  }
+} 

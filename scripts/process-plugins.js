@@ -3,8 +3,17 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const BackupManager = require('./backup-manager');
+const DependencyChecker = require('./dependency-checker');
+const Logger = require('./logger');
 
 const BASE_DIR = 'wp-content/plugins';
+const EXCLUDED_PLUGINS = ['techops-content-sync'];
+
+// Initialize utilities
+const backupManager = new BackupManager(BASE_DIR);
+const dependencyChecker = new DependencyChecker(process.env.SITE_URL, process.env.WP_AUTH_TOKEN);
+const logger = new Logger(path.join(BASE_DIR, 'sync.log'));
 
 async function processPlugins(pluginsList) {
     try {
@@ -13,7 +22,11 @@ async function processPlugins(pluginsList) {
             fs.mkdirSync(BASE_DIR, { recursive: true });
         }
 
-        console.log(`Processing ${pluginsList.length} plugins...`);
+        logger.info(`Processing ${pluginsList.length} plugins...`);
+
+        // Create initial backup
+        const backupPath = await backupManager.createBackup();
+        logger.info('Created initial backup', { backupPath });
 
         // Create activation states file
         const activationStates = {
@@ -32,16 +45,37 @@ async function processPlugins(pluginsList) {
             JSON.stringify(activationStates, null, 2)
         );
 
+        // Process each plugin
         for (const plugin of pluginsList) {
             try {
+                // Skip excluded plugins
+                if (EXCLUDED_PLUGINS.includes(plugin.slug)) {
+                    logger.info(`Skipping excluded plugin: ${plugin.slug}`);
+                    continue;
+                }
+
+                // Check dependencies
+                const dependencies = await dependencyChecker.checkDependencies(plugin);
+                if (!dependencies.areMet) {
+                    logger.warn(`Skipping ${plugin.slug}: Missing dependencies`, {
+                        missing: dependencies.missing,
+                        details: dependencies.details
+                    });
+                    continue;
+                }
+
                 const pluginDir = path.join(BASE_DIR, plugin.slug);
                 const zipPath = path.join(BASE_DIR, `${plugin.slug}.zip`);
                 const tempDir = path.join(BASE_DIR, '_temp_extract');
 
-                console.log(`\nProcessing plugin: ${plugin.slug}`);
+                logger.info(`Processing plugin: ${plugin.slug}`);
+
+                // Create backup point for this plugin
+                const pluginBackupPath = await backupManager.createBackup();
+                logger.debug(`Created backup point for ${plugin.slug}`, { backupPath: pluginBackupPath });
 
                 // Download plugin ZIP
-                console.log(`Downloading ${plugin.slug}...`);
+                logger.info(`Downloading ${plugin.slug}...`);
                 execSync(
                     `curl -H "Authorization: Basic ${process.env.WP_AUTH_TOKEN}" ` +
                     `"${process.env.SITE_URL}/wp-json/techops/v1/plugins/download/${plugin.slug}" ` +
@@ -54,12 +88,12 @@ async function processPlugins(pluginsList) {
                 }
 
                 // Extract ZIP to temp directory with force overwrite
-                console.log(`Extracting ${plugin.slug}...`);
+                logger.info(`Extracting ${plugin.slug}...`);
                 execSync(`unzip -o -q "${zipPath}" -d "${tempDir}"`);
 
                 // Remove existing plugin directory if it exists
                 if (fs.existsSync(pluginDir)) {
-                    console.log(`Removing existing ${plugin.slug} directory...`);
+                    logger.info(`Removing existing ${plugin.slug} directory...`);
                     fs.rmSync(pluginDir, { recursive: true, force: true });
                 }
 
@@ -77,17 +111,26 @@ async function processPlugins(pluginsList) {
                 }
 
                 // Clean up
-                console.log(`Cleaning up ${plugin.slug}...`);
+                logger.info(`Cleaning up ${plugin.slug}...`);
                 fs.rmSync(zipPath);
                 fs.rmSync(tempDir, { recursive: true, force: true });
 
-                console.log(`Successfully processed ${plugin.slug}`);
+                logger.info(`Successfully processed ${plugin.slug}`);
             } catch (error) {
-                console.error(`Error processing plugin ${plugin.slug}:`, error.message);
+                logger.error(`Error processing plugin ${plugin.slug}:`, { error: error.message });
+                // Attempt to restore from backup
+                try {
+                    await backupManager.restoreBackup(pluginBackupPath);
+                    logger.info(`Restored ${plugin.slug} from backup`);
+                } catch (restoreError) {
+                    logger.error(`Failed to restore ${plugin.slug} from backup:`, { error: restoreError.message });
+                }
             }
         }
+
+        logger.info('Plugin processing completed');
     } catch (error) {
-        console.error('Error in plugin processing:', error.message);
+        logger.error('Error in plugin processing:', { error: error.message });
         process.exit(1);
     }
 }
@@ -102,11 +145,11 @@ process.stdin.on('end', () => {
     try {
         const pluginsList = JSON.parse(data);
         processPlugins(pluginsList).catch(error => {
-            console.error('Error:', error.message);
+            logger.error('Error:', { error: error.message });
             process.exit(1);
         });
     } catch (error) {
-        console.error('Error parsing plugins list:', error.message);
+        logger.error('Error parsing plugins list:', { error: error.message });
         process.exit(1);
     }
 }); 
