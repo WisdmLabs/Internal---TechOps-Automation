@@ -4,6 +4,21 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
+// Verify required environment variables
+const requiredEnvVars = [
+    'LIVE_SITE_AUTH_TOKEN',
+    'STAGING_SITE_AUTH_TOKEN',
+    'LIVE_SITE_URL',
+    'STAGING_SITE_URL'
+];
+
+for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+        console.error(`Error: Required environment variable ${envVar} is not set`);
+        process.exit(1);
+    }
+}
+
 async function syncActivationStates() {
     try {
         console.log('Starting activation state synchronization...');
@@ -21,8 +36,8 @@ async function syncActivationStates() {
         // Get current activation states from staging
         console.log('Fetching current plugin states from staging site...');
         const stagingResponse = execSync(
-            `curl -s -H "Authorization: Basic ${process.env.WP_AUTH_TOKEN}" ` +
-            `"${process.env.STAGING_URL}/wp-json/techops/v1/plugins/list"`
+            `curl -s -H "Authorization: Basic ${process.env.STAGING_SITE_AUTH_TOKEN}" ` +
+            `"${process.env.STAGING_SITE_URL}/wp-json/techops/v1/plugins/list"`
         ).toString();
         
         const stagingPlugins = JSON.parse(stagingResponse);
@@ -46,9 +61,10 @@ async function syncActivationStates() {
                     
                     try {
                         const response = execSync(
-                            `curl -s -X POST -H "Authorization: Basic ${process.env.WP_AUTH_TOKEN}" ` +
+                            `curl -s -X POST -H "Authorization: Basic ${process.env.STAGING_SITE_AUTH_TOKEN}" ` +
                             `-H "Content-Type: application/json" ` +
-                            `"${process.env.STAGING_URL}/wp-json/techops/v1/plugins/${action}/${livePlugin.slug}"`
+                            `-d '{"plugin":"${livePlugin.slug}"}' ` +
+                            `"${process.env.STAGING_SITE_URL}/wp-json/techops/v1/plugins/${action}"`
                         ).toString();
                         
                         const result = JSON.parse(response);

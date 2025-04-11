@@ -27,31 +27,15 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify branch
-        run: |
-          echo "Current branch: $(git rev-parse --abbrev-ref HEAD)"
-          echo "Remote URL: $(git remote get-url origin)"
-          echo "Git status:"
-          git status
-
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: Debug Environment
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Directory contents:"
-          ls -la
-          echo "Node.js version: $(node --version)"
-          echo "NPM version: $(npm --version)"
-
       - name: Create directory structure
         run: |
           mkdir -p wp-content/plugins
           mkdir -p wp-content/themes
-          # Create .gitignore if it doesn't exist
           if [ ! -f .gitignore ]; then
             echo "# Ignore ZIP files and temp files" > .gitignore
             echo "*.zip" >> .gitignore
@@ -59,72 +43,63 @@ jobs:
             echo "wp-content/**/*.zip" >> .gitignore
             git add .gitignore
           fi
-          echo "Directory structure created:"
-          ls -R wp-content/
 
       - name: Make scripts executable
         run: |
           chmod +x scripts/*.sh
           chmod +x scripts/*.js
-          echo "Script permissions:"
-          ls -la scripts/
 
       - name: Test API Authentication
         env:
-          WP_APP_USERNAME: ${{ secrets.WP_APP_USERNAME }}
-          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
-          WP_AUTH_TOKEN: ${{ secrets.WP_AUTH_TOKEN }}
-          SITE_URL: ${{ inputs.site_url }}
+          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
+          STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
+          LIVE_SITE_URL: ${{ inputs.site_url }}
+          STAGING_SITE_URL: ${{ inputs.staging_url }}
         run: |
           echo "Testing API endpoints and authentication..."
           
           # Function to test endpoint
           test_endpoint() {
-            local endpoint=$1
-            local description=$2
-            echo "Testing $description endpoint: $SITE_URL$endpoint"
+            local url=$1
+            local token=$2
+            local description=$3
+            local endpoint=$4
+            
+            echo "Testing $description endpoint: $url$endpoint"
             echo "Auth token format check..."
-            if ! echo "$WP_AUTH_TOKEN" | base64 -d > /dev/null 2>&1; then
-              echo "Error: WP_AUTH_TOKEN is not valid base64"
+            if ! echo "$token" | base64 -d > /dev/null 2>&1; then
+              echo "Error: $description auth token is not valid base64"
               exit 1
             fi
             
-            # Test with curl
-            echo "Making request to $description endpoint..."
-            response=$(curl -s -w "\n%{http_code}" -H "Authorization: Basic $WP_AUTH_TOKEN" "$SITE_URL$endpoint")
+            response=$(curl -s -w "\n%{http_code}" -H "Authorization: Basic $token" "$url$endpoint")
             status_code=$(echo "$response" | tail -n1)
             body=$(echo "$response" | sed '$d')
             
             echo "Status code: $status_code"
-            echo "Response headers:"
-            curl -s -I -H "Authorization: Basic $WP_AUTH_TOKEN" "$SITE_URL$endpoint"
-            echo "Response body:"
-            echo "$body"
-            
             if [ "$status_code" != "200" ]; then
               echo "Error: $description endpoint returned status $status_code"
               exit 1
             fi
-            
-            echo "$description endpoint test successful"
-            echo "----------------------------------------"
           }
           
-          # Test endpoints
-          test_endpoint "/wp-json/techops/v1/plugins/list" "plugins"
-          test_endpoint "/wp-json/techops/v1/themes/list" "themes"
+          # Test live site endpoints
+          test_endpoint "$LIVE_SITE_URL" "$LIVE_SITE_AUTH_TOKEN" "live site plugins" "/wp-json/techops/v1/plugins/list"
+          test_endpoint "$LIVE_SITE_URL" "$LIVE_SITE_AUTH_TOKEN" "live site themes" "/wp-json/techops/v1/themes/list"
           
-          echo "API authentication tests completed successfully"
+          # Test staging site endpoints
+          test_endpoint "$STAGING_SITE_URL" "$STAGING_SITE_AUTH_TOKEN" "staging site plugins" "/wp-json/techops/v1/plugins/list"
+          test_endpoint "$STAGING_SITE_URL" "$STAGING_SITE_AUTH_TOKEN" "staging site themes" "/wp-json/techops/v1/themes/list"
 
       - name: Download and process content
         if: success()
         env:
-          WP_APP_USERNAME: ${{ secrets.WP_APP_USERNAME }}
-          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
-          WP_AUTH_TOKEN: ${{ secrets.WP_AUTH_TOKEN }}
-          SITE_URL: ${{ inputs.site_url }}
+          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
+          STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
+          LIVE_SITE_URL: ${{ inputs.site_url }}
+          STAGING_SITE_URL: ${{ inputs.staging_url }}
         run: |
-          echo "Starting content download with SITE_URL: $SITE_URL"
+          echo "Starting content download with LIVE_SITE_URL: $LIVE_SITE_URL"
           bash ./scripts/download-content.sh
 
       - name: Cleanup temporary files
@@ -132,15 +107,11 @@ jobs:
         run: |
           find wp-content -name "*.zip" -type f -delete
           find wp-content -name "*.tmp" -type f -delete
-          echo "Cleanup completed. Current wp-content structure:"
-          ls -R wp-content/
 
       - name: Configure Git
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          
-          # Ensure we're on main and up to date
           git fetch origin main
           git checkout main
           git pull origin main
@@ -148,26 +119,12 @@ jobs:
       - name: Check for changes and commit to main
         id: check_changes
         run: |
-          # Add all changes in wp-content
           git add wp-content/
-          
           if [[ -n "$(git status --porcelain)" ]]; then
-            echo "Changes detected in wp-content directory"
             echo "has_changes=true" >> $GITHUB_OUTPUT
-            
-            echo "Git status before commit:"
-            git status
-            
-            # Commit changes to main branch
             git commit -m "feat: Update WordPress content"
-            
-            echo "Pushing changes to main branch..."
             git push origin main
-            
-            echo "Git log of recent commits:"
-            git log -3 --oneline
           else
-            echo "No changes detected in wp-content directory"
             echo "has_changes=false" >> $GITHUB_OUTPUT
           fi
 
@@ -189,10 +146,10 @@ jobs:
 
       - name: Sync activation states
         env:
-          WP_APP_USERNAME: ${{ secrets.WP_APP_USERNAME }}
-          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
-          WP_AUTH_TOKEN: ${{ secrets.WP_AUTH_TOKEN }}
-          STAGING_URL: ${{ inputs.staging_url }}
+          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
+          STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
+          LIVE_SITE_URL: ${{ inputs.site_url }}
+          STAGING_SITE_URL: ${{ inputs.staging_url }}
         run: |
           node scripts/sync-activation.js
 

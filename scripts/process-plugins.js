@@ -10,9 +10,22 @@ const Logger = require('./logger');
 const BASE_DIR = 'wp-content/plugins';
 const EXCLUDED_PLUGINS = ['techops-content-sync'];
 
+// Verify required environment variables
+const requiredEnvVars = [
+    'LIVE_SITE_AUTH_TOKEN',
+    'LIVE_SITE_URL'
+];
+
+for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+        console.error(`Error: Required environment variable ${envVar} is not set`);
+        process.exit(1);
+    }
+}
+
 // Initialize utilities
 const backupManager = new BackupManager(BASE_DIR);
-const dependencyChecker = new DependencyChecker(process.env.SITE_URL, process.env.WP_AUTH_TOKEN);
+const dependencyChecker = new DependencyChecker(process.env.LIVE_SITE_URL, process.env.LIVE_SITE_AUTH_TOKEN);
 const logger = new Logger(path.join(BASE_DIR, 'sync.log'));
 
 async function processPlugins(pluginsList) {
@@ -77,8 +90,8 @@ async function processPlugins(pluginsList) {
                 // Download plugin ZIP
                 logger.info(`Downloading ${plugin.slug}...`);
                 execSync(
-                    `curl -H "Authorization: Basic ${process.env.WP_AUTH_TOKEN}" ` +
-                    `"${process.env.SITE_URL}/wp-json/techops/v1/plugins/download/${plugin.slug}" ` +
+                    `curl -H "Authorization: Basic ${process.env.LIVE_SITE_AUTH_TOKEN}" ` +
+                    `"${process.env.LIVE_SITE_URL}/wp-json/techops/v1/plugins/download/${plugin.slug}" ` +
                     `--output "${zipPath}" --fail --silent --show-error`
                 );
 
@@ -98,40 +111,25 @@ async function processPlugins(pluginsList) {
                 }
 
                 // Move from temp directory to final location
-                const extractedFiles = fs.readdirSync(tempDir);
-                if (extractedFiles.length === 1 && fs.statSync(path.join(tempDir, extractedFiles[0])).isDirectory()) {
-                    // If extracted to a single directory, move that directory
-                    fs.renameSync(path.join(tempDir, extractedFiles[0]), pluginDir);
-                } else {
-                    // If extracted multiple files, move them all to a new directory
-                    fs.mkdirSync(pluginDir, { recursive: true });
-                    extractedFiles.forEach(file => {
-                        fs.renameSync(path.join(tempDir, file), path.join(pluginDir, file));
-                    });
-                }
+                logger.info(`Moving ${plugin.slug} to final location...`);
+                fs.renameSync(path.join(tempDir, plugin.slug), pluginDir);
 
                 // Clean up
-                logger.info(`Cleaning up ${plugin.slug}...`);
-                fs.rmSync(zipPath);
+                logger.info(`Cleaning up temporary files for ${plugin.slug}...`);
+                fs.unlinkSync(zipPath);
                 fs.rmSync(tempDir, { recursive: true, force: true });
 
                 logger.info(`Successfully processed ${plugin.slug}`);
             } catch (error) {
-                logger.error(`Error processing plugin ${plugin.slug}:`, { error: error.message });
-                // Attempt to restore from backup
-                try {
-                    await backupManager.restoreBackup(pluginBackupPath);
-                    logger.info(`Restored ${plugin.slug} from backup`);
-                } catch (restoreError) {
-                    logger.error(`Failed to restore ${plugin.slug} from backup:`, { error: restoreError.message });
-                }
+                logger.error(`Error processing plugin ${plugin.slug}:`, error);
+                throw error;
             }
         }
 
-        logger.info('Plugin processing completed');
+        logger.info('Plugin processing completed successfully');
     } catch (error) {
-        logger.error('Error in plugin processing:', { error: error.message });
-        process.exit(1);
+        logger.error('Error in plugin processing:', error);
+        throw error;
     }
 }
 
@@ -141,15 +139,12 @@ process.stdin.on('data', chunk => {
     data += chunk;
 });
 
-process.stdin.on('end', () => {
+process.stdin.on('end', async () => {
     try {
         const pluginsList = JSON.parse(data);
-        processPlugins(pluginsList).catch(error => {
-            logger.error('Error:', { error: error.message });
-            process.exit(1);
-        });
+        await processPlugins(pluginsList);
     } catch (error) {
-        logger.error('Error parsing plugins list:', { error: error.message });
+        console.error('Error:', error.message);
         process.exit(1);
     }
 }); 
