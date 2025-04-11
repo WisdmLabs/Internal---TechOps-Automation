@@ -6,11 +6,25 @@ set -e
 # Enable debug mode
 set -x
 
-# Function to cleanup temporary files
+# Create a single backup directory for this run
+mkdir -p "_backups"
+BACKUP_TIMESTAMP=$(date +%Y-%m-%dT%H-%M-%SZ)
+BACKUP_DIR="_backups/backup-${BACKUP_TIMESTAMP}"
+mkdir -p "${BACKUP_DIR}"
+
+# Function to cleanup temporary files and old backups
 cleanup() {
     local exit_code=$?
-    echo "Cleaning up temporary files..."
+    echo "Cleaning up temporary files and old backups..."
     find . -name "*.tmp" -type f -delete
+    
+    # Keep only the latest 3 backups
+    if [ -d "_backups" ]; then
+        cd _backups
+        ls -t | tail -n +4 | xargs -r rm -rf
+        cd ..
+    fi
+    
     exit $exit_code
 }
 
@@ -125,8 +139,8 @@ make_api_request() {
 
 # Ensure directories exist
 echo "Creating directory structure..."
-mkdir -p "$PLUGINS_DIR"
-mkdir -p "$THEMES_DIR"
+mkdir -p "${BACKUP_DIR}/plugins"
+mkdir -p "${BACKUP_DIR}/themes"
 
 # Verify auth token format
 echo "Verifying auth tokens format..."
@@ -179,6 +193,15 @@ if [ ${THEMES_EXIT_CODE} -eq 0 ] && [ -f "${THEMES_RESPONSE_FILE}" ]; then
 else
     echo "Error fetching themes list"
     exit 1
+fi
+
+# After successful processing, move content to final location
+if [ ${PROCESS_EXIT_CODE} -eq 0 ]; then
+    echo "Moving processed content to final location..."
+    rm -rf "$PLUGINS_DIR"/*
+    rm -rf "$THEMES_DIR"/*
+    mv "${BACKUP_DIR}/plugins"/* "$PLUGINS_DIR"/
+    mv "${BACKUP_DIR}/themes"/* "$THEMES_DIR"/
 fi
 
 echo "Content sync completed successfully!" 
