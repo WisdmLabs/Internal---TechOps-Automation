@@ -268,8 +268,45 @@ class API_Endpoints {
         $file_handler = new File_Handler();
         
         try {
-            return $file_handler->create_plugin_zip($slug);
+            $result = $file_handler->create_plugin_zip($slug);
+            $zip_file = $result['file'];
+            
+            if (!file_exists($zip_file)) {
+                throw new \Exception('ZIP file not found after creation');
+            }
+            
+            // Get file size
+            $file_size = \filesize($zip_file);
+            if ($file_size === false) {
+                throw new \Exception('Could not determine file size');
+            }
+            
+            // Clear any previous output
+            if (ob_get_level()) {
+                ob_end_clean();
+            }
+            
+            // Set headers for file download
+            \header('Content-Type: application/zip');
+            \header('Content-Disposition: attachment; filename="' . basename($zip_file) . '"');
+            \header('Content-Length: ' . $file_size);
+            \header('Content-Transfer-Encoding: binary');
+            \header('Cache-Control: no-cache, must-revalidate');
+            \header('Pragma: public');
+            
+            // Output file contents
+            if (!\readfile($zip_file)) {
+                throw new \Exception('Failed to read file');
+            }
+            
+            // Clean up
+            if (isset($result['cleanup']) && is_callable($result['cleanup'])) {
+                $result['cleanup']();
+            }
+            
+            exit;
         } catch (\Exception $e) {
+            error_log('TechOps Content Sync: Download failed - ' . $e->getMessage());
             return new \WP_Error(
                 'plugin_download_failed',
                 $e->getMessage(),
@@ -286,8 +323,45 @@ class API_Endpoints {
         $file_handler = new File_Handler();
         
         try {
-            return $file_handler->create_theme_zip($slug);
+            $result = $file_handler->create_theme_zip($slug);
+            $zip_file = $result['file'];
+            
+            if (!file_exists($zip_file)) {
+                throw new \Exception('ZIP file not found after creation');
+            }
+            
+            // Get file size
+            $file_size = \filesize($zip_file);
+            if ($file_size === false) {
+                throw new \Exception('Could not determine file size');
+            }
+            
+            // Clear any previous output
+            if (ob_get_level()) {
+                ob_end_clean();
+            }
+            
+            // Set headers for file download
+            \header('Content-Type: application/zip');
+            \header('Content-Disposition: attachment; filename="' . basename($zip_file) . '"');
+            \header('Content-Length: ' . $file_size);
+            \header('Content-Transfer-Encoding: binary');
+            \header('Cache-Control: no-cache, must-revalidate');
+            \header('Pragma: public');
+            
+            // Output file contents
+            if (!\readfile($zip_file)) {
+                throw new \Exception('Failed to read file');
+            }
+            
+            // Clean up
+            if (isset($result['cleanup']) && is_callable($result['cleanup'])) {
+                $result['cleanup']();
+            }
+            
+            exit;
         } catch (\Exception $e) {
+            error_log('TechOps Content Sync: Download failed - ' . $e->getMessage());
             return new \WP_Error(
                 'theme_download_failed',
                 $e->getMessage(),

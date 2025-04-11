@@ -108,13 +108,13 @@ class File_Handler {
         $result = $zip->open($zip_file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         
         if ($result !== true) {
-            error_log('TechOps Content Sync: Failed to create ZIP file: ' . $zip_file);
-            throw new \Exception('Failed to create ZIP file');
+            error_log('TechOps Content Sync: Failed to create ZIP file: ' . $zip_file . ' (Error code: ' . $result . ')');
+            throw new \Exception('Failed to create ZIP file (Error code: ' . $result . ')');
         }
         
         // Create recursive directory iterator
         $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($source_path),
+            new \RecursiveDirectoryIterator($source_path, \RecursiveDirectoryIterator::SKIP_DOTS),
             \RecursiveIteratorIterator::LEAVES_ONLY
         );
         
@@ -129,8 +129,9 @@ class File_Handler {
                 error_log('TechOps Content Sync: Adding file to ZIP: ' . $relative_path);
                 
                 if (!$zip->addFile($file_path, $relative_path)) {
+                    $zip->close();
                     error_log('TechOps Content Sync: Failed to add file to ZIP: ' . $relative_path);
-                    throw new \Exception('Failed to add file to ZIP');
+                    throw new \Exception('Failed to add file to ZIP: ' . $relative_path);
                 }
             }
         }
@@ -141,7 +142,19 @@ class File_Handler {
             throw new \Exception('Failed to close ZIP file');
         }
         
-        error_log('TechOps Content Sync: ZIP file created successfully: ' . $zip_file);
+        // Verify the ZIP file was created and is valid
+        if (!file_exists($zip_file)) {
+            error_log('TechOps Content Sync: ZIP file does not exist after creation: ' . $zip_file);
+            throw new \Exception('ZIP file does not exist after creation');
+        }
+        
+        $zip_size = filesize($zip_file);
+        if ($zip_size === false || $zip_size === 0) {
+            error_log('TechOps Content Sync: Created ZIP file is empty: ' . $zip_file);
+            throw new \Exception('Created ZIP file is empty');
+        }
+        
+        error_log('TechOps Content Sync: ZIP file created successfully: ' . $zip_file . ' (size: ' . $zip_size . ' bytes)');
         
         // Return file path and cleanup callback
         return [
