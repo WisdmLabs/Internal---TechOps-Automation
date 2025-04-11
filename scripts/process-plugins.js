@@ -3,9 +3,9 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const BackupManager = require('./backup-manager');
-const DependencyChecker = require('./dependency-checker');
-const Logger = require('./logger');
+const BackupManager = require('./utils/backup-manager');
+const DependencyChecker = require('./utils/dependency-checker');
+const Logger = require('./utils/logger');
 
 // Verify required environment variables
 const requiredEnvVars = [
@@ -21,13 +21,13 @@ for (const envVar of requiredEnvVars) {
 }
 
 // Configuration
-const BASE_DIR = path.join('wp-content', 'plugins');
+const BASE_DIR = path.join(__dirname, '..');
 const EXCLUDED_PLUGINS = ['techops-content-sync'];
 const LOG_FILE = path.join(BASE_DIR, 'plugin-sync.log');
 
 // Initialize utilities
-const backupManager = new BackupManager(BASE_DIR);
-const dependencyChecker = new DependencyChecker(process.env.LIVE_SITE_URL, process.env.LIVE_SITE_AUTH_TOKEN);
+const backupManager = new BackupManager();
+const dependencyChecker = new DependencyChecker();
 const logger = new Logger(LOG_FILE);
 
 // Function to make API request with retries
@@ -76,11 +76,73 @@ function validatePluginMetadata(plugin) {
         }
     }
     
-    if (!/^[a-z0-9-]+$/.test(plugin.slug)) {
+    if (!/^[a-z0-9-_.]+$/.test(plugin.slug)) {
         throw new Error('Invalid plugin slug format');
     }
     
     return true;
+}
+
+async function processPlugin(plugin) {
+    try {
+        // Skip excluded plugins
+        if (EXCLUDED_PLUGINS.includes(plugin.slug)) {
+            logger.info(`Skipping excluded plugin: ${plugin.slug}`);
+            return true;
+        }
+
+        // Validate plugin slug
+        if (!/^[a-z0-9-_.]+$/.test(plugin.slug)) {
+            throw new Error('Invalid plugin slug format');
+        }
+
+        // Check dependencies
+        const dependencies = await dependencyChecker.checkDependencies(
+            plugin,
+            process.env.STAGING_SITE_URL,
+            process.env.STAGING_SITE_AUTH_TOKEN
+        );
+
+        if (!dependencies.areMet) {
+            logger.warn(`Plugin ${plugin.slug} has unmet dependencies`, { dependencies });
+            // Continue processing despite dependencies warning
+        }
+
+        // Create backup
+        const backupPath = await backupManager.createBackup(plugin.slug);
+
+        try {
+            // Download plugin
+            const pluginUrl = `${process.env.LIVE_SITE_URL}/wp-json/techops/v1/plugins/download/${plugin.slug}`;
+            const zipPath = path.join(BASE_DIR, 'wp-content/plugins', `${plugin.slug}.zip`);
+            
+            // Download with proper headers and error handling
+            execSync(`curl -s -L -H "Authorization: Basic ${process.env.LIVE_SITE_AUTH_TOKEN}" "${pluginUrl}" -o "${zipPath}" --fail`);
+            
+            // Verify download
+            if (!fs.existsSync(zipPath) || fs.statSync(zipPath).size === 0) {
+                throw new Error('Plugin download failed or file is empty');
+            }
+
+            // Extract plugin
+            const pluginDir = path.join(BASE_DIR, 'wp-content/plugins', plugin.slug);
+            execSync(`unzip -q -o "${zipPath}" -d "${pluginDir}"`);
+            
+            // Clean up
+            fs.unlinkSync(zipPath);
+            
+            return true;
+        } catch (error) {
+            // Restore from backup if available
+            if (backupPath) {
+                await backupManager.restoreBackup(backupPath);
+            }
+            throw error;
+        }
+    } catch (error) {
+        logger.error(`Failed to process plugin ${plugin.slug}`, { error: error.message });
+        return false;
+    }
 }
 
 async function processPlugins() {
@@ -144,40 +206,8 @@ async function processPlugins() {
                 // Validate plugin metadata
                 validatePluginMetadata(plugin);
                 
-                // Check dependencies
-                const dependencies = await dependencyChecker.checkDependencies(plugin);
-                if (!dependencies.areMet) {
-                    logger.warn(`Plugin ${plugin.slug} has unmet dependencies`, { dependencies });
-                }
-                
-                // Create plugin directory if it doesn't exist
-                const pluginDir = path.join(BASE_DIR, plugin.slug);
-                if (!fs.existsSync(pluginDir)) {
-                    fs.mkdirSync(pluginDir, { recursive: true });
-                }
-                
-                // Download plugin
-                const pluginUrl = `${process.env.LIVE_SITE_URL}/wp-json/techops/v1/plugins/download/${plugin.slug}`;
-                const zipPath = path.join(BASE_DIR, `${plugin.slug}.zip`);
-                
-                try {
-                    execSync(`curl -s -H "Authorization: Basic ${process.env.LIVE_SITE_AUTH_TOKEN}" "${pluginUrl}" -o "${zipPath}"`);
-                } catch (error) {
-                    logger.error(`Failed to download plugin ${plugin.slug}`, { error: error.message });
-                    continue;
-                }
-                
-                // Extract plugin
-                try {
-                    execSync(`unzip -q -o "${zipPath}" -d "${pluginDir}"`);
-                } catch (error) {
-                    logger.error(`Failed to extract plugin ${plugin.slug}`, { error: error.message });
-                    fs.unlinkSync(zipPath);
-                    continue;
-                }
-                
-                // Clean up zip file
-                fs.unlinkSync(zipPath);
+                // Process the plugin
+                await processPlugin(plugin);
                 
                 logger.info(`Successfully processed plugin: ${plugin.slug}`);
             } catch (error) {

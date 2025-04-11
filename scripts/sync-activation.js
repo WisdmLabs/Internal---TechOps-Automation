@@ -3,198 +3,137 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const Logger = require('./utils/logger');
+
+const logger = new Logger('SyncActivation');
+
+// Constants
+const STAGING_SITE_URL = process.env.STAGING_SITE_URL;
+const STAGING_SITE_AUTH_TOKEN = process.env.STAGING_SITE_AUTH_TOKEN;
+const LIVE_SITE_URL = process.env.LIVE_SITE_URL;
+const LIVE_SITE_AUTH_TOKEN = process.env.LIVE_SITE_AUTH_TOKEN;
 
 // Verify required environment variables
-const requiredEnvVars = [
-    'LIVE_SITE_AUTH_TOKEN',
-    'STAGING_SITE_AUTH_TOKEN',
-    'LIVE_SITE_URL',
-    'STAGING_SITE_URL'
-];
-
-for (const envVar of requiredEnvVars) {
-    if (!process.env[envVar]) {
-        console.error(`Error: Required environment variable ${envVar} is not set`);
-        process.exit(1);
-    }
+if (!STAGING_SITE_URL || !STAGING_SITE_AUTH_TOKEN || !LIVE_SITE_URL || !LIVE_SITE_AUTH_TOKEN) {
+    throw new Error('Missing required environment variables');
 }
 
-// Function to make API request with retries
-async function makeApiRequest(url, token, method = 'GET', data = null) {
-    const maxRetries = 3;
-    let retryCount = 0;
-    
-    while (retryCount < maxRetries) {
-        try {
-            const command = [
-                'curl -s',
-                `-H "Authorization: Basic ${token}"`,
-                '-H "Content-Type: application/json"',
-                '-H "Accept: application/json"',
-                '--max-time 30'
-            ];
-            
-            if (method === 'POST') {
-                command.push('-X POST');
-                if (data) {
-                    command.push(`-d '${JSON.stringify(data)}'`);
-                }
-            }
-            
-            command.push(`"${url}"`);
-            
-            const response = execSync(command.join(' ')).toString();
-            return JSON.parse(response);
-        } catch (error) {
-            retryCount++;
-            if (retryCount === maxRetries) {
-                throw error;
-            }
-            console.log(`Request failed, retrying in 5 seconds... (Attempt ${retryCount} of ${maxRetries})`);
-            await new Promise(resolve => setTimeout(resolve, 5000));
+async function activatePlugin(pluginSlug) {
+    try {
+        const response = await fetch(`${STAGING_SITE_URL}/wp-json/techops/v1/plugins/activate/${pluginSlug}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${STAGING_SITE_AUTH_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ plugin: pluginSlug })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        const result = await response.json();
+        return result.success;
+    } catch (error) {
+        logger.error(`Failed to activate plugin ${pluginSlug}`, { error: error.message });
+        throw error;
     }
 }
 
-// Function to validate plugin slug
-function validatePluginSlug(slug) {
-    return /^[a-z0-9-]+$/.test(slug);
+async function deactivatePlugin(pluginSlug) {
+    try {
+        const response = await fetch(`${STAGING_SITE_URL}/wp-json/techops/v1/plugins/deactivate/${pluginSlug}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${STAGING_SITE_AUTH_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ plugin: pluginSlug })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result.success;
+    } catch (error) {
+        logger.error(`Failed to deactivate plugin ${pluginSlug}`, { error: error.message });
+        throw error;
+    }
 }
 
 async function syncActivationStates() {
     try {
-        console.log('Starting activation state synchronization...');
-        
-        // Read activation states from live site
-        const liveStatesPath = path.join('wp-content', 'plugins', 'activation-states.json');
-        if (!fs.existsSync(liveStatesPath)) {
-            console.error('Activation states file not found:', liveStatesPath);
-            process.exit(1);
-        }
-        
-        let liveStates;
-        try {
-            liveStates = JSON.parse(fs.readFileSync(liveStatesPath));
-            if (!liveStates.plugins || !Array.isArray(liveStates.plugins)) {
-                throw new Error('Invalid activation states file format');
+        // Get current activation states from staging site
+        const response = await fetch(`${STAGING_SITE_URL}/wp-json/techops/v1/plugins/list`, {
+            headers: {
+                'Authorization': `Basic ${STAGING_SITE_AUTH_TOKEN}`
             }
-        } catch (error) {
-            console.error('Error parsing activation states file:', error.message);
-            process.exit(1);
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to get plugin list: ${response.status}`);
         }
-        
-        console.log(`Found ${liveStates.plugins.length} plugins in live site`);
-        
-        // Get current activation states from staging
-        console.log('Fetching current plugin states from staging site...');
-        let stagingPlugins;
-        try {
-            stagingPlugins = await makeApiRequest(
-                `${process.env.STAGING_SITE_URL}/wp-json/techops/v1/plugins/list`,
-                process.env.STAGING_SITE_AUTH_TOKEN
-            );
-            if (!Array.isArray(stagingPlugins)) {
-                throw new Error('Invalid response format from staging site');
-            }
-        } catch (error) {
-            console.error('Error fetching staging plugins:', error.message);
-            process.exit(1);
-        }
-        
-        console.log(`Found ${stagingPlugins.length} plugins in staging site`);
-        
-        // Track changes for reporting
+
+        const stagingPlugins = await response.json();
+        const stagingStates = new Map(stagingPlugins.map(p => [p.slug, p.active]));
+
+        // Read desired activation states
+        const activationStatesPath = path.join(__dirname, '..', 'wp-content/plugins/activation-states.json');
+        const activationStates = JSON.parse(fs.readFileSync(activationStatesPath, 'utf8'));
+
         const changes = {
             activated: [],
             deactivated: [],
             errors: []
         };
-        
-        // Compare and activate/deactivate plugins
-        for (const livePlugin of liveStates.plugins) {
-            if (!validatePluginSlug(livePlugin.slug)) {
-                changes.errors.push({
-                    plugin: livePlugin.slug,
-                    action: 'validate',
-                    error: 'Invalid plugin slug format'
-                });
-                continue;
-            }
-            
-            const stagingPlugin = stagingPlugins.find(p => p.slug === livePlugin.slug);
-            
-            if (stagingPlugin) {
-                if (livePlugin.active !== stagingPlugin.active) {
-                    const action = livePlugin.active ? 'activate' : 'deactivate';
-                    console.log(`${action}ing plugin: ${livePlugin.slug}`);
-                    
-                    try {
-                        const response = await makeApiRequest(
-                            `${process.env.STAGING_SITE_URL}/wp-json/techops/v1/plugins/${action}`,
-                            process.env.STAGING_SITE_AUTH_TOKEN,
-                            'POST',
-                            { plugin: livePlugin.slug }
-                        );
-                        
-                        if (response.success) {
-                            changes[action + 'd'].push(livePlugin.slug);
-                            console.log(`Successfully ${action}d plugin: ${livePlugin.slug}`);
-                        } else {
-                            changes.errors.push({
-                                plugin: livePlugin.slug,
-                                action: action,
-                                error: response.message || 'Unknown error'
-                            });
-                            console.error(`Failed to ${action} plugin ${livePlugin.slug}: ${response.message}`);
-                        }
-                    } catch (error) {
-                        changes.errors.push({
-                            plugin: livePlugin.slug,
-                            action: action,
-                            error: error.message
-                        });
-                        console.error(`Error ${action}ing plugin ${livePlugin.slug}:`, error.message);
+
+        // Sync each plugin's activation state
+        for (const plugin of activationStates.plugins) {
+            try {
+                const currentState = stagingStates.get(plugin.slug);
+                if (currentState !== plugin.active) {
+                    if (plugin.active) {
+                        await activatePlugin(plugin.slug);
+                        changes.activated.push(plugin.slug);
+                    } else {
+                        await deactivatePlugin(plugin.slug);
+                        changes.deactivated.push(plugin.slug);
                     }
                 }
-            } else {
-                console.warn(`Plugin ${livePlugin.slug} not found in staging site`);
+            } catch (error) {
                 changes.errors.push({
-                    plugin: livePlugin.slug,
-                    action: 'sync',
-                    error: 'Plugin not found in staging site'
+                    plugin: plugin.slug,
+                    error: error.message
                 });
             }
         }
-        
+
         // Write sync report
         const report = {
             timestamp: new Date().toISOString(),
-            changes: changes,
+            changes,
             summary: {
-                total_processed: liveStates.plugins.length,
+                total: activationStates.plugins.length,
                 activated: changes.activated.length,
                 deactivated: changes.deactivated.length,
                 errors: changes.errors.length
             }
         };
-        
+
         fs.writeFileSync(
-            path.join('wp-content', 'plugins', 'sync-report.json'),
+            path.join(__dirname, '..', 'wp-content/plugins/sync-report.json'),
             JSON.stringify(report, null, 2)
         );
-        
-        console.log('Sync report written to wp-content/plugins/sync-report.json');
-        
-        if (changes.errors.length > 0) {
-            console.warn(`Completed with ${changes.errors.length} errors`);
-            process.exit(1);
-        }
-        
-        console.log('Activation state synchronization completed successfully');
+
+        logger.info('Activation sync completed', report);
+        return report;
     } catch (error) {
-        console.error('Fatal error during synchronization:', error.message);
-        process.exit(1);
+        logger.error('Activation sync failed', { error: error.message });
+        throw error;
     }
 }
 
-syncActivationStates(); 
+module.exports = syncActivationStates; 

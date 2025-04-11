@@ -3,133 +3,79 @@ name: WordPress Content Sync
 on:
   workflow_dispatch:
     inputs:
-      site_url:
-        description: 'WordPress site URL'
+      wordpress_site_url:
+        description: 'WordPress Site URL'
         required: true
-        default: 'https://wordpress-1000690-5314661.cloudwaysapps.com'
-      staging_url:
-        description: 'Staging site URL'
+        default: 'https://techopsautomation.wisdmlabs.net'
+      live_site_url:
+        description: 'Live Site URL'
         required: true
-        default: 'https://staging-wordpress-1000690-5314661.cloudwaysapps.com'
+      live_site_auth_token:
+        description: 'Live Site Auth Token'
+        required: true
+        type: password
+      staging_site_auth_token:
+        description: 'Staging Site Auth Token'
+        required: true
+        type: password
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  sync:
+  sync-content:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          ref: main
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
+      - uses: actions/checkout@v3
+      
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-
+          
       - name: Install dependencies
         run: npm install
-
+        
       - name: Create directory structure
         run: |
           mkdir -p wp-content/plugins
           mkdir -p wp-content/themes
-          if [ ! -f .gitignore ]; then
-            echo "# Ignore ZIP files and temp files" > .gitignore
-            echo "*.zip" >> .gitignore
-            echo "*.tmp" >> .gitignore
-            echo "wp-content/**/*.zip" >> .gitignore
-            git add .gitignore
-          fi
-
+          
       - name: Make scripts executable
-        run: |
-          chmod +x scripts/*.sh
-          chmod +x scripts/*.js
-
+        run: chmod +x scripts/*.sh
+        
       - name: Test API Authentication
+        run: |
+          curl -i -H "Authorization: Basic ${{ github.event.inputs.live_site_auth_token }}" \
+            ${{ github.event.inputs.live_site_url }}/wp-json/techops/v1/plugins/list
+          curl -i -H "Authorization: Basic ${{ github.event.inputs.staging_site_auth_token }}" \
+            ${{ github.event.inputs.wordpress_site_url }}/wp-json/techops/v1/plugins/list
+            
+      - name: Download Content
         env:
-          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
-          STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
-          LIVE_SITE_URL: ${{ inputs.site_url }}
-          STAGING_SITE_URL: ${{ inputs.staging_url }}
-        run: |
-          echo "Testing API endpoints and authentication..."
-          
-          # Function to test endpoint
-          test_endpoint() {
-            local url=$1
-            local token=$2
-            local description=$3
-            local endpoint=$4
+          LIVE_SITE_URL: ${{ github.event.inputs.live_site_url }}
+          LIVE_SITE_AUTH_TOKEN: ${{ github.event.inputs.live_site_auth_token }}
+          STAGING_SITE_URL: ${{ github.event.inputs.wordpress_site_url }}
+          STAGING_SITE_AUTH_TOKEN: ${{ github.event.inputs.staging_site_auth_token }}
+        run: ./scripts/download-content.sh
+        
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: sync/wordpress-content
+          base: main
+          title: 'Sync WordPress Content'
+          body: |
+            This PR syncs WordPress content from live to staging site.
             
-            echo "Testing $description endpoint: $url$endpoint"
-            echo "Auth token format check..."
-            if ! echo "$token" | base64 -d > /dev/null 2>&1; then
-              echo "Error: $description auth token is not valid base64"
-              exit 1
-            fi
+            Changes include:
+            - Updated plugins
+            - Updated themes
+            - Synchronized activation states
             
-            response=$(curl -s -w "\n%{http_code}" -H "Authorization: Basic $token" "$url$endpoint")
-            status_code=$(echo "$response" | tail -n1)
-            body=$(echo "$response" | sed '$d')
-            
-            echo "Status code: $status_code"
-            if [ "$status_code" != "200" ]; then
-              echo "Error: $description endpoint returned status $status_code"
-              exit 1
-            fi
-          }
-          
-          # Test live site endpoints
-          test_endpoint "$LIVE_SITE_URL" "$LIVE_SITE_AUTH_TOKEN" "live site plugins" "/wp-json/techops/v1/plugins/list"
-          test_endpoint "$LIVE_SITE_URL" "$LIVE_SITE_AUTH_TOKEN" "live site themes" "/wp-json/techops/v1/themes/list"
-          
-          # Test staging site endpoints
-          test_endpoint "$STAGING_SITE_URL" "$STAGING_SITE_AUTH_TOKEN" "staging site plugins" "/wp-json/techops/v1/plugins/list"
-          test_endpoint "$STAGING_SITE_URL" "$STAGING_SITE_AUTH_TOKEN" "staging site themes" "/wp-json/techops/v1/themes/list"
-
-      - name: Download and process content
-        if: success()
-        env:
-          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
-          STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
-          LIVE_SITE_URL: ${{ inputs.site_url }}
-          STAGING_SITE_URL: ${{ inputs.staging_url }}
-        run: |
-          echo "Starting content download with LIVE_SITE_URL: $LIVE_SITE_URL"
-          bash ./scripts/download-content.sh
-
-      - name: Cleanup temporary files
-        if: always()
-        run: |
-          find wp-content -name "*.zip" -type f -delete
-          find wp-content -name "*.tmp" -type f -delete
-
-      - name: Configure Git
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git fetch origin main
-          git checkout main
-          git pull origin main
-
-      - name: Check for changes and commit to main
-        id: check_changes
-        run: |
-          git add wp-content/
-          if [[ -n "$(git status --porcelain)" ]]; then
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            git commit -m "feat: Update WordPress content"
-            git push origin main
-          else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          fi
+            Please review the changes before merging.
 
   sync-activation:
     needs: sync
