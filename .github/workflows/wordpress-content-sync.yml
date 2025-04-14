@@ -43,10 +43,15 @@ jobs:
         
       - name: Test API Authentication
         run: |
-          curl -i -H "Authorization: Basic ${{ secrets.LIVE_SITE_AUTH_TOKEN }}" \
-            ${{ github.event.inputs.live_site_url }}/wp-json/techops/v1/plugins/list
-          curl -i -H "Authorization: Basic ${{ secrets.STAGING_SITE_AUTH_TOKEN }}" \
-            ${{ github.event.inputs.staging_site_url }}/wp-json/techops/v1/plugins/list
+          echo "Testing API authentication for live site..."
+          LIVE_RESPONSE=$(curl -i -H "Authorization: Basic ${{ secrets.LIVE_SITE_AUTH_TOKEN }}" \
+            ${{ github.event.inputs.live_site_url }}/wp-json/techops/v1/plugins/list)
+          echo "Live site response status: $(echo "$LIVE_RESPONSE" | grep "HTTP/")"
+          
+          echo "Testing API authentication for staging site..."
+          STAGING_RESPONSE=$(curl -i -H "Authorization: Basic ${{ secrets.STAGING_SITE_AUTH_TOKEN }}" \
+            ${{ github.event.inputs.staging_site_url }}/wp-json/techops/v1/plugins/list)
+          echo "Staging site response status: $(echo "$STAGING_RESPONSE" | grep "HTTP/")"
             
       - name: Download Content
         env:
@@ -54,24 +59,43 @@ jobs:
           LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
           STAGING_SITE_URL: ${{ github.event.inputs.staging_site_url }}
           STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
-        run: ./scripts/download-content.sh
+        run: |
+          echo "Starting content download..."
+          ./scripts/download-content.sh
+          echo "Content download completed."
+
+      - name: Debug Git Status
+        run: |
+          echo "Current branch: $(git branch --show-current)"
+          echo "Git status:"
+          git status
+          echo "Changed files:"
+          git diff --name-status
 
       - name: Commit changes to main
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           
+          echo "Adding changes to git..."
           git add wp-content/
+          
+          echo "Committing changes..."
           git commit -m "feat: Update WordPress content from live site"
+          
+          echo "Pushing to main branch..."
           git push origin main
         
       - name: Create Pull Request to Release
+        id: create-pr
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          base: release
-          head: main
+          commit-message: "feat: Sync WordPress content to release"
+          branch: sync/wordpress-content
+          delete-branch: true
           title: 'Sync WordPress Content to Release'
+          base: release
           body: |
             This PR syncs the latest WordPress content changes from main to release branch.
             
@@ -79,4 +103,11 @@ jobs:
             - Updated plugins
             - Updated themes
             
-            Note: After merging this PR, the activation sync workflow will automatically run. 
+            Note: After merging this PR, the activation sync workflow will automatically run.
+
+      - name: PR Creation Debug
+        if: always()
+        run: |
+          echo "PR Creation Status: ${{ steps.create-pr.outcome }}"
+          echo "PR Number: ${{ steps.create-pr.outputs.pull-request-number }}"
+          echo "PR URL: ${{ steps.create-pr.outputs.pull-request-url }}" 
