@@ -162,7 +162,7 @@ PLUGINS_EXIT_CODE=$?
 
 if [ ${PLUGINS_EXIT_CODE} -eq 0 ] && [ -f "${PLUGINS_RESPONSE_FILE}" ]; then
     echo "Processing plugins data..."
-    node scripts/process-plugins.js < "${PLUGINS_RESPONSE_FILE}"
+    WP_AUTH_TOKEN="$LIVE_SITE_AUTH_TOKEN" SITE_URL="$LIVE_SITE_URL" node scripts/process-plugins.js < "${PLUGINS_RESPONSE_FILE}"
     PROCESS_EXIT_CODE=$?
     rm -f "${PLUGINS_RESPONSE_FILE}"
     
