@@ -264,7 +264,6 @@ async function processPlugins() {
                 // Process the plugin
                 await processPlugin(plugin);
                 
-                logger.info(`Successfully processed plugin: ${plugin.slug}`);
             } catch (error) {
                 logger.error(`Error processing plugin ${plugin.slug}`, { error: error.message });
             }

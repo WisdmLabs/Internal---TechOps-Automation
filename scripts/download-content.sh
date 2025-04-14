@@ -182,7 +182,7 @@ THEMES_EXIT_CODE=$?
 
 if [ ${THEMES_EXIT_CODE} -eq 0 ] && [ -f "${THEMES_RESPONSE_FILE}" ]; then
     echo "Processing themes data..."
-    node scripts/process-themes.js < "${THEMES_RESPONSE_FILE}"
+    WP_AUTH_TOKEN="$LIVE_SITE_AUTH_TOKEN" SITE_URL="$LIVE_SITE_URL" node scripts/process-themes.js < "${THEMES_RESPONSE_FILE}"
     PROCESS_EXIT_CODE=$?
     rm -f "${THEMES_RESPONSE_FILE}"
     
