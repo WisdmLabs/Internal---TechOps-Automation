@@ -1,0 +1,66 @@
+name: WordPress Activation Sync
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - release
+
+jobs:
+  sync-activation:
+    # Only run if PR was merged (not just closed)
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for deployment
+        run: |
+          echo "Waiting 60 seconds for content deployment to complete..."
+          echo "This ensures all files are properly deployed to the staging site."
+          sleep 60
+          echo "Proceeding with activation sync..."
+          
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: release
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Sync activation states
+        id: sync_states
+        env:
+          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
+          STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
+          # Use workflow inputs from the PR if available, otherwise fall back to repository variables
+          LIVE_SITE_URL: ${{ github.event.inputs.live_site_url || vars.LIVE_SITE_URL }}
+          STAGING_SITE_URL: ${{ github.event.inputs.staging_site_url || vars.STAGING_SITE_URL }}
+        run: |
+          echo "Starting plugin activation sync..."
+          node scripts/sync-activation.js
+          if [[ -f wp-content/plugins/sync-report.json ]]; then
+            echo "sync_successful=true" >> $GITHUB_OUTPUT
+            echo "Activation sync completed successfully"
+          else
+            echo "sync_successful=false" >> $GITHUB_OUTPUT
+            echo "Activation sync failed"
+            exit 1
+          fi
+
+      - name: Add Sync Report Comment
+        if: always()
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Activation Sync Status
+            ${{ steps.sync_states.outputs.sync_successful == 'true' && '✅ Plugin activation states synchronized successfully' || '❌ Plugin activation sync failed' }}
+            
+            Please verify the plugin states on the staging site. 

@@ -21,6 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -52,107 +55,28 @@ jobs:
           STAGING_SITE_URL: ${{ github.event.inputs.staging_site_url }}
           STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
         run: ./scripts/download-content.sh
-        
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: sync/wordpress-content
-          base: main
-          title: 'Sync WordPress Content'
-          body: |
-            This PR syncs WordPress content from live to staging site.
-            
-            Changes include:
-            - Updated plugins
-            - Updated themes
-            - Synchronized activation states
-            
-            Please review the changes before merging.
 
-  sync-activation:
-    needs: sync-content
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          ref: main
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Sync activation states
-        id: sync_states
-        env:
-          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
-          STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
-          LIVE_SITE_URL: ${{ github.event.inputs.live_site_url }}
-          STAGING_SITE_URL: ${{ github.event.inputs.staging_site_url }}
-        run: |
-          node scripts/sync-activation.js
-          if [[ -f wp-content/plugins/sync-report.json ]]; then
-            echo "sync_successful=true" >> $GITHUB_OUTPUT
-          else
-            echo "sync_successful=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Commit sync report
-        if: steps.sync_states.outputs.sync_successful == 'true'
+      - name: Commit changes to main
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           
-          git add wp-content/plugins/sync-report.json
-          git commit -m "docs: Add activation sync report"
+          git add wp-content/
+          git commit -m "feat: Update WordPress content from live site"
           git push origin main
-
-      - name: Create Pull Request from main to release
-        if: steps.check_changes.outputs.has_changes == 'true' && steps.sync_states.outputs.sync_successful == 'true'
+        
+      - name: Create Pull Request to Release
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base: release
           head: main
-          title: 'feat: Update WordPress content'
+          title: 'Sync WordPress Content to Release'
           body: |
-            Automated PR to sync WordPress content from main to release:
-            - Updated wp-content/plugins
-            - Updated wp-content/themes
-            - Synchronized plugin activation states
+            This PR syncs the latest WordPress content changes from main to release branch.
             
-            Note: All temporary and ZIP files have been cleaned up.
+            Changes include:
+            - Updated plugins
+            - Updated themes
             
-            ## Changes Summary
-            Branch being merged: `main` → `release`
-            
-            ## Verification
-            - [ ] Changes are present in main branch
-            - [ ] No sensitive files included
-            - [ ] Directory structure is correct
-            - [ ] Plugin activation states are synchronized
-          commit-message: 'feat: Update WordPress content'
-          committer: GitHub <noreply@github.com>
-          author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
-          
-      - name: Verify final state
-        if: always()
-        run: |
-          echo "Final branch state:"
-          git rev-parse --abbrev-ref HEAD
-          
-          echo "Recent commits in main:"
-          git log -3 --oneline main
-          
-          echo "Recent commits in release:"
-          git log -3 --oneline release
-          
-          echo "Branch difference:"
-          git --no-pager diff main...release --stat 
+            Note: After merging this PR, the activation sync workflow will automatically run. 
