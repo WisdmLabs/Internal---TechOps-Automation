@@ -65,6 +65,26 @@ done
 BASE_DIR="wp-content"
 PLUGINS_DIR="$BASE_DIR/plugins"
 THEMES_DIR="$BASE_DIR/themes"
+EXCLUDED_PLUGINS=("techops-content-sync")
+
+# Function to safely remove content except excluded plugins
+safe_remove_content() {
+    local dir="$1"
+    local excluded_pattern="$2"
+    
+    # First, backup excluded plugin if it exists
+    if [ -d "$dir/$excluded_pattern" ]; then
+        cp -r "$dir/$excluded_pattern" "${BACKUP_DIR}/excluded/"
+    fi
+    
+    # Remove everything except excluded plugin
+    find "$dir" -mindepth 1 -maxdepth 1 ! -name "$excluded_pattern" -exec rm -rf {} +
+}
+
+# Create backup structure with excluded directory
+mkdir -p "${BACKUP_DIR}/plugins"
+mkdir -p "${BACKUP_DIR}/themes"
+mkdir -p "${BACKUP_DIR}/excluded"
 
 # Function to make API request
 make_api_request() {
@@ -137,11 +157,6 @@ make_api_request() {
     return 1
 }
 
-# Ensure directories exist
-echo "Creating directory structure..."
-mkdir -p "${BACKUP_DIR}/plugins"
-mkdir -p "${BACKUP_DIR}/themes"
-
 # Verify auth token format
 echo "Verifying auth tokens format..."
 for token_var in "LIVE_SITE_AUTH_TOKEN" "STAGING_SITE_AUTH_TOKEN"; do
@@ -198,10 +213,23 @@ fi
 # After successful processing, move content to final location
 if [ ${PROCESS_EXIT_CODE} -eq 0 ]; then
     echo "Moving processed content to final location..."
-    rm -rf "$PLUGINS_DIR"/*
+    
+    # Safely remove existing content while preserving excluded plugins
+    safe_remove_content "$PLUGINS_DIR" "techops-content-sync"
     rm -rf "$THEMES_DIR"/*
-    mv "${BACKUP_DIR}/plugins"/* "$PLUGINS_DIR"/
-    mv "${BACKUP_DIR}/themes"/* "$THEMES_DIR"/
+    
+    # Move new content from backup
+    if [ -d "${BACKUP_DIR}/plugins" ]; then
+        cp -r "${BACKUP_DIR}/plugins"/* "$PLUGINS_DIR"/ 2>/dev/null || true
+    fi
+    if [ -d "${BACKUP_DIR}/themes" ]; then
+        cp -r "${BACKUP_DIR}/themes"/* "$THEMES_DIR"/ 2>/dev/null || true
+    fi
+    
+    # Restore excluded plugins
+    if [ -d "${BACKUP_DIR}/excluded/techops-content-sync" ]; then
+        cp -r "${BACKUP_DIR}/excluded/techops-content-sync" "$PLUGINS_DIR"/
+    fi
 fi
 
 echo "Content sync completed successfully!" 
