@@ -6,11 +6,38 @@ set -e
 # Enable debug mode
 set -x
 
+# Find the repository root by looking for .git directory
+find_repo_root() {
+    local current_dir="$1"
+    local repo_root=""
+    
+    # Traverse up until we find the .git directory or reach the filesystem root
+    while [ "$current_dir" != "/" ]; do
+        if [ -d "$current_dir/.git" ]; then
+            repo_root="$current_dir"
+            break
+        fi
+        current_dir=$(dirname "$current_dir")
+    done
+    
+    # If we couldn't find the .git directory, use the current directory
+    if [ -z "$repo_root" ]; then
+        repo_root="$(pwd)"
+    fi
+    
+    echo "$repo_root"
+}
+
+# Get the repository root
+REPO_ROOT=$(find_repo_root "$(pwd)")
+echo "[DEBUG] Repository root: $REPO_ROOT"
+
 # Create a single backup directory for this run
-mkdir -p "_backups"
+mkdir -p "$REPO_ROOT/_backups"
 BACKUP_TIMESTAMP=$(date +%Y-%m-%dT%H-%M-%SZ)
-BACKUP_DIR="_backups/backup-${BACKUP_TIMESTAMP}"
+BACKUP_DIR="$REPO_ROOT/_backups/backup-${BACKUP_TIMESTAMP}"
 mkdir -p "${BACKUP_DIR}"
+echo "[DEBUG] Backup directory: $BACKUP_DIR"
 
 # Function to cleanup temporary files and old backups
 cleanup() {
@@ -19,10 +46,10 @@ cleanup() {
     find . -name "*.tmp" -type f -delete
     
     # Keep only the latest 3 backups
-    if [ -d "_backups" ]; then
-        cd _backups
+    if [ -d "$REPO_ROOT/_backups" ]; then
+        cd "$REPO_ROOT/_backups"
         ls -t | tail -n +4 | xargs -r rm -rf
-        cd ..
+        cd "$REPO_ROOT"
     fi
     
     exit $exit_code
