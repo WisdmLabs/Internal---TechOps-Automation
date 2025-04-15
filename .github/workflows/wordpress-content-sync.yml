@@ -23,9 +23,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: main
+          fetch-depth: 0  # Fetch all history
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: . # This ensures the repo is checked out in the current directory
-      
+          
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -70,20 +70,6 @@ jobs:
           
           echo "✅ Authentication successful for both sites"
 
-      - name: Check and Switch to Main Branch
-        run: |
-          CURRENT_BRANCH=$(git branch --show-current)
-          echo "Current branch: $CURRENT_BRANCH"
-          
-          if [[ "$CURRENT_BRANCH" != "main" ]]; then
-            echo "Not on main branch. Switching to main branch..."
-            git checkout main
-            git pull origin main
-            echo "✅ Successfully switched to main branch"
-          else
-            echo "Already on main branch"
-          fi
-            
       - name: Download Content
         env:
           LIVE_SITE_URL: ${{ github.event.inputs.live_site_url }}
@@ -108,28 +94,24 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           
-          echo "Adding changes to git..."
-          git add .
-          
-          echo "Committing changes..."
-          git commit -m "feat: Update WordPress content from live site"
-          
-          echo "Pushing to main branch..."
-          git push origin main
+          # Check if there are any changes to commit
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "Changes detected, committing..."
+            git add .
+            git commit -m "feat: Update WordPress content from live site"
+            git push origin main
+            echo "Changes pushed to main branch"
+          else
+            echo "No changes to commit"
+          fi
         
       - name: Create Pull Request to Release
         id: create-pr
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
-          base: release
-          delete-branch: false
-          draft: false
-          labels: |
-            automated
-            wordpress-sync
-          title: 'Sync WordPress Content to Release'
+          commit-message: "feat: Update WordPress content from live site"
+          title: "Sync WordPress Content to Release"
           body: |
             This PR syncs the latest WordPress content changes from main to release branch.
             
@@ -138,6 +120,12 @@ jobs:
             - Updated themes
             
             Note: After merging this PR, the activation sync workflow will automatically run.
+          branch: sync-wordpress-content
+          base: release
+          delete-branch: true
+          labels: |
+            automated
+            wordpress-sync
 
       - name: PR Creation Debug
         if: always()
