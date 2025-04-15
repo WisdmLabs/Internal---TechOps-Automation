@@ -3,144 +3,78 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const DependencyChecker = require('./utils/dependency-checker');
 const Logger = require('./utils/logger');
+const DependencyChecker = require('./utils/dependency-checker');
 
-// Verify required environment variables
-const requiredEnvVars = [
-    'LIVE_SITE_AUTH_TOKEN',
-    'LIVE_SITE_URL',
-    'BACKUP_DIR'
-];
+// Initialize logger
+const logger = new Logger('ProcessPlugins');
 
-for (const envVar of requiredEnvVars) {
-    if (!process.env[envVar]) {
-        console.error(`Error: Required environment variable ${envVar} is not set`);
-        process.exit(1);
-    }
-}
-
-// Configuration
-const BASE_DIR = 'wp-content/plugins';
-const EXCLUDED_PLUGINS = ['techops-content-sync'];
-const LOG_FILE = path.join(path.dirname(__dirname), 'plugin-sync.log');
+// Constants
+const BASE_DIR = path.join(process.cwd(), 'wp-content', 'plugins');
 const PLUGIN_SLUG = process.env.PLUGIN_SLUG || '';
 
-// Initialize utilities
-const dependencyChecker = new DependencyChecker();
-const logger = new Logger(LOG_FILE);
-
-// Function to make API request with retries
-async function makeApiRequest(url, token, method = 'GET', data = null) {
-    const maxRetries = 3;
-    let retryCount = 0;
-    
-    while (retryCount < maxRetries) {
-        try {
-            const command = [
-                'curl -s',
-                `-H "Authorization: Basic ${token}"`,
-                '-H "Content-Type: application/json"',
-                '-H "Accept: application/json"',
-                '--max-time 30'
-            ];
-            
-            if (method === 'POST') {
-                command.push('-X POST');
-                if (data) {
-                    command.push(`-d '${JSON.stringify(data)}'`);
-                }
-            }
-            
-            command.push(`"${url}"`);
-            
-            const response = execSync(command.join(' ')).toString();
-            return JSON.parse(response);
-        } catch (error) {
-            retryCount++;
-            if (retryCount === maxRetries) {
-                throw error;
-            }
-            console.log(`Request failed, retrying in 5 seconds... (Attempt ${retryCount} of ${maxRetries})`);
-            await new Promise(resolve => setTimeout(resolve, 5000));
-        }
-    }
+// Verify required environment variables
+if (!process.env.LIVE_SITE_AUTH_TOKEN || !process.env.LIVE_SITE_URL) {
+    logger.error('Missing required environment variables: LIVE_SITE_AUTH_TOKEN or LIVE_SITE_URL');
+    process.exit(1);
 }
 
-// Function to validate plugin metadata
-function validatePluginMetadata(plugin) {
-    const requiredFields = ['slug', 'name', 'version'];
-    for (const field of requiredFields) {
-        if (!plugin[field]) {
-            throw new Error(`Missing required field: ${field}`);
+async function processPlugins(pluginsList) {
+    try {
+        // Ensure the plugins directory exists
+        if (!fs.existsSync(BASE_DIR)) {
+            fs.mkdirSync(BASE_DIR, { recursive: true });
         }
-    }
-    
-    if (!/^[a-z0-9-_.]+$/.test(plugin.slug)) {
-        throw new Error('Invalid plugin slug format');
-    }
-    
-    return true;
-}
 
-async function processPlugin(plugin) {
-    const maxRetries = 3;
-    let retryCount = 0;
-    let lastError = null;
+        // Filter plugins if a specific plugin slug is provided
+        const pluginsToProcess = PLUGIN_SLUG
+            ? pluginsList.filter(plugin => plugin.slug === PLUGIN_SLUG)
+            : pluginsList;
 
-    while (retryCount < maxRetries) {
-        try {
-            // Skip excluded plugins
-            if (EXCLUDED_PLUGINS.includes(plugin.slug)) {
-                logger.info(`Skipping excluded plugin: ${plugin.slug}`);
-                return true;
-            }
+        logger.info(`Processing ${pluginsToProcess.length} plugins...`);
 
-            // If a specific plugin slug is provided, skip other plugins
-            if (PLUGIN_SLUG && plugin.slug !== PLUGIN_SLUG) {
-                logger.info(`Skipping plugin ${plugin.slug} (not the specified plugin: ${PLUGIN_SLUG})`);
-                return true;
-            }
+        // Initialize dependency checker
+        const dependencyChecker = new DependencyChecker();
 
-            // Validate plugin slug
-            if (!/^[a-z0-9-_.]+$/.test(plugin.slug)) {
-                throw new Error('Invalid plugin slug format');
-            }
-
-            // Check dependencies
-            const dependencies = await dependencyChecker.checkDependencies(
-                plugin,
-                process.env.STAGING_SITE_URL,
-                process.env.STAGING_SITE_AUTH_TOKEN
-            );
-
-            if (!dependencies.areMet) {
-                logger.warn(`Plugin ${plugin.slug} has unmet dependencies`, { dependencies });
-                // Continue processing despite dependencies warning
-            }
-
+        for (const plugin of pluginsToProcess) {
             try {
-                // Download plugin with retries
-                const pluginUrl = `${process.env.LIVE_SITE_URL}/wp-json/techops/v1/plugins/download/${plugin.slug}`;
+                const pluginDir = path.join(BASE_DIR, plugin.slug);
                 const zipPath = path.join(BASE_DIR, `${plugin.slug}.zip`);
-                
-                // Download with proper headers, retries, and error handling
-                const downloadCommand = [
-                    'curl',
-                    '-s',
-                    '-L',
-                    '-H', `"Authorization: Basic ${process.env.LIVE_SITE_AUTH_TOKEN}"`,
-                    '--retry', '3',
-                    '--retry-delay', '5',
-                    '--retry-max-time', '60',
-                    '--max-time', '300',
-                    '--fail',
-                    `"${pluginUrl}"`,
-                    '-o', `"${zipPath}"`
-                ].join(' ');
 
-                execSync(downloadCommand);
-                
+                logger.info(`\nProcessing plugin: ${plugin.slug}`);
+
+                // Check dependencies
+                const dependencies = await dependencyChecker.checkDependencies(
+                    plugin,
+                    process.env.LIVE_SITE_URL,
+                    process.env.LIVE_SITE_AUTH_TOKEN
+                );
+
+                if (!dependencies.areMet) {
+                    logger.warn(`Plugin ${plugin.slug} dependencies not met:`, {
+                        missing: dependencies.missing,
+                        current: {
+                            wordpress: dependencies.wordpress,
+                            php: dependencies.php
+                        }
+                    });
+                    // Continue processing despite dependency warnings
+                }
+
+                // Remove existing plugin directory if it exists
+                if (fs.existsSync(pluginDir)) {
+                    logger.info(`Removing existing ${plugin.slug} directory...`);
+                    fs.rmSync(pluginDir, { recursive: true, force: true });
+                }
+
+                // Download plugin ZIP directly to plugins directory
+                logger.info(`Downloading ${plugin.slug}...`);
+                execSync(
+                    `curl -H "Authorization: Basic ${process.env.LIVE_SITE_AUTH_TOKEN}" ` +
+                    `"${process.env.LIVE_SITE_URL}/wp-json/techops/v1/plugins/download/${plugin.slug}" ` +
+                    `--output "${zipPath}" --fail --silent --show-error`
+                );
+
                 // Verify download
                 if (!fs.existsSync(zipPath)) {
                     throw new Error('Plugin download failed - file not created');
@@ -158,122 +92,58 @@ async function processPlugin(plugin) {
                     throw new Error('Invalid ZIP file downloaded');
                 }
 
-                // Extract plugin with proper error handling
-                const pluginDir = path.join(BASE_DIR, plugin.slug);
-                try {
-                    // Remove existing directory if it exists
-                    if (fs.existsSync(pluginDir)) {
-                        execSync(`rm -rf "${pluginDir}"`);
+                // Extract ZIP directly to plugin directory
+                logger.info(`Extracting ${plugin.slug}...`);
+                execSync(`unzip -q -o "${zipPath}" -d "${pluginDir}"`);
+
+                // Remove the ZIP file
+                fs.unlinkSync(zipPath);
+
+                // Verify plugin directory contents
+                logger.info(`Verifying ${plugin.slug} contents...`);
+                const pluginFiles = fs.readdirSync(pluginDir);
+                if (pluginFiles.length === 0) {
+                    throw new Error('Plugin directory is empty after extraction');
+                }
+                logger.info(`Plugin directory contains ${pluginFiles.length} files/directories`);
+
+                // Save activation state
+                const activationStatesPath = path.join(BASE_DIR, 'activation-states.json');
+                let activationStates = { plugins: [] };
+                
+                if (fs.existsSync(activationStatesPath)) {
+                    try {
+                        activationStates = JSON.parse(fs.readFileSync(activationStatesPath, 'utf8'));
+                    // Remove existing entry for this plugin if it exists
+                        activationStates.plugins = activationStates.plugins.filter(p => p.slug !== plugin.slug);
+                    } catch (error) {
+                        logger.warn(`Error reading activation states: ${error.message}`);
                     }
-                    
-                    // Create directory and extract
-                    fs.mkdirSync(pluginDir, { recursive: true });
-                    execSync(`unzip -q -o "${zipPath}" -d "${pluginDir}"`);
-                } catch (error) {
-                    throw new Error(`Failed to extract plugin: ${error.message}`);
                 }
                 
-                // Clean up
-                fs.unlinkSync(zipPath);
+                // Add new activation state
+                activationStates.plugins.push({
+                    slug: plugin.slug,
+                    active: plugin.active || false
+                });
                 
-                logger.info(`Successfully processed plugin: ${plugin.slug}`);
-                return true;
-            } catch (error) {
-                throw error;
-            }
-        } catch (error) {
-            lastError = error;
-            retryCount++;
-            
-            if (retryCount < maxRetries) {
-                logger.warn(`Failed to process plugin ${plugin.slug}, retrying (${retryCount}/${maxRetries})...`, { error: error.message });
-                await new Promise(resolve => setTimeout(resolve, 5000 * retryCount)); // Exponential backoff
-                continue;
-            }
-            
-            logger.error(`Failed to process plugin ${plugin.slug} after ${maxRetries} attempts`, { error: error.message });
-            return false;
-        }
-    }
+                // Write updated activation states
+                fs.writeFileSync(activationStatesPath, JSON.stringify(activationStates, null, 2));
+                logger.info(`Updated activation state for ${plugin.slug}`);
 
-    return false;
-}
-
-async function processPlugins() {
-    try {
-        logger.info('Starting plugin processing...');
-        
-        // Ensure base directory exists
-        if (!fs.existsSync(BASE_DIR)) {
-            logger.info(`Creating directory: ${BASE_DIR}`);
-            fs.mkdirSync(BASE_DIR, { recursive: true });
-        }
-        
-        // Get plugins list
-        logger.info('Fetching plugins list...');
-        let pluginsList;
-        try {
-            pluginsList = await makeApiRequest(
-                `${process.env.LIVE_SITE_URL}/wp-json/techops/v1/plugins/list`,
-                process.env.LIVE_SITE_AUTH_TOKEN
-            );
-            if (!Array.isArray(pluginsList)) {
-                throw new Error('Invalid response format from plugins list endpoint');
-            }
-        } catch (error) {
-            logger.error('Failed to fetch plugins list', { error: error.message });
-            throw error;
-        }
-        
-        logger.info(`Found ${pluginsList.length} plugins to process`);
-        
-        // Filter out excluded plugins
-        const filteredPlugins = pluginsList.filter(plugin => !EXCLUDED_PLUGINS.includes(plugin.slug));
-        
-        // If a specific plugin slug is provided, filter to only that plugin
-        const pluginsToProcess = PLUGIN_SLUG 
-            ? filteredPlugins.filter(plugin => plugin.slug === PLUGIN_SLUG)
-            : filteredPlugins;
-            
-        console.log(`Processing ${pluginsToProcess.length} plugins (excluding: ${EXCLUDED_PLUGINS.join(', ')})`);
-        
-        // Create activation states file
-        const activationStates = {
-            plugins: filteredPlugins.map(plugin => ({
-                slug: plugin.slug,
-                active: plugin.active,
-                version: plugin.version,
-                name: plugin.name
-            })),
-            lastSync: new Date().toISOString()
-        };
-        
-        // Ensure directory exists before writing file
-        const activationStatesPath = path.join(path.dirname(__dirname), 'activation-states.json');
-        fs.writeFileSync(activationStatesPath, JSON.stringify(activationStates, null, 2));
-        logger.info(`Created activation states file at: ${activationStatesPath}`);
-        
-        // Process each plugin
-        for (const plugin of pluginsToProcess) {
-            try {
-                logger.info(`Processing plugin: ${plugin.slug}`);
-                
-                // Validate plugin metadata
-                validatePluginMetadata(plugin);
-                
-                // Process the plugin
-                await processPlugin(plugin);
-                
+                logger.info(`✅ Successfully processed ${plugin.slug}`);
             } catch (error) {
-                logger.error(`Error processing plugin ${plugin.slug}`, { error: error.message });
+                logger.error(`Error processing plugin ${plugin.slug}:`, { error: error.message });
+                // The shell script will handle restoration from backup
             }
         }
-        
-        logger.info('Plugin processing completed');
+
+        logger.info('\n✅ Plugin processing completed successfully');
     } catch (error) {
-        logger.error('Fatal error during plugin processing', { error: error.message });
+        logger.error('Error processing plugins:', { error: error.message });
         process.exit(1);
     }
 }
 
-processPlugins(); 
+// Export the main function
+module.exports = { processPlugins }; 
