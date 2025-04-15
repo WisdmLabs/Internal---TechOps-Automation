@@ -12,6 +12,7 @@ const logger = new Logger('ProcessPlugins');
 // Constants
 const BASE_DIR = path.join(process.cwd(), 'wp-content', 'plugins');
 const PLUGIN_SLUG = process.env.PLUGIN_SLUG || '';
+const EXCLUDED_PLUGINS = ['techops-content-sync'];
 
 // Verify required environment variables
 if (!process.env.LIVE_SITE_AUTH_TOKEN || !process.env.LIVE_SITE_URL) {
@@ -27,9 +28,16 @@ async function processPlugins(pluginsList) {
         }
 
         // Filter plugins if a specific plugin slug is provided
-        const pluginsToProcess = PLUGIN_SLUG
-            ? pluginsList.filter(plugin => plugin.slug === PLUGIN_SLUG)
-            : pluginsList;
+        // Also exclude techops-content-sync plugin
+        const pluginsToProcess = pluginsList.filter(plugin => {
+            // Skip excluded plugins
+            if (EXCLUDED_PLUGINS.includes(plugin.slug)) {
+                logger.info(`Skipping excluded plugin: ${plugin.slug}`);
+                return false;
+            }
+            // Apply specific plugin filter if provided
+            return PLUGIN_SLUG ? plugin.slug === PLUGIN_SLUG : true;
+        });
 
         logger.info(`Processing ${pluginsToProcess.length} plugins...`);
 

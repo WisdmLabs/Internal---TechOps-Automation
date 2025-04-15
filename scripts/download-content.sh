@@ -154,10 +154,21 @@ backup_existing_content() {
     echo "Backing up existing $content_type..."
     
     if [ -z "$specific_slug" ]; then
-        # Backup entire content type
+        # Backup entire content type, excluding techops-content-sync for plugins
         if [ -d "$source_dir" ] && [ "$(ls -A "$source_dir")" ]; then
             echo "Backing up all $content_type..."
-            cp -r "$source_dir"/* "${BACKUP_DIR}/$content_type/"
+            mkdir -p "${BACKUP_DIR}/$content_type"
+            if [ "$content_type" = "plugins" ]; then
+                # For plugins, exclude techops-content-sync
+                for item in "$source_dir"/*; do
+                    if [ -d "$item" ] && [ "$(basename "$item")" != "techops-content-sync" ]; then
+                        cp -r "$item" "${BACKUP_DIR}/$content_type/"
+                    fi
+                done
+            else
+                # For themes, copy everything
+                cp -r "$source_dir"/* "${BACKUP_DIR}/$content_type/"
+            fi
             echo "✅ All $content_type backed up successfully"
         else
             echo "⚠️ No existing $content_type to backup"
@@ -167,8 +178,15 @@ backup_existing_content() {
         local source_path="$source_dir/$specific_slug"
         local backup_path="${BACKUP_DIR}/$content_type/$specific_slug"
         
+        # Skip backup if it's techops-content-sync
+        if [ "$content_type" = "plugins" ] && [ "$specific_slug" = "techops-content-sync" ]; then
+            echo "⚠️ Skipping backup of techops-content-sync plugin"
+            return 0
+        fi
+        
         if [ -d "$source_path" ]; then
             echo "Backing up specific $content_type: $specific_slug..."
+            mkdir -p "${BACKUP_DIR}/$content_type"
             cp -r "$source_path" "${BACKUP_DIR}/$content_type/"
             echo "✅ $content_type '$specific_slug' backed up successfully"
         else
@@ -189,8 +207,20 @@ restore_from_backup() {
         # Restore entire content type
         if [ -d "${BACKUP_DIR}/$content_type" ] && [ "$(ls -A "${BACKUP_DIR}/$content_type")" ]; then
             echo "Restoring all $content_type..."
-            rm -rf "$target_dir"/*
-            cp -r "${BACKUP_DIR}/$content_type"/* "$target_dir"/
+            if [ "$content_type" = "plugins" ]; then
+                # For plugins, preserve techops-content-sync
+                for item in "${BACKUP_DIR}/$content_type"/*; do
+                    local item_name=$(basename "$item")
+                    if [ "$item_name" != "techops-content-sync" ]; then
+                        rm -rf "$target_dir/$item_name"
+                        cp -r "$item" "$target_dir/"
+                    fi
+                done
+            else
+                # For themes, restore everything
+                rm -rf "$target_dir"/*
+                cp -r "${BACKUP_DIR}/$content_type"/* "$target_dir"/
+            fi
             echo "✅ All $content_type restored successfully"
             return 0
         else
@@ -198,15 +228,19 @@ restore_from_backup() {
             return 1
         fi
     else
+        # Skip restore if it's techops-content-sync
+        if [ "$content_type" = "plugins" ] && [ "$specific_slug" = "techops-content-sync" ]; then
+            echo "⚠️ Skipping restore of techops-content-sync plugin"
+            return 0
+        fi
+        
         # Restore specific plugin or theme
         local backup_path="${BACKUP_DIR}/$content_type/$specific_slug"
         local target_path="$target_dir/$specific_slug"
         
         if [ -d "$backup_path" ]; then
             echo "Restoring specific $content_type: $specific_slug..."
-            if [ -d "$target_path" ]; then
-                rm -rf "$target_path"
-            fi
+            rm -rf "$target_path"
             cp -r "$backup_path" "$target_dir/"
             echo "✅ $content_type '$specific_slug' restored successfully"
             return 0
