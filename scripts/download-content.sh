@@ -39,6 +39,9 @@ BACKUP_DIR="$REPO_ROOT/_backups/backup-${BACKUP_TIMESTAMP}"
 mkdir -p "${BACKUP_DIR}"
 echo "[DEBUG] Backup directory: $BACKUP_DIR"
 
+# Export the backup directory path for use by other scripts
+export BACKUP_DIR="${BACKUP_DIR}"
+
 # Function to cleanup temporary files and old backups
 cleanup() {
     local exit_code=$?
@@ -241,7 +244,7 @@ PLUGINS_EXIT_CODE=$?
 
 if [ ${PLUGINS_EXIT_CODE} -eq 0 ] && [ -f "${PLUGINS_RESPONSE_FILE}" ]; then
     echo "Processing plugins data..."
-    WP_AUTH_TOKEN="$LIVE_SITE_AUTH_TOKEN" SITE_URL="$LIVE_SITE_URL" node scripts/process-plugins.js < "${PLUGINS_RESPONSE_FILE}"
+    WP_AUTH_TOKEN="$LIVE_SITE_AUTH_TOKEN" SITE_URL="$LIVE_SITE_URL" BACKUP_DIR="${BACKUP_DIR}" node scripts/process-plugins.js < "${PLUGINS_RESPONSE_FILE}"
     PROCESS_EXIT_CODE=$?
     rm -f "${PLUGINS_RESPONSE_FILE}"
     
@@ -261,7 +264,7 @@ THEMES_EXIT_CODE=$?
 
 if [ ${THEMES_EXIT_CODE} -eq 0 ] && [ -f "${THEMES_RESPONSE_FILE}" ]; then
     echo "Processing themes data..."
-    WP_AUTH_TOKEN="$LIVE_SITE_AUTH_TOKEN" SITE_URL="$LIVE_SITE_URL" node scripts/process-themes.js < "${THEMES_RESPONSE_FILE}"
+    WP_AUTH_TOKEN="$LIVE_SITE_AUTH_TOKEN" SITE_URL="$LIVE_SITE_URL" BACKUP_DIR="${BACKUP_DIR}" node scripts/process-themes.js < "${THEMES_RESPONSE_FILE}"
     PROCESS_EXIT_CODE=$?
     rm -f "${THEMES_RESPONSE_FILE}"
     
@@ -291,22 +294,28 @@ if [ ${PROCESS_EXIT_CODE} -eq 0 ]; then
     rm -rf "$THEMES_DIR"/*
     
     # Move new content from backup with verification
-    if [ -d "${BACKUP_DIR}/plugins" ]; then
+    if [ -d "${BACKUP_DIR}/plugins" ] && [ "$(ls -A "${BACKUP_DIR}/plugins")" ]; then
         echo "Copying plugins from backup..."
         if ! cp -r "${BACKUP_DIR}/plugins"/* "$PLUGINS_DIR"/; then
             echo "Error: Failed to copy plugins"
             exit 1
         fi
         verify_copy "${BACKUP_DIR}/plugins" "$PLUGINS_DIR"
+    else
+        echo "Error: Plugins backup directory is empty or does not exist"
+        exit 1
     fi
     
-    if [ -d "${BACKUP_DIR}/themes" ]; then
+    if [ -d "${BACKUP_DIR}/themes" ] && [ "$(ls -A "${BACKUP_DIR}/themes")" ]; then
         echo "Copying themes from backup..."
         if ! cp -r "${BACKUP_DIR}/themes"/* "$THEMES_DIR"/; then
             echo "Error: Failed to copy themes"
             exit 1
         fi
         verify_copy "${BACKUP_DIR}/themes" "$THEMES_DIR"
+    else
+        echo "Error: Themes backup directory is empty or does not exist"
+        exit 1
     fi
     
     # Restore sync plugin

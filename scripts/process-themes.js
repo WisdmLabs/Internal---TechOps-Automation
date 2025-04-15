@@ -3,8 +3,10 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { BackupManager } = require('./utils/backup-manager');
 
 const BASE_DIR = 'wp-content/themes';
+const backupManager = new BackupManager();
 
 async function processThemes(themesList) {
     try {
@@ -49,47 +51,50 @@ async function processThemes(themesList) {
                 // Move from temp directory to final location
                 const extractedFiles = fs.readdirSync(tempDir);
                 if (extractedFiles.length === 1 && fs.statSync(path.join(tempDir, extractedFiles[0])).isDirectory()) {
-                    // If extracted to a single directory, move that directory
+                    // If there's only one directory, move its contents
                     fs.renameSync(path.join(tempDir, extractedFiles[0]), themeDir);
                 } else {
-                    // If extracted multiple files, move them all to a new directory
-                    fs.mkdirSync(themeDir, { recursive: true });
-                    extractedFiles.forEach(file => {
-                        fs.renameSync(path.join(tempDir, file), path.join(themeDir, file));
-                    });
+                    // Otherwise move all files directly
+                    fs.renameSync(tempDir, themeDir);
                 }
 
                 // Clean up
-                console.log(`Cleaning up ${theme.slug}...`);
-                fs.rmSync(zipPath);
-                fs.rmSync(tempDir, { recursive: true, force: true });
+                fs.unlinkSync(zipPath);
+                if (fs.existsSync(tempDir)) {
+                    fs.rmSync(tempDir, { recursive: true, force: true });
+                }
 
-                console.log(`Successfully processed ${theme.slug}`);
+                console.log(`✅ Successfully processed ${theme.slug}`);
             } catch (error) {
-                console.error(`Error processing theme ${theme.slug}:`, error.message);
+                console.error(`❌ Error processing theme ${theme.slug}:`, error.message);
+                // Use BackupManager to restore the theme if it exists in backup
+                try {
+                    const backupDir = backupManager.getBackupDir();
+                    const backupThemePath = path.join(backupDir, 'themes', theme.slug);
+                    if (fs.existsSync(backupThemePath)) {
+                        console.log(`Restoring ${theme.slug} from backup...`);
+                        fs.rmSync(themeDir, { recursive: true, force: true });
+                        fs.cpSync(backupThemePath, themeDir, { recursive: true });
+                        console.log(`✅ Successfully restored ${theme.slug} from backup`);
+                    } else {
+                        console.error(`No backup found for theme ${theme.slug}`);
+                    }
+                } catch (restoreError) {
+                    console.error(`Failed to restore theme ${theme.slug}:`, restoreError.message);
+                }
             }
         }
+
+        console.log('\n✅ Theme processing completed successfully');
     } catch (error) {
-        console.error('Error in theme processing:', error.message);
+        console.error('❌ Error processing themes:', error.message);
         process.exit(1);
     }
 }
 
 // Read themes list from stdin
-let data = '';
-process.stdin.on('data', chunk => {
-    data += chunk;
-});
-
-process.stdin.on('end', () => {
-    try {
-        const themesList = JSON.parse(data);
-        processThemes(themesList).catch(error => {
-            console.error('Error:', error.message);
-            process.exit(1);
-        });
-    } catch (error) {
-        console.error('Error parsing themes list:', error.message);
-        process.exit(1);
-    }
+const themesList = JSON.parse(fs.readFileSync(0, 'utf-8'));
+processThemes(themesList).catch(error => {
+    console.error('❌ Fatal error:', error.message);
+    process.exit(1);
 }); 

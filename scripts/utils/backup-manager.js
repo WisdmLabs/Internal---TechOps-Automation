@@ -5,49 +5,46 @@ const { execSync } = require('child_process');
 class BackupManager {
     constructor(baseDir) {
         this.baseDir = baseDir;
-        // Create backups directory in the repository root
-        // Find the repository root by looking for .git directory
-        let currentDir = path.dirname(baseDir);
-        let repoRoot = null;
         
-        // Traverse up until we find the .git directory or reach the filesystem root
-        while (currentDir !== path.dirname(currentDir)) {
-            if (fs.existsSync(path.join(currentDir, '.git'))) {
-                repoRoot = currentDir;
-                break;
+        // Check if BACKUP_DIR environment variable is set (from download-content.sh)
+        if (process.env.BACKUP_DIR) {
+            this.backupDir = process.env.BACKUP_DIR;
+            console.log(`[DEBUG] Using backup directory from environment: ${this.backupDir}`);
+        } else {
+            // Fallback to finding repository root and creating backup directory
+            let currentDir = path.dirname(baseDir);
+            let repoRoot = null;
+            
+            // Traverse up until we find the .git directory or reach the filesystem root
+            while (currentDir !== path.dirname(currentDir)) {
+                if (fs.existsSync(path.join(currentDir, '.git'))) {
+                    repoRoot = currentDir;
+                    break;
+                }
+                currentDir = path.dirname(currentDir);
             }
-            currentDir = path.dirname(currentDir);
+            
+            // If we couldn't find the .git directory, use the current directory
+            if (!repoRoot) {
+                repoRoot = process.cwd();
+            }
+            
+            this.backupDir = path.join(repoRoot, '_backups');
+            console.log(`[DEBUG] Repository root: ${repoRoot}`);
+            console.log(`[DEBUG] Backup directory: ${this.backupDir}`);
         }
-        
-        // If we couldn't find the .git directory, use the current directory
-        if (!repoRoot) {
-            repoRoot = process.cwd();
-        }
-        
-        this.backupDir = path.join(repoRoot, '_backups');
-        console.log(`[DEBUG] Repository root: ${repoRoot}`);
-        console.log(`[DEBUG] Backup directory: ${this.backupDir}`);
     }
 
     async createBackup() {
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const backupPath = path.join(this.backupDir, `backup-${timestamp}`);
-        
-        // Create backup directory
-        fs.mkdirSync(backupPath, { recursive: true });
-        
-        // Copy the entire plugins directory
-        fs.cpSync(
-            this.baseDir,
-            path.join(backupPath, 'plugins'),
-            { recursive: true }
-        );
-        
-        return backupPath;
+        // Instead of creating a new backup, just return the existing backup directory
+        // This is because download-content.sh already created the backup
+        console.log(`[DEBUG] Using existing backup directory: ${this.backupDir}`);
+        return this.backupDir;
     }
 
     async restoreBackup(backupPath) {
         // Restore from backup
+        console.log(`[DEBUG] Restoring from backup: ${backupPath}`);
         fs.cpSync(
             path.join(backupPath, 'plugins'),
             this.baseDir,
