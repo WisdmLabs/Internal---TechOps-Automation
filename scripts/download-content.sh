@@ -52,6 +52,16 @@ find_repo_root() {
 REPO_ROOT=$(find_repo_root "$(pwd)")
 echo "[DEBUG] Repository root: $REPO_ROOT"
 
+# Configuration
+BASE_DIR="wp-content"
+PLUGINS_DIR="$BASE_DIR/plugins"
+THEMES_DIR="$BASE_DIR/themes"
+SYNC_PLUGIN="techops-content-sync"
+
+# Create base directories
+mkdir -p "$PLUGINS_DIR"
+mkdir -p "$THEMES_DIR"
+
 # Create a single backup directory for this run
 mkdir -p "$REPO_ROOT/_backups"
 BACKUP_TIMESTAMP=$(date +%Y-%m-%dT%H-%M-%SZ)
@@ -261,12 +271,6 @@ if [ "$available_space" -lt "$required_space" ]; then
     echo "Error: Insufficient disk space. Required: ${required_space}MB, Available: ${available_space}MB"
     exit 1
 fi
-
-# Configuration
-BASE_DIR="wp-content"
-PLUGINS_DIR="$BASE_DIR/plugins"
-THEMES_DIR="$BASE_DIR/themes"
-SYNC_PLUGIN="techops-content-sync"
 
 # Create backup structure
 mkdir -p "${BACKUP_DIR}/plugins"
