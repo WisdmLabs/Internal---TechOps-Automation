@@ -129,6 +129,33 @@ jobs:
           git commit -m "feat: Update WordPress content from live site"
           git push origin main
 
+      - name: Wait for latest commit to be reflected
+        if: env.CHANGES_FOUND == 'true'
+        run: |
+          echo "Waiting for latest commit to be reflected..."
+          LATEST_COMMIT=$(git rev-parse HEAD)
+          echo "Latest commit hash: $LATEST_COMMIT"
+          
+          # Wait for up to 30 seconds for the commit to be reflected
+          for i in {1..30}; do
+            git fetch origin main
+            REMOTE_COMMIT=$(git rev-parse origin/main)
+            echo "Remote commit hash: $REMOTE_COMMIT"
+            
+            if [ "$LATEST_COMMIT" = "$REMOTE_COMMIT" ]; then
+              echo "✅ Latest commit is now reflected in remote"
+              break
+            fi
+            
+            if [ $i -eq 30 ]; then
+              echo "❌ Timeout waiting for latest commit to be reflected"
+              exit 1
+            fi
+            
+            echo "Waiting for commit to be reflected... (attempt $i/30)"
+            sleep 1
+          done
+
       - name: Create sync branch
         if: env.CHANGES_FOUND == 'true'
         run: |
