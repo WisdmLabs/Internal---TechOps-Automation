@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const BackupManager = require('./utils/backup-manager');
+const { BackupManager } = require('./utils/backup-manager');
 const DependencyChecker = require('./utils/dependency-checker');
 const Logger = require('./utils/logger');
 
@@ -21,12 +21,12 @@ for (const envVar of requiredEnvVars) {
 }
 
 // Configuration
-const BASE_DIR = path.join(__dirname, '..');
+const BASE_DIR = 'wp-content/plugins';
 const EXCLUDED_PLUGINS = ['techops-content-sync'];
-const LOG_FILE = path.join(BASE_DIR, 'plugin-sync.log');
+const LOG_FILE = path.join(path.dirname(__dirname), 'plugin-sync.log');
 
 // Initialize utilities
-const backupManager = new BackupManager(path.join(BASE_DIR, 'wp-content/plugins'));
+const backupManager = new BackupManager();
 const dependencyChecker = new DependencyChecker();
 const logger = new Logger(LOG_FILE);
 
@@ -119,7 +119,7 @@ async function processPlugin(plugin) {
             try {
                 // Download plugin with retries
                 const pluginUrl = `${process.env.LIVE_SITE_URL}/wp-json/techops/v1/plugins/download/${plugin.slug}`;
-                const zipPath = path.join(BASE_DIR, 'wp-content/plugins', `${plugin.slug}.zip`);
+                const zipPath = path.join(BASE_DIR, `${plugin.slug}.zip`);
                 
                 // Download with proper headers, retries, and error handling
                 const downloadCommand = [
@@ -156,7 +156,7 @@ async function processPlugin(plugin) {
                 }
 
                 // Extract plugin with proper error handling
-                const pluginDir = path.join(BASE_DIR, 'wp-content/plugins', plugin.slug);
+                const pluginDir = path.join(BASE_DIR, plugin.slug);
                 try {
                     // Remove existing directory if it exists
                     if (fs.existsSync(pluginDir)) {
