@@ -101,17 +101,20 @@ jobs:
             git commit -m "feat: Update WordPress content from live site"
             git push origin main
             echo "Changes pushed to main branch"
+            echo "CHANGES_FOUND=true" >> $GITHUB_ENV
           else
             echo "No changes to commit"
+            echo "CHANGES_FOUND=false" >> $GITHUB_ENV
           fi
         
       - name: Create Pull Request to Release
-        id: create-pr
+        if: env.CHANGES_FOUND == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "feat: Update WordPress content from live site"
-          title: "Sync WordPress Content to Release"
+          base: release
+          head: main  # This creates PR from main branch
+          title: "Sync WordPress Content from Main to Release"
           body: |
             This PR syncs the latest WordPress content changes from main to release branch.
             
@@ -120,9 +123,7 @@ jobs:
             - Updated themes
             
             Note: After merging this PR, the activation sync workflow will automatically run.
-          branch: sync-wordpress-content
-          base: release
-          delete-branch: true
+          delete-branch: false  # Don't delete main branch
           labels: |
             automated
             wordpress-sync
@@ -130,6 +131,9 @@ jobs:
       - name: PR Creation Debug
         if: always()
         run: |
+          echo "Changes Found: ${{ env.CHANGES_FOUND }}"
           echo "PR Creation Status: ${{ steps.create-pr.outcome }}"
-          echo "PR Number: ${{ steps.create-pr.outputs.pull-request-number }}"
-          echo "PR URL: ${{ steps.create-pr.outputs.pull-request-url }}" 
+          if [[ "${{ env.CHANGES_FOUND }}" == "true" ]]; then
+            echo "PR Number: ${{ steps.create-pr.outputs.pull-request-number }}"
+            echo "PR URL: ${{ steps.create-pr.outputs.pull-request-url }}"
+          fi 
