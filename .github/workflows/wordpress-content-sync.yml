@@ -24,6 +24,7 @@ jobs:
         with:
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
+          path: . # This ensures the repo is checked out in the current directory
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
