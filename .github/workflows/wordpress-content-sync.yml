@@ -83,6 +83,15 @@ jobs:
           else
             echo "Already on main branch"
           fi
+          
+          # Verify we are on main branch
+          CURRENT_BRANCH=$(git branch --show-current)
+          if [[ "$CURRENT_BRANCH" != "main" ]]; then
+            echo "❌ Failed to switch to main branch"
+            exit 1
+          fi
+          
+          echo "✅ Confirmed we are on main branch: $CURRENT_BRANCH"
             
       - name: Download Content
         env:
@@ -159,12 +168,29 @@ jobs:
       - name: Create sync branch
         if: env.CHANGES_FOUND == 'true'
         run: |
-          # Create a new branch from the current main (with changes)
-          echo "Creating sync branch ${{ env.SYNC_BRANCH }}..."
+          # Verify we are still on main branch
+          CURRENT_BRANCH=$(git branch --show-current)
+          if [[ "$CURRENT_BRANCH" != "main" ]]; then
+            echo "❌ Not on main branch. Cannot create sync branch."
+            exit 1
+          fi
+          
+          # Create a new branch as a clone of main
+          echo "Creating sync branch ${{ env.SYNC_BRANCH }} as a clone of main branch..."
           git checkout -b ${{ env.SYNC_BRANCH }}
           
+          # Verify the new branch is identical to main
+          MAIN_COMMIT=$(git rev-parse main)
+          SYNC_COMMIT=$(git rev-parse HEAD)
+          if [[ "$MAIN_COMMIT" != "$SYNC_COMMIT" ]]; then
+            echo "❌ Sync branch is not identical to main branch"
+            exit 1
+          fi
+          
+          echo "✅ Successfully created sync branch ${{ env.SYNC_BRANCH }} as a clone of main"
+          
           # Push the sync branch to remote
-          echo "Pushing sync branch..."
+          echo "Pushing sync branch to remote..."
           git push origin ${{ env.SYNC_BRANCH }}
         
       - name: Create Pull Request to Release
