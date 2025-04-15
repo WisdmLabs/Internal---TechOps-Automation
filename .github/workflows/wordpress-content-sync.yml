@@ -109,6 +109,8 @@ jobs:
           if [[ -n "$(git status --porcelain)" ]]; then
             echo "CHANGES_FOUND=true" >> $GITHUB_ENV
             echo "Changes found in the repository"
+            # Generate a unique branch name using timestamp
+            echo "SYNC_BRANCH=sync-wordpress-content-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_ENV
           else
             echo "CHANGES_FOUND=false" >> $GITHUB_ENV
             echo "No changes found in the repository"
@@ -123,11 +125,20 @@ jobs:
           echo "Adding changes to git..."
           git add .
           
-          echo "Committing changes..."
+          echo "Committing changes to main..."
           git commit -m "feat: Update WordPress content from live site"
-          
-          echo "Pushing to main branch..."
           git push origin main
+
+      - name: Create sync branch
+        if: env.CHANGES_FOUND == 'true'
+        run: |
+          # Create a new branch from the current main (with changes)
+          echo "Creating sync branch ${{ env.SYNC_BRANCH }}..."
+          git checkout -b ${{ env.SYNC_BRANCH }}
+          
+          # Push the sync branch to remote
+          echo "Pushing sync branch..."
+          git push origin ${{ env.SYNC_BRANCH }}
         
       - name: Create Pull Request to Release
         if: env.CHANGES_FOUND == 'true'
@@ -135,17 +146,17 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base: release
-          branch: main
-          title: "Sync WordPress Content from Main to Release"
+          branch: ${{ env.SYNC_BRANCH }}
+          title: "Sync WordPress Content from Live Site"
           body: |
-            This PR syncs the latest WordPress content changes from main to release branch.
+            This PR syncs the latest WordPress content changes from live site to release branch.
             
             Changes include:
             - Updated plugins
             - Updated themes
             
             Note: After merging this PR, the activation sync workflow will automatically run.
-          delete-branch: false
+          delete-branch: true
           labels: |
             automated
             wordpress-sync
@@ -155,4 +166,5 @@ jobs:
         run: |
           echo "PR Creation Status: ${{ steps.create-pr.outcome }}"
           echo "PR Number: ${{ steps.create-pr.outputs.pull-request-number }}"
-          echo "PR URL: ${{ steps.create-pr.outputs.pull-request-url }}" 
+          echo "PR URL: ${{ steps.create-pr.outputs.pull-request-url }}"
+          echo "Sync Branch: ${{ env.SYNC_BRANCH }}" 
