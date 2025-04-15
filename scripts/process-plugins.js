@@ -3,14 +3,14 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const { BackupManager } = require('./utils/backup-manager');
 const DependencyChecker = require('./utils/dependency-checker');
 const Logger = require('./utils/logger');
 
 // Verify required environment variables
 const requiredEnvVars = [
     'LIVE_SITE_AUTH_TOKEN',
-    'LIVE_SITE_URL'
+    'LIVE_SITE_URL',
+    'BACKUP_DIR'
 ];
 
 for (const envVar of requiredEnvVars) {
@@ -24,9 +24,9 @@ for (const envVar of requiredEnvVars) {
 const BASE_DIR = 'wp-content/plugins';
 const EXCLUDED_PLUGINS = ['techops-content-sync'];
 const LOG_FILE = path.join(path.dirname(__dirname), 'plugin-sync.log');
+const PLUGIN_SLUG = process.env.PLUGIN_SLUG || '';
 
 // Initialize utilities
-const backupManager = new BackupManager();
 const dependencyChecker = new DependencyChecker();
 const logger = new Logger(LOG_FILE);
 
@@ -96,6 +96,12 @@ async function processPlugin(plugin) {
                 return true;
             }
 
+            // If a specific plugin slug is provided, skip other plugins
+            if (PLUGIN_SLUG && plugin.slug !== PLUGIN_SLUG) {
+                logger.info(`Skipping plugin ${plugin.slug} (not the specified plugin: ${PLUGIN_SLUG})`);
+                return true;
+            }
+
             // Validate plugin slug
             if (!/^[a-z0-9-_.]+$/.test(plugin.slug)) {
                 throw new Error('Invalid plugin slug format');
@@ -112,9 +118,6 @@ async function processPlugin(plugin) {
                 logger.warn(`Plugin ${plugin.slug} has unmet dependencies`, { dependencies });
                 // Continue processing despite dependencies warning
             }
-
-            // Create backup
-            const backupPath = await backupManager.createBackup(plugin.slug);
 
             try {
                 // Download plugin with retries
@@ -176,10 +179,6 @@ async function processPlugin(plugin) {
                 logger.info(`Successfully processed plugin: ${plugin.slug}`);
                 return true;
             } catch (error) {
-                // Restore from backup if available
-                if (backupPath) {
-                    await backupManager.restoreBackup(backupPath);
-                }
                 throw error;
             }
         } catch (error) {
@@ -201,7 +200,6 @@ async function processPlugin(plugin) {
 }
 
 async function processPlugins() {
-    let backupPath = null;
     try {
         logger.info('Starting plugin processing...');
         
@@ -210,10 +208,6 @@ async function processPlugins() {
             logger.info(`Creating directory: ${BASE_DIR}`);
             fs.mkdirSync(BASE_DIR, { recursive: true });
         }
-        
-        // Create backup
-        backupPath = await backupManager.createBackup();
-        logger.info(`Created backup at: ${backupPath}`);
         
         // Get plugins list
         logger.info('Fetching plugins list...');
@@ -235,7 +229,13 @@ async function processPlugins() {
         
         // Filter out excluded plugins
         const filteredPlugins = pluginsList.filter(plugin => !EXCLUDED_PLUGINS.includes(plugin.slug));
-        console.log(`Processing ${filteredPlugins.length} plugins (excluding: ${EXCLUDED_PLUGINS.join(', ')})`);
+        
+        // If a specific plugin slug is provided, filter to only that plugin
+        const pluginsToProcess = PLUGIN_SLUG 
+            ? filteredPlugins.filter(plugin => plugin.slug === PLUGIN_SLUG)
+            : filteredPlugins;
+            
+        console.log(`Processing ${pluginsToProcess.length} plugins (excluding: ${EXCLUDED_PLUGINS.join(', ')})`);
         
         // Create activation states file
         const activationStates = {
@@ -249,12 +249,12 @@ async function processPlugins() {
         };
         
         // Ensure directory exists before writing file
-        const activationStatesPath = path.join(BASE_DIR, 'activation-states.json');
+        const activationStatesPath = path.join(path.dirname(__dirname), 'activation-states.json');
         fs.writeFileSync(activationStatesPath, JSON.stringify(activationStates, null, 2));
         logger.info(`Created activation states file at: ${activationStatesPath}`);
         
         // Process each plugin
-        for (const plugin of filteredPlugins) {
+        for (const plugin of pluginsToProcess) {
             try {
                 logger.info(`Processing plugin: ${plugin.slug}`);
                 
@@ -272,15 +272,6 @@ async function processPlugins() {
         logger.info('Plugin processing completed');
     } catch (error) {
         logger.error('Fatal error during plugin processing', { error: error.message });
-        // Restore from backup if we have one
-        if (backupPath) {
-            try {
-                await backupManager.restoreBackup(backupPath);
-                logger.info('Successfully restored from backup');
-            } catch (restoreError) {
-                logger.error('Failed to restore from backup', { error: restoreError.message });
-            }
-        }
         process.exit(1);
     }
 }

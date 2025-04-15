@@ -3,10 +3,9 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const { BackupManager } = require('./utils/backup-manager');
 
 const BASE_DIR = 'wp-content/themes';
-const backupManager = new BackupManager();
+const THEME_SLUG = process.env.THEME_SLUG || '';
 
 async function processThemes(themesList) {
     try {
@@ -15,9 +14,14 @@ async function processThemes(themesList) {
             fs.mkdirSync(BASE_DIR, { recursive: true });
         }
 
-        console.log(`Processing ${themesList.length} themes...`);
+        // Filter themes if a specific theme slug is provided
+        const themesToProcess = THEME_SLUG
+            ? themesList.filter(theme => theme.slug === THEME_SLUG)
+            : themesList;
 
-        for (const theme of themesList) {
+        console.log(`Processing ${themesToProcess.length} themes...`);
+
+        for (const theme of themesToProcess) {
             try {
                 const themeDir = path.join(BASE_DIR, theme.slug);
                 const zipPath = path.join(BASE_DIR, `${theme.slug}.zip`);
@@ -67,21 +71,7 @@ async function processThemes(themesList) {
                 console.log(`✅ Successfully processed ${theme.slug}`);
             } catch (error) {
                 console.error(`❌ Error processing theme ${theme.slug}:`, error.message);
-                // Use BackupManager to restore the theme if it exists in backup
-                try {
-                    const backupDir = backupManager.getBackupDir();
-                    const backupThemePath = path.join(backupDir, 'themes', theme.slug);
-                    if (fs.existsSync(backupThemePath)) {
-                        console.log(`Restoring ${theme.slug} from backup...`);
-                        fs.rmSync(themeDir, { recursive: true, force: true });
-                        fs.cpSync(backupThemePath, themeDir, { recursive: true });
-                        console.log(`✅ Successfully restored ${theme.slug} from backup`);
-                    } else {
-                        console.error(`No backup found for theme ${theme.slug}`);
-                    }
-                } catch (restoreError) {
-                    console.error(`Failed to restore theme ${theme.slug}:`, restoreError.message);
-                }
+                // The shell script will handle restoration from backup
             }
         }
 

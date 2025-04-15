@@ -1,3 +1,8 @@
+/**
+ * @deprecated This class is deprecated. Backup functionality has been moved to download-content.sh
+ * Will be removed in a future version.
+ */
+
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
