@@ -46,12 +46,42 @@ jobs:
           echo "Testing API authentication for live site..."
           LIVE_RESPONSE=$(curl -i -H "Authorization: Basic ${{ secrets.LIVE_SITE_AUTH_TOKEN }}" \
             ${{ github.event.inputs.live_site_url }}/wp-json/techops/v1/plugins/list)
-          echo "Live site response status: $(echo "$LIVE_RESPONSE" | grep "HTTP/")"
+          LIVE_STATUS=$(echo "$LIVE_RESPONSE" | grep "HTTP/" | awk '{print $2}')
+          echo "Live site response status: $LIVE_STATUS"
+          
+          if [[ "$LIVE_STATUS" != "200" ]]; then
+            echo "❌ Live site authentication failed with status $LIVE_STATUS"
+            echo "Response: $LIVE_RESPONSE"
+            exit 1
+          fi
           
           echo "Testing API authentication for staging site..."
           STAGING_RESPONSE=$(curl -i -H "Authorization: Basic ${{ secrets.STAGING_SITE_AUTH_TOKEN }}" \
             ${{ github.event.inputs.staging_site_url }}/wp-json/techops/v1/plugins/list)
-          echo "Staging site response status: $(echo "$STAGING_RESPONSE" | grep "HTTP/")"
+          STAGING_STATUS=$(echo "$STAGING_RESPONSE" | grep "HTTP/" | awk '{print $2}')
+          echo "Staging site response status: $STAGING_STATUS"
+          
+          if [[ "$STAGING_STATUS" != "200" ]]; then
+            echo "❌ Staging site authentication failed with status $STAGING_STATUS"
+            echo "Response: $STAGING_RESPONSE"
+            exit 1
+          fi
+          
+          echo "✅ Authentication successful for both sites"
+
+      - name: Check and Switch to Main Branch
+        run: |
+          CURRENT_BRANCH=$(git branch --show-current)
+          echo "Current branch: $CURRENT_BRANCH"
+          
+          if [[ "$CURRENT_BRANCH" != "main" ]]; then
+            echo "Not on main branch. Switching to main branch..."
+            git checkout main
+            git pull origin main
+            echo "✅ Successfully switched to main branch"
+          else
+            echo "Already on main branch"
+          fi
             
       - name: Download Content
         env:
@@ -91,11 +121,14 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "feat: Sync WordPress content to release"
-          branch: sync/wordpress-content
-          delete-branch: true
-          title: 'Sync WordPress Content to Release'
+          branch: main
           base: release
+          delete-branch: false
+          draft: false
+          labels: |
+            automated
+            wordpress-sync
+          title: 'Sync WordPress Content to Release'
           body: |
             This PR syncs the latest WordPress content changes from main to release branch.
             
