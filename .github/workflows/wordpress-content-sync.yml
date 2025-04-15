@@ -108,7 +108,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           
           echo "Adding changes to git..."
-          git add wp-content/
+          git add .
           
           echo "Committing changes..."
           git commit -m "feat: Update WordPress content from live site"

@@ -31,6 +31,32 @@ cleanup() {
 # Set up cleanup trap
 trap cleanup EXIT
 
+# Function to verify copy operation
+verify_copy() {
+    local source="$1"
+    local dest="$2"
+    local sync_plugin="techops-content-sync"
+    
+    # Count files excluding the sync plugin
+    local source_count=$(find "$source" -type f ! -path "*/$sync_plugin/*" | wc -l)
+    local dest_count=$(find "$dest" -type f ! -path "*/$sync_plugin/*" | wc -l)
+    
+    echo "Source files (excluding $sync_plugin): $source_count"
+    echo "Destination files (excluding $sync_plugin): $dest_count"
+    
+    if [ "$source_count" -eq "$dest_count" ]; then
+        echo "✅ Copy verified: $source_count files copied from $source to $dest (excluding $sync_plugin)"
+        return 0
+    else
+        echo "❌ Copy failed: Expected $source_count files, got $dest_count (excluding $sync_plugin)"
+        echo "Source directory contents (excluding $sync_plugin):"
+        find "$source" -type f ! -path "*/$sync_plugin/*" -ls
+        echo "Destination directory contents (excluding $sync_plugin):"
+        find "$dest" -type f ! -path "*/$sync_plugin/*" -ls
+        return 1
+    fi
+}
+
 # Check for required commands
 required_commands=(
     "curl"
@@ -65,26 +91,34 @@ done
 BASE_DIR="wp-content"
 PLUGINS_DIR="$BASE_DIR/plugins"
 THEMES_DIR="$BASE_DIR/themes"
-EXCLUDED_PLUGINS=("techops-content-sync")
+SYNC_PLUGIN="techops-content-sync"
 
-# Function to safely remove content except excluded plugins
-safe_remove_content() {
-    local dir="$1"
-    local excluded_pattern="$2"
-    
-    # First, backup excluded plugin if it exists
-    if [ -d "$dir/$excluded_pattern" ]; then
-        cp -r "$dir/$excluded_pattern" "${BACKUP_DIR}/excluded/"
-    fi
-    
-    # Remove everything except excluded plugin
-    find "$dir" -mindepth 1 -maxdepth 1 ! -name "$excluded_pattern" -exec rm -rf {} +
-}
-
-# Create backup structure with excluded directory
+# Create backup structure
 mkdir -p "${BACKUP_DIR}/plugins"
 mkdir -p "${BACKUP_DIR}/themes"
-mkdir -p "${BACKUP_DIR}/excluded"
+mkdir -p "${BACKUP_DIR}/sync-plugin"
+
+# Function to backup sync plugin
+backup_sync_plugin() {
+    echo "Backing up sync plugin..."
+    if [ -d "$PLUGINS_DIR/$SYNC_PLUGIN" ]; then
+        cp -r "$PLUGINS_DIR/$SYNC_PLUGIN" "${BACKUP_DIR}/sync-plugin/"
+        echo "✅ Sync plugin backed up successfully"
+    else
+        echo "⚠️ Sync plugin not found in plugins directory"
+    fi
+}
+
+# Function to restore sync plugin
+restore_sync_plugin() {
+    echo "Restoring sync plugin..."
+    if [ -d "${BACKUP_DIR}/sync-plugin/$SYNC_PLUGIN" ]; then
+        cp -r "${BACKUP_DIR}/sync-plugin/$SYNC_PLUGIN" "$PLUGINS_DIR/"
+        echo "✅ Sync plugin restored successfully"
+    else
+        echo "⚠️ No backup found for sync plugin"
+    fi
+}
 
 # Function to make API request
 make_api_request() {
@@ -170,6 +204,9 @@ echo "Starting WordPress content sync..."
 echo "Using live site URL: $LIVE_SITE_URL"
 echo "Using staging site URL: $STAGING_SITE_URL"
 
+# Backup sync plugin before starting the sync process
+backup_sync_plugin
+
 # Download and process plugins from live site
 echo "Fetching plugins list from live site..."
 PLUGINS_RESPONSE_FILE=$(make_api_request "$LIVE_SITE_URL" "$LIVE_SITE_AUTH_TOKEN" "/wp-json/techops/v1/plugins/list" "plugins list")
@@ -214,21 +251,51 @@ fi
 if [ ${PROCESS_EXIT_CODE} -eq 0 ]; then
     echo "Moving processed content to final location..."
     
-    # Safely remove existing content while preserving excluded plugins
-    safe_remove_content "$PLUGINS_DIR" "techops-content-sync"
+    # Debug: Show contents of backup directories
+    echo "Contents of backup directories before copy:"
+    echo "Plugins backup:"
+    ls -la "${BACKUP_DIR}/plugins"
+    echo "Themes backup:"
+    ls -la "${BACKUP_DIR}/themes"
+    
+    # Clear existing content
+    echo "Clearing existing content..."
+    rm -rf "$PLUGINS_DIR"/*
     rm -rf "$THEMES_DIR"/*
     
-    # Move new content from backup
+    # Move new content from backup with verification
     if [ -d "${BACKUP_DIR}/plugins" ]; then
-        cp -r "${BACKUP_DIR}/plugins"/* "$PLUGINS_DIR"/ 2>/dev/null || true
-    fi
-    if [ -d "${BACKUP_DIR}/themes" ]; then
-        cp -r "${BACKUP_DIR}/themes"/* "$THEMES_DIR"/ 2>/dev/null || true
+        echo "Copying plugins from backup..."
+        if ! cp -r "${BACKUP_DIR}/plugins"/* "$PLUGINS_DIR"/; then
+            echo "Error: Failed to copy plugins"
+            exit 1
+        fi
+        verify_copy "${BACKUP_DIR}/plugins" "$PLUGINS_DIR"
     fi
     
-    # Restore excluded plugins
-    if [ -d "${BACKUP_DIR}/excluded/techops-content-sync" ]; then
-        cp -r "${BACKUP_DIR}/excluded/techops-content-sync" "$PLUGINS_DIR"/
+    if [ -d "${BACKUP_DIR}/themes" ]; then
+        echo "Copying themes from backup..."
+        if ! cp -r "${BACKUP_DIR}/themes"/* "$THEMES_DIR"/; then
+            echo "Error: Failed to copy themes"
+            exit 1
+        fi
+        verify_copy "${BACKUP_DIR}/themes" "$THEMES_DIR"
+    fi
+    
+    # Restore sync plugin
+    # restore_sync_plugin
+    
+    # Verify final content
+    echo "Verifying final content in wp-content directories:"
+    echo "Plugins directory:"
+    ls -la "$PLUGINS_DIR"
+    echo "Themes directory:"
+    ls -la "$THEMES_DIR"
+    
+    # Check if directories have content
+    if [ ! "$(ls -A "$PLUGINS_DIR")" ] || [ ! "$(ls -A "$THEMES_DIR")" ]; then
+        echo "Error: One or more directories are empty after copy"
+        exit 1
     fi
 fi
 
