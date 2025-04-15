@@ -38,6 +38,8 @@ async function processThemes(themesList) {
                 const zipPath = path.join(BASE_DIR, `${theme.slug}.zip`);
 
                 logger.info(`\nProcessing theme: ${theme.slug}`);
+                logger.info(`Theme directory path: ${themeDir}`);
+                logger.info(`Theme zip path: ${zipPath}`);
 
                 // Remove existing theme directory if it exists
                 if (fs.existsSync(themeDir)) {
@@ -107,4 +109,4 @@ const themesList = JSON.parse(fs.readFileSync(0, 'utf-8'));
 processThemes(themesList).catch(error => {
     console.error('❌ Fatal error:', error.message);
     process.exit(1);
-}); 
+});

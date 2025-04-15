@@ -42,6 +42,8 @@ async function processPlugins(pluginsList) {
                 const zipPath = path.join(BASE_DIR, `${plugin.slug}.zip`);
 
                 logger.info(`\nProcessing plugin: ${plugin.slug}`);
+                logger.info(`Plugin directory path: ${pluginDir}`);
+                logger.info(`Plugin zip path: ${zipPath}`);
 
                 // Check dependencies
                 const dependencies = await dependencyChecker.checkDependencies(
@@ -114,7 +116,7 @@ async function processPlugins(pluginsList) {
                 if (fs.existsSync(activationStatesPath)) {
                     try {
                         activationStates = JSON.parse(fs.readFileSync(activationStatesPath, 'utf8'));
-                    // Remove existing entry for this plugin if it exists
+                        // Remove existing entry for this plugin if it exists
                         activationStates.plugins = activationStates.plugins.filter(p => p.slug !== plugin.slug);
                     } catch (error) {
                         logger.warn(`Error reading activation states: ${error.message}`);
@@ -146,4 +148,11 @@ async function processPlugins(pluginsList) {
 }
 
 // Export the main function
-module.exports = { processPlugins }; 
+module.exports = { processPlugins };
+
+// Read plugins list from stdin
+const pluginsList = JSON.parse(fs.readFileSync(0, 'utf-8'));
+processPlugins(pluginsList).catch(error => {
+    console.error('❌ Fatal error:', error.message);
+    process.exit(1);
+});
