@@ -487,7 +487,7 @@ if [ "$PLUGINS_PROCESSED" = true ] && [ "$THEMES_PROCESSED" = true ]; then
     echo "✅ Both plugins and themes processed successfully"
     
     # Restore sync plugin
-    restore_sync_plugin
+    # restore_sync_plugin
     
     # Verify final content
     echo "Verifying final content in wp-content directories:"
