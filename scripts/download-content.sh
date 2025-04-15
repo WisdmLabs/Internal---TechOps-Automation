@@ -402,6 +402,12 @@ backup_existing_content "themes" "$THEMES_DIR" "$THEME_SLUG"
 # Backup sync plugin before starting the sync process
 backup_sync_plugin
 
+# Initialize variables to track processing status
+PLUGINS_PROCESSED=false
+THEMES_PROCESSED=false
+PLUGINS_FAILED=false
+THEMES_FAILED=false
+
 # Download and process plugins from live site
 echo "Fetching plugins list from live site..."
 PLUGINS_RESPONSE_FILE=$(make_api_request "$LIVE_SITE_URL" "$LIVE_SITE_AUTH_TOKEN" "/wp-json/techops/v1/plugins/list" "plugins list")
@@ -413,8 +419,12 @@ if [ ${PLUGINS_EXIT_CODE} -eq 0 ] && [ -f "${PLUGINS_RESPONSE_FILE}" ]; then
     PROCESS_EXIT_CODE=$?
     rm -f "${PLUGINS_RESPONSE_FILE}"
     
-    if [ ${PROCESS_EXIT_CODE} -ne 0 ]; then
-        echo "Error processing plugins data"
+    if [ ${PROCESS_EXIT_CODE} -eq 0 ]; then
+        PLUGINS_PROCESSED=true
+        echo "✅ Plugins processed successfully"
+    else
+        PLUGINS_FAILED=true
+        echo "❌ Error processing plugins data"
         
         # Check if a specific plugin slug was provided
         if [ -n "$PLUGIN_SLUG" ]; then
@@ -422,12 +432,17 @@ if [ ${PLUGINS_EXIT_CODE} -eq 0 ] && [ -f "${PLUGINS_RESPONSE_FILE}" ]; then
         else
             restore_from_backup "plugins" "$PLUGINS_DIR"
         fi
-        
-        exit 1
     fi
 else
-    echo "Error fetching plugins list"
-    exit 1
+    PLUGINS_FAILED=true
+    echo "❌ Error fetching plugins list"
+    
+    # Restore plugins from backup
+    if [ -n "$PLUGIN_SLUG" ]; then
+        restore_from_backup "plugins" "$PLUGINS_DIR" "$PLUGIN_SLUG"
+    else
+        restore_from_backup "plugins" "$PLUGINS_DIR"
+    fi
 fi
 
 # Download and process themes from live site
@@ -441,8 +456,12 @@ if [ ${THEMES_EXIT_CODE} -eq 0 ] && [ -f "${THEMES_RESPONSE_FILE}" ]; then
     PROCESS_EXIT_CODE=$?
     rm -f "${THEMES_RESPONSE_FILE}"
     
-    if [ ${PROCESS_EXIT_CODE} -ne 0 ]; then
-        echo "Error processing themes data"
+    if [ ${PROCESS_EXIT_CODE} -eq 0 ]; then
+        THEMES_PROCESSED=true
+        echo "✅ Themes processed successfully"
+    else
+        THEMES_FAILED=true
+        echo "❌ Error processing themes data"
         
         # Check if a specific theme slug was provided
         if [ -n "$THEME_SLUG" ]; then
@@ -450,54 +469,22 @@ if [ ${THEMES_EXIT_CODE} -eq 0 ] && [ -f "${THEMES_RESPONSE_FILE}" ]; then
         else
             restore_from_backup "themes" "$THEMES_DIR"
         fi
-        
-        exit 1
     fi
 else
-    echo "Error fetching themes list"
-    exit 1
+    THEMES_FAILED=true
+    echo "❌ Error fetching themes list"
+    
+    # Restore themes from backup
+    if [ -n "$THEME_SLUG" ]; then
+        restore_from_backup "themes" "$THEMES_DIR" "$THEME_SLUG"
+    else
+        restore_from_backup "themes" "$THEMES_DIR"
+    fi
 fi
 
-# After successful processing, move content to final location
-if [ ${PROCESS_EXIT_CODE} -eq 0 ]; then
-    echo "Moving processed content to final location..."
-    
-    # Debug: Show contents of backup directories
-    echo "Contents of backup directories before copy:"
-    echo "Plugins backup:"
-    ls -la "${BACKUP_DIR}/plugins"
-    echo "Themes backup:"
-    ls -la "${BACKUP_DIR}/themes"
-    
-    # Clear existing content
-    echo "Clearing existing content..."
-    rm -rf "$PLUGINS_DIR"/*
-    rm -rf "$THEMES_DIR"/*
-    
-    # Move new content from backup with verification
-    if [ -d "${BACKUP_DIR}/plugins" ] && [ "$(ls -A "${BACKUP_DIR}/plugins")" ]; then
-        echo "Copying plugins from backup..."
-        if ! cp -r "${BACKUP_DIR}/plugins"/* "$PLUGINS_DIR"/; then
-            echo "Error: Failed to copy plugins"
-            exit 1
-        fi
-        verify_copy "${BACKUP_DIR}/plugins" "$PLUGINS_DIR"
-    else
-        echo "Error: Plugins backup directory is empty or does not exist"
-        exit 1
-    fi
-    
-    if [ -d "${BACKUP_DIR}/themes" ] && [ "$(ls -A "${BACKUP_DIR}/themes")" ]; then
-        echo "Copying themes from backup..."
-        if ! cp -r "${BACKUP_DIR}/themes"/* "$THEMES_DIR"/; then
-            echo "Error: Failed to copy themes"
-            exit 1
-        fi
-        verify_copy "${BACKUP_DIR}/themes" "$THEMES_DIR"
-    else
-        echo "Error: Themes backup directory is empty or does not exist"
-        exit 1
-    fi
+# Check if both plugins and themes were processed successfully
+if [ "$PLUGINS_PROCESSED" = true ] && [ "$THEMES_PROCESSED" = true ]; then
+    echo "✅ Both plugins and themes processed successfully"
     
     # Restore sync plugin
     restore_sync_plugin
@@ -511,9 +498,23 @@ if [ ${PROCESS_EXIT_CODE} -eq 0 ]; then
     
     # Check if directories have content
     if [ ! "$(ls -A "$PLUGINS_DIR")" ] || [ ! "$(ls -A "$THEMES_DIR")" ]; then
-        echo "Error: One or more directories are empty after copy"
+        echo "❌ Error: One or more directories are empty after processing"
         exit 1
     fi
+else
+    echo "⚠️ Some content processing failed:"
+    if [ "$PLUGINS_FAILED" = true ]; then
+        echo "  - Plugins processing failed"
+    fi
+    if [ "$THEMES_FAILED" = true ]; then
+        echo "  - Themes processing failed"
+    fi
+    
+    # Restore sync plugin
+    restore_sync_plugin
+    
+    # Exit with error
+    exit 1
 fi
 
 echo "Content sync completed successfully!" 
