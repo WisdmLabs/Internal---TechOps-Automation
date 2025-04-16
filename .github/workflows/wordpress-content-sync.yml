@@ -165,33 +165,33 @@ jobs:
             sleep 1
           done
 
-      - name: Create sync branch
-        if: env.CHANGES_FOUND == 'true'
-        run: |
-          # Verify we are still on main branch
-          CURRENT_BRANCH=$(git branch --show-current)
-          if [[ "$CURRENT_BRANCH" != "main" ]]; then
-            echo "❌ Not on main branch. Cannot create sync branch."
-            exit 1
-          fi
+      # - name: Create sync branch
+      #   if: env.CHANGES_FOUND == 'true'
+      #   run: |
+      #     # Verify we are still on main branch
+      #     CURRENT_BRANCH=$(git branch --show-current)
+      #     if [[ "$CURRENT_BRANCH" != "main" ]]; then
+      #       echo "❌ Not on main branch. Cannot create sync branch."
+      #       exit 1
+      #     fi
           
-          # Create a new branch as a clone of main
-          echo "Creating sync branch ${{ env.SYNC_BRANCH }} as a clone of main branch..."
-          git checkout -b ${{ env.SYNC_BRANCH }}
+      #     # Create a new branch as a clone of main
+      #     echo "Creating sync branch ${{ env.SYNC_BRANCH }} as a clone of main branch..."
+      #     git checkout -b ${{ env.SYNC_BRANCH }}
           
-          # Verify the new branch is identical to main
-          MAIN_COMMIT=$(git rev-parse main)
-          SYNC_COMMIT=$(git rev-parse HEAD)
-          if [[ "$MAIN_COMMIT" != "$SYNC_COMMIT" ]]; then
-            echo "❌ Sync branch is not identical to main branch"
-            exit 1
-          fi
+      #     # Verify the new branch is identical to main
+      #     MAIN_COMMIT=$(git rev-parse main)
+      #     SYNC_COMMIT=$(git rev-parse HEAD)
+      #     if [[ "$MAIN_COMMIT" != "$SYNC_COMMIT" ]]; then
+      #       echo "❌ Sync branch is not identical to main branch"
+      #       exit 1
+      #     fi
           
-          echo "✅ Successfully created sync branch ${{ env.SYNC_BRANCH }} as a clone of main"
+      #     echo "✅ Successfully created sync branch ${{ env.SYNC_BRANCH }} as a clone of main"
           
-          # Push the sync branch to remote
-          echo "Pushing sync branch to remote..."
-          git push origin ${{ env.SYNC_BRANCH }}
+      #     # Push the sync branch to remote
+      #     echo "Pushing sync branch to remote..."
+      #     git push origin ${{ env.SYNC_BRANCH }}
         
       - name: Create Pull Request to Release
         if: env.CHANGES_FOUND == 'true'
@@ -221,3 +221,15 @@ jobs:
           echo "PR Number: ${{ steps.create-pr.outputs.pull-request-number }}"
           echo "PR URL: ${{ steps.create-pr.outputs.pull-request-url }}"
           echo "Sync Branch: ${{ env.SYNC_BRANCH }}" 
+          echo "Checking branch status after PR creation..."
+          git fetch --all
+          echo "Remote branches:"
+          git branch -r
+          echo "Local branches:"
+          git branch
+          echo "Branch ${{ env.SYNC_BRANCH }} commit:"
+          git log -1 origin/${{ env.SYNC_BRANCH }}
+          echo "Main branch commit:"
+          git log -1 main
+          echo "Release branch commit:"
+          git log -1 origin/release
