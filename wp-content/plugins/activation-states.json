@@ -82,7 +82,7 @@
     },
     {
       "slug": "wp-security-audit-log",
-      "active": false
+      "active": true
     },
     {
       "slug": "wpforms-lite",
