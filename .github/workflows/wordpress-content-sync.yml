@@ -228,7 +228,7 @@ jobs:
           echo "Local branches:"
           git branch
           echo "Branch ${{ env.SYNC_BRANCH }} commit:"
-          git log -1 origin/${{ env.SYNC_BRANCH }}
+          git log -1 ${{ env.SYNC_BRANCH }}
           echo "Main branch commit:"
           git log -1 main
           echo "Release branch commit:"
