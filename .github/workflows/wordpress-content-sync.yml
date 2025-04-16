@@ -15,6 +15,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write # Added permission for updating repository variables
 
 jobs:
   sync-content:
@@ -23,8 +24,26 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TOKEN_FOR_TECHOPS_AUTOMATION }}
           path: . # This ensures the repo is checked out in the current directory
+      
+      - name: Update Repository Variables
+        run: |
+          # Update LIVE_SITE_URL variable
+          curl -X PATCH \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.TOKEN_FOR_TECHOPS_AUTOMATION }}" \
+            https://api.github.com/repos/${{ github.repository }}/actions/variables/LIVE_SITE_URL \
+            -d "{\"name\":\"LIVE_SITE_URL\",\"value\":\"${{ github.event.inputs.live_site_url }}\"}"
+          
+          # Update STAGING_SITE_URL variable
+          curl -X PATCH \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.TOKEN_FOR_TECHOPS_AUTOMATION }}" \
+            https://api.github.com/repos/${{ github.repository }}/actions/variables/STAGING_SITE_URL \
+            -d "{\"name\":\"STAGING_SITE_URL\",\"value\":\"${{ github.event.inputs.staging_site_url }}\"}"
+          
+          echo "✅ Repository variables updated with current workflow inputs"
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
