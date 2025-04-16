@@ -198,7 +198,7 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          base: release
+          base: main
           branch: ${{ env.SYNC_BRANCH }}
           title: "Sync WordPress Content from Live Site"
           body: |
