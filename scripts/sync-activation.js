@@ -13,6 +13,27 @@ const STAGING_SITE_AUTH_TOKEN = process.env.STAGING_SITE_AUTH_TOKEN;
 const LIVE_SITE_URL = process.env.LIVE_SITE_URL;
 const LIVE_SITE_AUTH_TOKEN = process.env.LIVE_SITE_AUTH_TOKEN;
 
+// List of known security plugins
+const SECURITY_PLUGINS = [
+    'wordfence',
+    'better-wp-security',
+    'sucuri-scanner',
+    'all-in-one-wp-security-and-firewall',
+    'wp-security-audit-log',
+    'shield-security',
+    'wp-hide-security-enhancer',
+    'bulletproof-security',
+    'security-ninja',
+    'defender-security'
+];
+
+// Function to check if a plugin is a security plugin
+function isSecurityPlugin(pluginSlug) {
+    return SECURITY_PLUGINS.some(securityPlugin => 
+        pluginSlug.toLowerCase().includes(securityPlugin)
+    );
+}
+
 // Verify required environment variables with detailed logging
 function validateEnvironment() {
     const missingVars = [];
@@ -167,15 +188,35 @@ async function syncActivationStates() {
             throw error;
         }
 
+        // Separate plugins into regular and security plugins
+        const regularPlugins = [];
+        const securityPlugins = [];
+        
+        activationStates.plugins.forEach(plugin => {
+            if (isSecurityPlugin(plugin.slug)) {
+                logger.info(`Identified security plugin: ${plugin.slug}`);
+                securityPlugins.push(plugin);
+            } else {
+                regularPlugins.push(plugin);
+            }
+        });
+
+        logger.info(`Categorized plugins:`, {
+            regularCount: regularPlugins.length,
+            securityCount: securityPlugins.length
+        });
+
         const changes = {
             activated: [],
             deactivated: [],
             errors: [],
-            skipped: []
+            skipped: [],
+            securityPlugins: [] // Track security plugin operations
         };
 
-        // Sync each plugin's activation state
-        for (const plugin of activationStates.plugins) {
+        // Process regular plugins first
+        logger.info('Processing regular plugins...');
+        for (const plugin of regularPlugins) {
             try {
                 const currentState = stagingStates.get(plugin.slug);
                 if (currentState === undefined) {
@@ -220,12 +261,76 @@ async function syncActivationStates() {
             }
         }
 
+        // Process security plugins last
+        if (securityPlugins.length > 0) {
+            logger.info('Processing security plugins...');
+            for (const plugin of securityPlugins) {
+                try {
+                    const currentState = stagingStates.get(plugin.slug);
+                    if (currentState === undefined) {
+                        logger.warn(`Security plugin not found on staging site: ${plugin.slug}`);
+                        changes.skipped.push({
+                            plugin: plugin.slug,
+                            reason: 'Security plugin not found on staging site'
+                        });
+                        continue;
+                    }
+
+                    if (currentState !== plugin.active) {
+                        logger.info(`State mismatch for security plugin: ${plugin.slug}`, {
+                            current: currentState,
+                            desired: plugin.active
+                        });
+
+                        if (plugin.active) {
+                            await activatePlugin(plugin.slug);
+                            changes.activated.push(plugin.slug);
+                            changes.securityPlugins.push({
+                                plugin: plugin.slug,
+                                action: 'activated'
+                            });
+                        } else {
+                            await deactivatePlugin(plugin.slug);
+                            changes.deactivated.push(plugin.slug);
+                            changes.securityPlugins.push({
+                                plugin: plugin.slug,
+                                action: 'deactivated'
+                            });
+                        }
+
+                        // Add a delay after each security plugin operation
+                        logger.info(`Waiting after security plugin operation: ${plugin.slug}`);
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                    } else {
+                        logger.debug(`Security plugin state already correct: ${plugin.slug}`);
+                        changes.skipped.push({
+                            plugin: plugin.slug,
+                            reason: 'State already correct'
+                        });
+                    }
+                } catch (error) {
+                    logger.error(`Failed to sync security plugin: ${plugin.slug}`, {
+                        error: error.message,
+                        stack: error.stack
+                    });
+                    changes.errors.push({
+                        plugin: plugin.slug,
+                        error: error.message,
+                        stack: error.stack,
+                        isSecurityPlugin: true
+                    });
+                }
+            }
+        }
+
         // Write sync report
         const report = {
             timestamp: new Date().toISOString(),
             changes,
             summary: {
                 total: activationStates.plugins.length,
+                regularPlugins: regularPlugins.length,
+                securityPlugins: securityPlugins.length,
                 activated: changes.activated.length,
                 deactivated: changes.deactivated.length,
                 errors: changes.errors.length,
