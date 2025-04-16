@@ -34,54 +34,90 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Sync activation states
-        id: sync_states
+      - name: Sync theme activation states
+        id: theme_sync_states
         env:
           LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
           STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
-          # Use workflow inputs from the PR if available, otherwise fall back to repository variables
           LIVE_SITE_URL: ${{ github.event.inputs.live_site_url || vars.LIVE_SITE_URL }}
           STAGING_SITE_URL: ${{ github.event.inputs.staging_site_url || vars.STAGING_SITE_URL }}
         run: |
-          echo "Starting plugin activation sync..."
-          # Create a temporary file for error output
+          echo "Starting theme activation sync..."
           ERROR_LOG=$(mktemp)
           
-          # Run the sync script and capture both stdout and stderr
-          if ! node scripts/sync-activation.js 2>&1 | tee -a "$ERROR_LOG"; then
-            # If the script failed, process the error log
+          if ! node scripts/sync-theme-activation.js 2>&1 | tee -a "$ERROR_LOG"; then
             ERROR_MSG=$(cat "$ERROR_LOG" | grep -A 5 "error:" || cat "$ERROR_LOG")
-            echo "sync_successful=false" >> $GITHUB_OUTPUT
-            echo "sync_error<<EOF" >> $GITHUB_OUTPUT
+            echo "theme_sync_successful=false" >> $GITHUB_OUTPUT
+            echo "theme_sync_error<<EOF" >> $GITHUB_OUTPUT
             echo "$ERROR_MSG" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
-            echo "❌ Activation sync failed with error:"
+            echo "❌ Theme activation sync failed with error:"
             echo "$ERROR_MSG"
             rm "$ERROR_LOG"
             exit 1
           fi
           
-          # Check if sync report exists and is valid
-          if [[ -f wp-content/plugins/sync-report.json ]]; then
-            # Read the report and check for errors
-            REPORT_CONTENT=$(cat wp-content/plugins/sync-report.json)
-            ERROR_COUNT=$(echo "$REPORT_CONTENT" | grep -o '"errors":' | wc -l)
-            
-            if [[ $ERROR_COUNT -gt 0 ]]; then
-              echo "sync_successful=false" >> $GITHUB_OUTPUT
-              echo "sync_error<<EOF" >> $GITHUB_OUTPUT
+          if [[ -f wp-content/themes/activation-states.json ]]; then
+            REPORT_CONTENT=$(cat wp-content/themes/activation-states.json)
+            if echo "$REPORT_CONTENT" | grep -q '"sync_status":"error"'; then
+              echo "theme_sync_successful=false" >> $GITHUB_OUTPUT
+              echo "theme_sync_error<<EOF" >> $GITHUB_OUTPUT
               echo "$REPORT_CONTENT" >> $GITHUB_OUTPUT
               echo "EOF" >> $GITHUB_OUTPUT
-              echo "❌ Sync completed with errors. Check the report for details."
+              echo "❌ Theme sync completed with errors. Check the report for details."
               exit 1
             fi
             
-            echo "sync_successful=true" >> $GITHUB_OUTPUT
-            echo "✅ Activation sync completed successfully"
+            echo "theme_sync_successful=true" >> $GITHUB_OUTPUT
+            echo "✅ Theme activation sync completed successfully"
           else
-            echo "sync_successful=false" >> $GITHUB_OUTPUT
-            echo "sync_error=No sync report generated" >> $GITHUB_OUTPUT
-            echo "❌ No sync report found"
+            echo "theme_sync_successful=false" >> $GITHUB_OUTPUT
+            echo "theme_sync_error=No theme sync report generated" >> $GITHUB_OUTPUT
+            echo "❌ No theme sync report found"
+            exit 1
+          fi
+
+      - name: Sync plugin activation states
+        id: plugin_sync_states
+        if: success() || failure()  # Run even if theme sync failed
+        env:
+          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
+          STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
+          LIVE_SITE_URL: ${{ github.event.inputs.live_site_url || vars.LIVE_SITE_URL }}
+          STAGING_SITE_URL: ${{ github.event.inputs.staging_site_url || vars.STAGING_SITE_URL }}
+        run: |
+          echo "Starting plugin activation sync..."
+          ERROR_LOG=$(mktemp)
+          
+          if ! node scripts/sync-activation.js 2>&1 | tee -a "$ERROR_LOG"; then
+            ERROR_MSG=$(cat "$ERROR_LOG" | grep -A 5 "error:" || cat "$ERROR_LOG")
+            echo "plugin_sync_successful=false" >> $GITHUB_OUTPUT
+            echo "plugin_sync_error<<EOF" >> $GITHUB_OUTPUT
+            echo "$ERROR_MSG" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "❌ Plugin activation sync failed with error:"
+            echo "$ERROR_MSG"
+            rm "$ERROR_LOG"
+            exit 1
+          fi
+          
+          if [[ -f wp-content/plugins/sync-report.json ]]; then
+            REPORT_CONTENT=$(cat wp-content/plugins/sync-report.json)
+            if echo "$REPORT_CONTENT" | grep -q '"errors":'; then
+              echo "plugin_sync_successful=false" >> $GITHUB_OUTPUT
+              echo "plugin_sync_error<<EOF" >> $GITHUB_OUTPUT
+              echo "$REPORT_CONTENT" >> $GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
+              echo "❌ Plugin sync completed with errors. Check the report for details."
+              exit 1
+            fi
+            
+            echo "plugin_sync_successful=true" >> $GITHUB_OUTPUT
+            echo "✅ Plugin activation sync completed successfully"
+          else
+            echo "plugin_sync_successful=false" >> $GITHUB_OUTPUT
+            echo "plugin_sync_error=No plugin sync report generated" >> $GITHUB_OUTPUT
+            echo "❌ No plugin sync report found"
             exit 1
           fi
 
@@ -92,9 +128,17 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ## Activation Sync Status
-            ${{ steps.sync_states.outputs.sync_successful == 'true' && '✅ Plugin activation states synchronized successfully' || '❌ Plugin activation sync failed' }}
             
-            ${{ steps.sync_states.outputs.sync_successful != 'true' && format('### Error Details:{0}{1}', '\n```\n', steps.sync_states.outputs.sync_error) || '' }}
-            ${{ steps.sync_states.outputs.sync_successful != 'true' && '\n```' || '' }}
+            ### Theme Activation
+            ${{ steps.theme_sync_states.outputs.theme_sync_successful == 'true' && '✅ Theme activation states synchronized successfully' || '❌ Theme activation sync failed' }}
             
-            Please verify the plugin states on the staging site. 
+            ${{ steps.theme_sync_states.outputs.theme_sync_successful != 'true' && format('#### Theme Error Details:{0}{1}', '\n```\n', steps.theme_sync_states.outputs.theme_sync_error) || '' }}
+            ${{ steps.theme_sync_states.outputs.theme_sync_successful != 'true' && '\n```' || '' }}
+            
+            ### Plugin Activation
+            ${{ steps.plugin_sync_states.outputs.plugin_sync_successful == 'true' && '✅ Plugin activation states synchronized successfully' || '❌ Plugin activation sync failed' }}
+            
+            ${{ steps.plugin_sync_states.outputs.plugin_sync_successful != 'true' && format('#### Plugin Error Details:{0}{1}', '\n```\n', steps.plugin_sync_states.outputs.plugin_sync_error) || '' }}
+            ${{ steps.plugin_sync_states.outputs.plugin_sync_successful != 'true' && '\n```' || '' }}
+            
+            Please verify the theme and plugin states on the staging site. 
