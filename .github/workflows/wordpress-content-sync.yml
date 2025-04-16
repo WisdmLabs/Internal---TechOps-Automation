@@ -212,11 +212,12 @@ jobs:
       #     echo "Pushing sync branch to remote..."
       #     git push origin ${{ env.SYNC_BRANCH }}
         
-      - name: Create Pull Request to Release
+      - name: Create Pull Request to Main
+        id: create-pr
         if: env.CHANGES_FOUND == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TOKEN_FOR_TECHOPS_AUTOMATION }}
           base: main
           branch: ${{ env.SYNC_BRANCH }}
           title: "Sync WordPress Content from Live Site"
@@ -229,9 +230,44 @@ jobs:
             
             Note: After merging this PR, the activation sync workflow will automatically run.
           delete-branch: false
-          # labels: |
-          #   automated
-          #   wordpress-sync
+
+      - name: Retry PR Creation if Failed
+        if: env.CHANGES_FOUND == 'true' && steps.create-pr.outcome != 'success'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.TOKEN_FOR_TECHOPS_AUTOMATION }}
+          script: |
+            const maxRetries = 3;
+            const baseDelay = 5000; // 5 seconds
+            
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+              try {
+                const pr = await github.rest.pulls.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: 'Sync WordPress Content from Live Site',
+                  head: '${{ env.SYNC_BRANCH }}',
+                  base: 'main',
+                  body: `This PR syncs the latest WordPress content changes from live site to release branch.
+                  
+                  Changes include:
+                  - Updated plugins
+                  - Updated themes
+                  
+                  Note: After merging this PR, the activation sync workflow will automatically run.`
+                });
+                console.log(`✅ PR created successfully on attempt ${attempt}`);
+                break;
+              } catch (error) {
+                if (attempt === maxRetries) {
+                  console.error('Failed to create PR after all retries');
+                  throw error;
+                }
+                const delay = baseDelay * Math.pow(2, attempt - 1);
+                console.log(`Attempt ${attempt} failed, retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+              }
+            }
 
       - name: PR Creation Debug
         if: always()
