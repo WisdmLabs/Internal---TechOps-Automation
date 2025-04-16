@@ -44,13 +44,44 @@ jobs:
           STAGING_SITE_URL: ${{ github.event.inputs.staging_site_url || vars.STAGING_SITE_URL }}
         run: |
           echo "Starting plugin activation sync..."
-          node scripts/sync-activation.js
+          # Create a temporary file for error output
+          ERROR_LOG=$(mktemp)
+          
+          # Run the sync script and capture both stdout and stderr
+          if ! node scripts/sync-activation.js 2>&1 | tee -a "$ERROR_LOG"; then
+            # If the script failed, process the error log
+            ERROR_MSG=$(cat "$ERROR_LOG" | grep -A 5 "error:" || cat "$ERROR_LOG")
+            echo "sync_successful=false" >> $GITHUB_OUTPUT
+            echo "sync_error<<EOF" >> $GITHUB_OUTPUT
+            echo "$ERROR_MSG" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "❌ Activation sync failed with error:"
+            echo "$ERROR_MSG"
+            rm "$ERROR_LOG"
+            exit 1
+          fi
+          
+          # Check if sync report exists and is valid
           if [[ -f wp-content/plugins/sync-report.json ]]; then
+            # Read the report and check for errors
+            REPORT_CONTENT=$(cat wp-content/plugins/sync-report.json)
+            ERROR_COUNT=$(echo "$REPORT_CONTENT" | grep -o '"errors":' | wc -l)
+            
+            if [[ $ERROR_COUNT -gt 0 ]]; then
+              echo "sync_successful=false" >> $GITHUB_OUTPUT
+              echo "sync_error<<EOF" >> $GITHUB_OUTPUT
+              echo "$REPORT_CONTENT" >> $GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
+              echo "❌ Sync completed with errors. Check the report for details."
+              exit 1
+            fi
+            
             echo "sync_successful=true" >> $GITHUB_OUTPUT
-            echo "Activation sync completed successfully"
+            echo "✅ Activation sync completed successfully"
           else
             echo "sync_successful=false" >> $GITHUB_OUTPUT
-            echo "Activation sync failed"
+            echo "sync_error=No sync report generated" >> $GITHUB_OUTPUT
+            echo "❌ No sync report found"
             exit 1
           fi
 
@@ -62,5 +93,8 @@ jobs:
           body: |
             ## Activation Sync Status
             ${{ steps.sync_states.outputs.sync_successful == 'true' && '✅ Plugin activation states synchronized successfully' || '❌ Plugin activation sync failed' }}
+            
+            ${{ steps.sync_states.outputs.sync_successful != 'true' && format('### Error Details:{0}{1}', '\n```\n', steps.sync_states.outputs.sync_error) || '' }}
+            ${{ steps.sync_states.outputs.sync_successful != 'true' && '\n```' || '' }}
             
             Please verify the plugin states on the staging site. 
