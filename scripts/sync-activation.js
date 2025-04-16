@@ -13,10 +13,11 @@ const STAGING_SITE_AUTH_TOKEN = process.env.STAGING_SITE_AUTH_TOKEN;
 const LIVE_SITE_URL = process.env.LIVE_SITE_URL;
 const LIVE_SITE_AUTH_TOKEN = process.env.LIVE_SITE_AUTH_TOKEN;
 
-// List of known security plugins
+// List of known security plugins with exact slugs
 const SECURITY_PLUGINS = [
     'wordfence',
     'better-wp-security',
+    'ithemes-security-pro',
     'sucuri-scanner',
     'all-in-one-wp-security-and-firewall',
     'wp-security-audit-log',
@@ -29,9 +30,8 @@ const SECURITY_PLUGINS = [
 
 // Function to check if a plugin is a security plugin
 function isSecurityPlugin(pluginSlug) {
-    return SECURITY_PLUGINS.some(securityPlugin => 
-        pluginSlug.toLowerCase().includes(securityPlugin)
-    );
+    // Exact match only
+    return SECURITY_PLUGINS.includes(pluginSlug.toLowerCase());
 }
 
 // Verify required environment variables with detailed logging
@@ -211,6 +211,7 @@ async function syncActivationStates() {
             deactivated: [],
             errors: [],
             skipped: [],
+            already_matched: [], // New category for plugins already in correct state
             securityPlugins: [] // Track security plugin operations
         };
 
@@ -242,10 +243,12 @@ async function syncActivationStates() {
                         changes.deactivated.push(plugin.slug);
                     }
                 } else {
-                    logger.debug(`Plugin state already correct: ${plugin.slug}`);
-                    changes.skipped.push({
+                    logger.info(`Plugin state already correct: ${plugin.slug}`, {
+                        state: currentState ? 'activated' : 'deactivated'
+                    });
+                    changes.already_matched.push({
                         plugin: plugin.slug,
-                        reason: 'State already correct'
+                        state: currentState ? 'activated' : 'deactivated'
                     });
                 }
             } catch (error) {
@@ -302,10 +305,13 @@ async function syncActivationStates() {
                         logger.info(`Waiting after security plugin operation: ${plugin.slug}`);
                         await new Promise(resolve => setTimeout(resolve, 5000));
                     } else {
-                        logger.debug(`Security plugin state already correct: ${plugin.slug}`);
-                        changes.skipped.push({
+                        logger.info(`Security plugin state already correct: ${plugin.slug}`, {
+                            state: currentState ? 'activated' : 'deactivated'
+                        });
+                        changes.already_matched.push({
                             plugin: plugin.slug,
-                            reason: 'State already correct'
+                            state: currentState ? 'activated' : 'deactivated',
+                            isSecurityPlugin: true
                         });
                     }
                 } catch (error) {
@@ -333,6 +339,7 @@ async function syncActivationStates() {
                 securityPlugins: securityPlugins.length,
                 activated: changes.activated.length,
                 deactivated: changes.deactivated.length,
+                already_matched: changes.already_matched.length,
                 errors: changes.errors.length,
                 skipped: changes.skipped.length
             }
@@ -351,6 +358,7 @@ async function syncActivationStates() {
             throw error;
         }
 
+        // Only throw error if there are actual errors, not just matches
         if (changes.errors.length > 0) {
             const errorMsg = `Sync completed with ${changes.errors.length} errors`;
             logger.error(errorMsg, { errors: changes.errors });
