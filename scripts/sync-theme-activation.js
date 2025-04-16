@@ -13,28 +13,106 @@ const LIVE_SITE_URL = process.env.LIVE_SITE_URL;
 const LIVE_SITE_AUTH_TOKEN = process.env.LIVE_SITE_AUTH_TOKEN;
 
 const REPORT_PATH = path.join(process.cwd(), 'wp-content', 'themes', 'activation-states.json');
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000; // 2 seconds
 
-async function makeApiRequest(url, options) {
+// Validate environment variables
+function validateEnvironment() {
+    const requiredVars = {
+        STAGING_SITE_URL,
+        STAGING_SITE_AUTH_TOKEN,
+        LIVE_SITE_URL,
+        LIVE_SITE_AUTH_TOKEN
+    };
+
+    const missingVars = Object.entries(requiredVars)
+        .filter(([, value]) => !value)
+        .map(([key]) => key);
+
+    if (missingVars.length > 0) {
+        throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+    }
+
+    // Validate URL formats
     try {
+        new URL(STAGING_SITE_URL);
+        new URL(LIVE_SITE_URL);
+    } catch (error) {
+        throw new Error(`Invalid URL format: ${error.message}`);
+    }
+}
+
+// Helper function for delay
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+async function makeApiRequest(url, options, retryCount = 0) {
+    try {
+        logger.info('Making API request', { 
+            url,
+            method: options.method || 'GET',
+            attempt: retryCount + 1
+        });
+
         const response = await fetch(url, {
             ...options,
             headers: {
                 ...options.headers,
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'User-Agent': 'TechOps-Theme-Sync/1.0'
             }
         });
 
+        const responseText = await response.text();
+        let responseData;
+
+        try {
+            responseData = JSON.parse(responseText);
+        } catch (parseError) {
+            logger.error('Failed to parse response as JSON', {
+                url,
+                responseText,
+                error: parseError.message
+            });
+            
+            if (retryCount < MAX_RETRIES) {
+                logger.info(`Retrying request (${retryCount + 1}/${MAX_RETRIES})...`);
+                await delay(RETRY_DELAY * Math.pow(2, retryCount));
+                return makeApiRequest(url, options, retryCount + 1);
+            }
+            throw new Error('Invalid JSON response from API');
+        }
+
         if (!response.ok) {
+            const errorDetails = {
+                status: response.status,
+                statusText: response.statusText,
+                body: responseData,
+                url,
+                method: options.method || 'GET'
+            };
+            logger.error('API request failed', errorDetails);
+
+            if (retryCount < MAX_RETRIES) {
+                logger.info(`Retrying request (${retryCount + 1}/${MAX_RETRIES})...`);
+                await delay(RETRY_DELAY * Math.pow(2, retryCount));
+                return makeApiRequest(url, options, retryCount + 1);
+            }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
-        return data;
+        return responseData;
     } catch (error) {
-        logger.error(`API request failed: ${url}`, {
-            error: error.message,
-            stack: error.stack
-        });
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            logger.error('Network error', {
+                url,
+                error: error.message
+            });
+            if (retryCount < MAX_RETRIES) {
+                logger.info(`Retrying request (${retryCount + 1}/${MAX_RETRIES})...`);
+                await delay(RETRY_DELAY * Math.pow(2, retryCount));
+                return makeApiRequest(url, options, retryCount + 1);
+            }
+        }
         throw error;
     }
 }
@@ -51,17 +129,35 @@ async function getThemeStates(siteUrl, authToken) {
             }
         );
 
-        if (!result.themes || !Array.isArray(result.themes)) {
-            throw new Error('Invalid theme list response format');
+        // Handle different response formats
+        let themes;
+        if (Array.isArray(result)) {
+            themes = result;
+        } else if (result.themes && Array.isArray(result.themes)) {
+            themes = result.themes;
+        } else if (typeof result === 'object') {
+            // Try to extract theme information from object
+            themes = Object.entries(result)
+                .filter(([, value]) => typeof value === 'object' && value.stylesheet)
+                .map(([slug, data]) => ({
+                    slug,
+                    active: data.active || false,
+                    name: data.name || slug
+                }));
         }
 
-        return result.themes;
+        if (!themes || themes.length === 0) {
+            logger.warn('No themes found in response', { siteUrl, responseData: result });
+            return [];
+        }
+
+        return themes;
     } catch (error) {
         logger.error(`Failed to get theme states from ${siteUrl}`, {
             error: error.message,
             stack: error.stack
         });
-        throw error;
+        return [];
     }
 }
 
@@ -75,12 +171,13 @@ async function activateTheme(themeSlug) {
                 headers: {
                     'Authorization': `Basic ${STAGING_SITE_AUTH_TOKEN}`,
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({ theme: themeSlug })
             }
         );
 
-        if (!result.success) {
-            throw new Error(`Failed to activate theme: ${themeSlug}`);
+        if (!result.success && result.status !== 'active') {
+            throw new Error(`Failed to activate theme: ${themeSlug} - ${result.message || 'Unknown error'}`);
         }
 
         logger.info(`Successfully activated theme: ${themeSlug}`);
@@ -94,31 +191,45 @@ async function activateTheme(themeSlug) {
     }
 }
 
-async function writeReport(report) {
+async function ensureReportDirectory() {
+    const reportDir = path.dirname(REPORT_PATH);
     try {
-        const reportDir = path.dirname(REPORT_PATH);
         if (!fs.existsSync(reportDir)) {
             fs.mkdirSync(reportDir, { recursive: true });
+            logger.info(`Created report directory: ${reportDir}`);
+        }
+        return true;
+    } catch (error) {
+        logger.error('Failed to create report directory', {
+            dir: reportDir,
+            error: error.message
+        });
+        return false;
+    }
+}
+
+async function writeReport(report) {
+    try {
+        if (!await ensureReportDirectory()) {
+            throw new Error('Failed to ensure report directory exists');
         }
 
         fs.writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2));
         logger.info(`Theme activation report written to ${REPORT_PATH}`);
+        return true;
     } catch (error) {
         logger.error('Failed to write theme activation report', {
             error: error.message,
             stack: error.stack
         });
-        throw error;
+        return false;
     }
 }
 
 async function syncThemeActivation() {
     try {
         logger.info('Starting theme activation sync');
-
-        // Get theme states from both sites
-        const liveThemes = await getThemeStates(LIVE_SITE_URL, LIVE_SITE_AUTH_TOKEN);
-        const stagingThemes = await getThemeStates(STAGING_SITE_URL, STAGING_SITE_AUTH_TOKEN);
+        validateEnvironment();
 
         const changes = {
             activated: [],
@@ -127,10 +238,32 @@ async function syncThemeActivation() {
             timestamp: new Date().toISOString()
         };
 
+        // Get theme states from both sites
+        const [liveThemes, stagingThemes] = await Promise.all([
+            getThemeStates(LIVE_SITE_URL, LIVE_SITE_AUTH_TOKEN),
+            getThemeStates(STAGING_SITE_URL, STAGING_SITE_AUTH_TOKEN)
+        ]);
+
+        if (liveThemes.length === 0) {
+            logger.warn('No themes found in live site, creating fallback report');
+            const fallbackReport = {
+                themes: [],
+                meta: {
+                    last_sync_timestamp: changes.timestamp,
+                    sync_version: '1.0',
+                    status: 'warning',
+                    message: 'No themes found in live site'
+                }
+            };
+            await writeReport(fallbackReport);
+            return changes;
+        }
+
         // Find active theme in live site
         const activeTheme = liveThemes.find(theme => theme.active);
         if (!activeTheme) {
-            throw new Error('No active theme found in live site');
+            logger.warn('No active theme found in live site, using first available theme');
+            activeTheme = liveThemes[0];
         }
 
         // Check if theme needs activation in staging
@@ -174,7 +307,10 @@ async function syncThemeActivation() {
             }
         };
 
-        await writeReport(report);
+        const reportWritten = await writeReport(report);
+        if (!reportWritten) {
+            logger.warn('Failed to write report, but sync process completed');
+        }
 
         if (changes.errors.length > 0) {
             throw new Error(`Theme sync completed with ${changes.errors.length} errors`);
@@ -191,6 +327,19 @@ async function syncThemeActivation() {
             error: error.message,
             stack: error.stack
         });
+
+        // Try to write error report
+        const errorReport = {
+            themes: [],
+            meta: {
+                last_sync_timestamp: new Date().toISOString(),
+                sync_version: '1.0',
+                status: 'error',
+                error: error.message
+            }
+        };
+        await writeReport(errorReport).catch(() => {});
+
         throw error;
     }
 }
