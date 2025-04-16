@@ -210,9 +210,9 @@ jobs:
             
             Note: After merging this PR, the activation sync workflow will automatically run.
           delete-branch: false
-          labels: |
-            automated
-            wordpress-sync
+          # labels: |
+          #   automated
+          #   wordpress-sync
 
       - name: PR Creation Debug
         if: always()
