@@ -703,3 +703,246 @@
 {"timestamp":"2025-04-15T13:48:55.301Z","level":"info","message":"Updated activation state for wordpress-seo","details":{}}
 {"timestamp":"2025-04-15T13:48:55.301Z","level":"info","message":"✅ Successfully processed wordpress-seo","details":{}}
 {"timestamp":"2025-04-15T13:48:55.301Z","level":"info","message":"\n✅ Plugin processing completed successfully","details":{}}
+{"timestamp":"2025-04-16T04:43:30.865Z","level":"info","message":"Skipping excluded plugin: techops-content-sync","details":{}}
+{"timestamp":"2025-04-16T04:43:30.867Z","level":"info","message":"Processing 24 plugins...","details":{}}
+{"timestamp":"2025-04-16T04:43:30.867Z","level":"info","message":"\nProcessing plugin: akismet","details":{}}
+{"timestamp":"2025-04-16T04:43:30.868Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/akismet","details":{}}
+{"timestamp":"2025-04-16T04:43:30.868Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/akismet.zip","details":{}}
+{"timestamp":"2025-04-16T04:43:32.285Z","level":"info","message":"Removing existing akismet directory...","details":{}}
+{"timestamp":"2025-04-16T04:43:32.289Z","level":"info","message":"Downloading akismet...","details":{}}
+{"timestamp":"2025-04-16T04:43:33.494Z","level":"info","message":"Extracting akismet...","details":{}}
+{"timestamp":"2025-04-16T04:43:33.502Z","level":"info","message":"Verifying akismet contents...","details":{}}
+{"timestamp":"2025-04-16T04:43:33.502Z","level":"info","message":"Plugin directory contains 14 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:43:33.503Z","level":"info","message":"Updated activation state for akismet","details":{}}
+{"timestamp":"2025-04-16T04:43:33.503Z","level":"info","message":"✅ Successfully processed akismet","details":{}}
+{"timestamp":"2025-04-16T04:43:33.503Z","level":"info","message":"\nProcessing plugin: bbpress","details":{}}
+{"timestamp":"2025-04-16T04:43:33.503Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/bbpress","details":{}}
+{"timestamp":"2025-04-16T04:43:33.503Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/bbpress.zip","details":{}}
+{"timestamp":"2025-04-16T04:43:34.816Z","level":"info","message":"Removing existing bbpress directory...","details":{}}
+{"timestamp":"2025-04-16T04:43:34.829Z","level":"info","message":"Downloading bbpress...","details":{}}
+{"timestamp":"2025-04-16T04:43:36.515Z","level":"info","message":"Extracting bbpress...","details":{}}
+{"timestamp":"2025-04-16T04:43:36.550Z","level":"info","message":"Verifying bbpress contents...","details":{}}
+{"timestamp":"2025-04-16T04:43:36.550Z","level":"info","message":"Plugin directory contains 9 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:43:36.550Z","level":"info","message":"Updated activation state for bbpress","details":{}}
+{"timestamp":"2025-04-16T04:43:36.550Z","level":"info","message":"✅ Successfully processed bbpress","details":{}}
+{"timestamp":"2025-04-16T04:43:36.551Z","level":"info","message":"\nProcessing plugin: breeze","details":{}}
+{"timestamp":"2025-04-16T04:43:36.551Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/breeze","details":{}}
+{"timestamp":"2025-04-16T04:43:36.551Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/breeze.zip","details":{}}
+{"timestamp":"2025-04-16T04:43:37.907Z","level":"info","message":"Removing existing breeze directory...","details":{}}
+{"timestamp":"2025-04-16T04:43:37.927Z","level":"info","message":"Downloading breeze...","details":{}}
+{"timestamp":"2025-04-16T04:43:39.871Z","level":"info","message":"Extracting breeze...","details":{}}
+{"timestamp":"2025-04-16T04:43:39.910Z","level":"info","message":"Verifying breeze contents...","details":{}}
+{"timestamp":"2025-04-16T04:43:39.910Z","level":"info","message":"Plugin directory contains 10 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:43:39.910Z","level":"info","message":"Updated activation state for breeze","details":{}}
+{"timestamp":"2025-04-16T04:43:39.910Z","level":"info","message":"✅ Successfully processed breeze","details":{}}
+{"timestamp":"2025-04-16T04:43:39.910Z","level":"info","message":"\nProcessing plugin: advanced-nocaptcha-recaptcha","details":{}}
+{"timestamp":"2025-04-16T04:43:39.911Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/advanced-nocaptcha-recaptcha","details":{}}
+{"timestamp":"2025-04-16T04:43:39.911Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/advanced-nocaptcha-recaptcha.zip","details":{}}
+{"timestamp":"2025-04-16T04:43:41.299Z","level":"info","message":"Removing existing advanced-nocaptcha-recaptcha directory...","details":{}}
+{"timestamp":"2025-04-16T04:43:41.302Z","level":"info","message":"Downloading advanced-nocaptcha-recaptcha...","details":{}}
+{"timestamp":"2025-04-16T04:43:42.688Z","level":"info","message":"Extracting advanced-nocaptcha-recaptcha...","details":{}}
+{"timestamp":"2025-04-16T04:43:42.697Z","level":"info","message":"Verifying advanced-nocaptcha-recaptcha contents...","details":{}}
+{"timestamp":"2025-04-16T04:43:42.697Z","level":"info","message":"Plugin directory contains 9 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:43:42.697Z","level":"info","message":"Updated activation state for advanced-nocaptcha-recaptcha","details":{}}
+{"timestamp":"2025-04-16T04:43:42.697Z","level":"info","message":"✅ Successfully processed advanced-nocaptcha-recaptcha","details":{}}
+{"timestamp":"2025-04-16T04:43:42.697Z","level":"info","message":"\nProcessing plugin: classic-editor","details":{}}
+{"timestamp":"2025-04-16T04:43:42.697Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/classic-editor","details":{}}
+{"timestamp":"2025-04-16T04:43:42.698Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/classic-editor.zip","details":{}}
+{"timestamp":"2025-04-16T04:43:44.032Z","level":"info","message":"Removing existing classic-editor directory...","details":{}}
+{"timestamp":"2025-04-16T04:43:44.032Z","level":"info","message":"Downloading classic-editor...","details":{}}
+{"timestamp":"2025-04-16T04:43:44.900Z","level":"info","message":"Extracting classic-editor...","details":{}}
+{"timestamp":"2025-04-16T04:43:44.905Z","level":"info","message":"Verifying classic-editor contents...","details":{}}
+{"timestamp":"2025-04-16T04:43:44.905Z","level":"info","message":"Plugin directory contains 5 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:43:44.905Z","level":"info","message":"Updated activation state for classic-editor","details":{}}
+{"timestamp":"2025-04-16T04:43:44.906Z","level":"info","message":"✅ Successfully processed classic-editor","details":{}}
+{"timestamp":"2025-04-16T04:43:44.906Z","level":"info","message":"\nProcessing plugin: contact-form-7","details":{}}
+{"timestamp":"2025-04-16T04:43:44.906Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/contact-form-7","details":{}}
+{"timestamp":"2025-04-16T04:43:44.906Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/contact-form-7.zip","details":{}}
+{"timestamp":"2025-04-16T04:43:46.263Z","level":"info","message":"Removing existing contact-form-7 directory...","details":{}}
+{"timestamp":"2025-04-16T04:43:46.272Z","level":"info","message":"Downloading contact-form-7...","details":{}}
+{"timestamp":"2025-04-16T04:43:47.626Z","level":"info","message":"Extracting contact-form-7...","details":{}}
+{"timestamp":"2025-04-16T04:43:47.643Z","level":"info","message":"Verifying contact-form-7 contents...","details":{}}
+{"timestamp":"2025-04-16T04:43:47.643Z","level":"info","message":"Plugin directory contains 10 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:43:47.644Z","level":"info","message":"Updated activation state for contact-form-7","details":{}}
+{"timestamp":"2025-04-16T04:43:47.644Z","level":"info","message":"✅ Successfully processed contact-form-7","details":{}}
+{"timestamp":"2025-04-16T04:43:47.644Z","level":"info","message":"\nProcessing plugin: db-access-adminer","details":{}}
+{"timestamp":"2025-04-16T04:43:47.644Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/db-access-adminer","details":{}}
+{"timestamp":"2025-04-16T04:43:47.644Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/db-access-adminer.zip","details":{}}
+{"timestamp":"2025-04-16T04:43:48.964Z","level":"info","message":"Removing existing db-access-adminer directory...","details":{}}
+{"timestamp":"2025-04-16T04:43:48.965Z","level":"info","message":"Downloading db-access-adminer...","details":{}}
+{"timestamp":"2025-04-16T04:43:50.371Z","level":"info","message":"Extracting db-access-adminer...","details":{}}
+{"timestamp":"2025-04-16T04:43:50.383Z","level":"info","message":"Verifying db-access-adminer contents...","details":{}}
+{"timestamp":"2025-04-16T04:43:50.383Z","level":"info","message":"Plugin directory contains 17 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:43:50.383Z","level":"info","message":"Updated activation state for db-access-adminer","details":{}}
+{"timestamp":"2025-04-16T04:43:50.383Z","level":"info","message":"✅ Successfully processed db-access-adminer","details":{}}
+{"timestamp":"2025-04-16T04:43:50.383Z","level":"info","message":"\nProcessing plugin: download-plugins-dashboard","details":{}}
+{"timestamp":"2025-04-16T04:43:50.383Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/download-plugins-dashboard","details":{}}
+{"timestamp":"2025-04-16T04:43:50.383Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/download-plugins-dashboard.zip","details":{}}
+{"timestamp":"2025-04-16T04:43:51.719Z","level":"info","message":"Removing existing download-plugins-dashboard directory...","details":{}}
+{"timestamp":"2025-04-16T04:43:51.723Z","level":"info","message":"Downloading download-plugins-dashboard...","details":{}}
+{"timestamp":"2025-04-16T04:43:52.768Z","level":"info","message":"Extracting download-plugins-dashboard...","details":{}}
+{"timestamp":"2025-04-16T04:43:52.774Z","level":"info","message":"Verifying download-plugins-dashboard contents...","details":{}}
+{"timestamp":"2025-04-16T04:43:52.774Z","level":"info","message":"Plugin directory contains 7 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:43:52.775Z","level":"info","message":"Updated activation state for download-plugins-dashboard","details":{}}
+{"timestamp":"2025-04-16T04:43:52.775Z","level":"info","message":"✅ Successfully processed download-plugins-dashboard","details":{}}
+{"timestamp":"2025-04-16T04:43:52.775Z","level":"info","message":"\nProcessing plugin: email-log","details":{}}
+{"timestamp":"2025-04-16T04:43:52.775Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/email-log","details":{}}
+{"timestamp":"2025-04-16T04:43:52.775Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/email-log.zip","details":{}}
+{"timestamp":"2025-04-16T04:43:54.132Z","level":"info","message":"Removing existing email-log directory...","details":{}}
+{"timestamp":"2025-04-16T04:43:54.139Z","level":"info","message":"Downloading email-log...","details":{}}
+{"timestamp":"2025-04-16T04:43:55.353Z","level":"info","message":"Extracting email-log...","details":{}}
+{"timestamp":"2025-04-16T04:43:55.363Z","level":"info","message":"Verifying email-log contents...","details":{}}
+{"timestamp":"2025-04-16T04:43:55.363Z","level":"info","message":"Plugin directory contains 9 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:43:55.364Z","level":"info","message":"Updated activation state for email-log","details":{}}
+{"timestamp":"2025-04-16T04:43:55.364Z","level":"info","message":"✅ Successfully processed email-log","details":{}}
+{"timestamp":"2025-04-16T04:43:55.364Z","level":"info","message":"\nProcessing plugin: googleanalytics.php","details":{}}
+{"timestamp":"2025-04-16T04:43:55.364Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/googleanalytics.php","details":{}}
+{"timestamp":"2025-04-16T04:43:55.364Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/googleanalytics.php.zip","details":{}}
+{"timestamp":"2025-04-16T04:43:57.368Z","level":"info","message":"Removing existing googleanalytics.php directory...","details":{}}
+{"timestamp":"2025-04-16T04:43:58.067Z","level":"info","message":"Downloading googleanalytics.php...","details":{}}
+{"timestamp":"2025-04-16T04:44:21.578Z","level":"info","message":"Extracting googleanalytics.php...","details":{}}
+{"timestamp":"2025-04-16T04:44:23.592Z","level":"info","message":"Verifying googleanalytics.php contents...","details":{}}
+{"timestamp":"2025-04-16T04:44:23.592Z","level":"info","message":"Plugin directory contains 40 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:44:23.592Z","level":"info","message":"Updated activation state for googleanalytics.php","details":{}}
+{"timestamp":"2025-04-16T04:44:23.593Z","level":"info","message":"✅ Successfully processed googleanalytics.php","details":{}}
+{"timestamp":"2025-04-16T04:44:23.593Z","level":"info","message":"\nProcessing plugin: hcaptcha-for-forms-and-more","details":{}}
+{"timestamp":"2025-04-16T04:44:23.593Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/hcaptcha-for-forms-and-more","details":{}}
+{"timestamp":"2025-04-16T04:44:23.593Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/hcaptcha-for-forms-and-more.zip","details":{}}
+{"timestamp":"2025-04-16T04:44:24.970Z","level":"info","message":"Removing existing hcaptcha-for-forms-and-more directory...","details":{}}
+{"timestamp":"2025-04-16T04:44:24.999Z","level":"info","message":"Downloading hcaptcha-for-forms-and-more...","details":{}}
+{"timestamp":"2025-04-16T04:44:26.794Z","level":"info","message":"Extracting hcaptcha-for-forms-and-more...","details":{}}
+{"timestamp":"2025-04-16T04:44:26.851Z","level":"info","message":"Verifying hcaptcha-for-forms-and-more contents...","details":{}}
+{"timestamp":"2025-04-16T04:44:26.851Z","level":"info","message":"Plugin directory contains 11 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:44:26.852Z","level":"info","message":"Updated activation state for hcaptcha-for-forms-and-more","details":{}}
+{"timestamp":"2025-04-16T04:44:26.852Z","level":"info","message":"✅ Successfully processed hcaptcha-for-forms-and-more","details":{}}
+{"timestamp":"2025-04-16T04:44:26.852Z","level":"info","message":"\nProcessing plugin: hello.php","details":{}}
+{"timestamp":"2025-04-16T04:44:26.852Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/hello.php","details":{}}
+{"timestamp":"2025-04-16T04:44:26.852Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/hello.php.zip","details":{}}
+{"timestamp":"2025-04-16T04:44:28.204Z","level":"info","message":"Removing existing hello.php directory...","details":{}}
+{"timestamp":"2025-04-16T04:44:28.905Z","level":"info","message":"Downloading hello.php...","details":{}}
+{"timestamp":"2025-04-16T04:44:49.138Z","level":"info","message":"Extracting hello.php...","details":{}}
+{"timestamp":"2025-04-16T04:44:51.162Z","level":"info","message":"Verifying hello.php contents...","details":{}}
+{"timestamp":"2025-04-16T04:44:51.163Z","level":"info","message":"Plugin directory contains 40 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:44:51.163Z","level":"info","message":"Updated activation state for hello.php","details":{}}
+{"timestamp":"2025-04-16T04:44:51.163Z","level":"info","message":"✅ Successfully processed hello.php","details":{}}
+{"timestamp":"2025-04-16T04:44:51.163Z","level":"info","message":"\nProcessing plugin: wp-maintenance-mode","details":{}}
+{"timestamp":"2025-04-16T04:44:51.163Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/wp-maintenance-mode","details":{}}
+{"timestamp":"2025-04-16T04:44:51.163Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/wp-maintenance-mode.zip","details":{}}
+{"timestamp":"2025-04-16T04:44:52.576Z","level":"info","message":"Removing existing wp-maintenance-mode directory...","details":{}}
+{"timestamp":"2025-04-16T04:44:52.591Z","level":"info","message":"Downloading wp-maintenance-mode...","details":{}}
+{"timestamp":"2025-04-16T04:44:55.162Z","level":"info","message":"Extracting wp-maintenance-mode...","details":{}}
+{"timestamp":"2025-04-16T04:44:55.271Z","level":"info","message":"Verifying wp-maintenance-mode contents...","details":{}}
+{"timestamp":"2025-04-16T04:44:55.271Z","level":"info","message":"Plugin directory contains 11 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:44:55.272Z","level":"info","message":"Updated activation state for wp-maintenance-mode","details":{}}
+{"timestamp":"2025-04-16T04:44:55.272Z","level":"info","message":"✅ Successfully processed wp-maintenance-mode","details":{}}
+{"timestamp":"2025-04-16T04:44:55.272Z","level":"info","message":"\nProcessing plugin: object-cache-pro","details":{}}
+{"timestamp":"2025-04-16T04:44:55.272Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/object-cache-pro","details":{}}
+{"timestamp":"2025-04-16T04:44:55.272Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/object-cache-pro.zip","details":{}}
+{"timestamp":"2025-04-16T04:44:56.659Z","level":"info","message":"Removing existing object-cache-pro directory...","details":{}}
+{"timestamp":"2025-04-16T04:44:56.668Z","level":"info","message":"Downloading object-cache-pro...","details":{}}
+{"timestamp":"2025-04-16T04:44:58.081Z","level":"info","message":"Extracting object-cache-pro...","details":{}}
+{"timestamp":"2025-04-16T04:44:58.102Z","level":"info","message":"Verifying object-cache-pro contents...","details":{}}
+{"timestamp":"2025-04-16T04:44:58.102Z","level":"info","message":"Plugin directory contains 10 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:44:58.102Z","level":"info","message":"Updated activation state for object-cache-pro","details":{}}
+{"timestamp":"2025-04-16T04:44:58.102Z","level":"info","message":"✅ Successfully processed object-cache-pro","details":{}}
+{"timestamp":"2025-04-16T04:44:58.102Z","level":"info","message":"\nProcessing plugin: otter-blocks","details":{}}
+{"timestamp":"2025-04-16T04:44:58.103Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/otter-blocks","details":{}}
+{"timestamp":"2025-04-16T04:44:58.103Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/otter-blocks.zip","details":{}}
+{"timestamp":"2025-04-16T04:44:59.404Z","level":"info","message":"Removing existing otter-blocks directory...","details":{}}
+{"timestamp":"2025-04-16T04:44:59.459Z","level":"info","message":"Downloading otter-blocks...","details":{}}
+{"timestamp":"2025-04-16T04:45:03.149Z","level":"info","message":"Extracting otter-blocks...","details":{}}
+{"timestamp":"2025-04-16T04:45:03.317Z","level":"info","message":"Verifying otter-blocks contents...","details":{}}
+{"timestamp":"2025-04-16T04:45:03.317Z","level":"info","message":"Plugin directory contains 9 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:45:03.318Z","level":"info","message":"Updated activation state for otter-blocks","details":{}}
+{"timestamp":"2025-04-16T04:45:03.318Z","level":"info","message":"✅ Successfully processed otter-blocks","details":{}}
+{"timestamp":"2025-04-16T04:45:03.318Z","level":"info","message":"\nProcessing plugin: stop-emails","details":{}}
+{"timestamp":"2025-04-16T04:45:03.318Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/stop-emails","details":{}}
+{"timestamp":"2025-04-16T04:45:03.318Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/stop-emails.zip","details":{}}
+{"timestamp":"2025-04-16T04:45:05.214Z","level":"info","message":"Removing existing stop-emails directory...","details":{}}
+{"timestamp":"2025-04-16T04:45:05.216Z","level":"info","message":"Downloading stop-emails...","details":{}}
+{"timestamp":"2025-04-16T04:45:06.521Z","level":"info","message":"Extracting stop-emails...","details":{}}
+{"timestamp":"2025-04-16T04:45:06.526Z","level":"info","message":"Verifying stop-emails contents...","details":{}}
+{"timestamp":"2025-04-16T04:45:06.526Z","level":"info","message":"Plugin directory contains 12 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:45:06.527Z","level":"info","message":"Updated activation state for stop-emails","details":{}}
+{"timestamp":"2025-04-16T04:45:06.527Z","level":"info","message":"✅ Successfully processed stop-emails","details":{}}
+{"timestamp":"2025-04-16T04:45:06.527Z","level":"info","message":"\nProcessing plugin: td-cloud-library","details":{}}
+{"timestamp":"2025-04-16T04:45:06.527Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/td-cloud-library","details":{}}
+{"timestamp":"2025-04-16T04:45:06.527Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/td-cloud-library.zip","details":{}}
+{"timestamp":"2025-04-16T04:45:07.919Z","level":"info","message":"Removing existing td-cloud-library directory...","details":{}}
+{"timestamp":"2025-04-16T04:45:07.933Z","level":"info","message":"Downloading td-cloud-library...","details":{}}
+{"timestamp":"2025-04-16T04:45:10.213Z","level":"info","message":"Extracting td-cloud-library...","details":{}}
+{"timestamp":"2025-04-16T04:45:10.277Z","level":"info","message":"Verifying td-cloud-library contents...","details":{}}
+{"timestamp":"2025-04-16T04:45:10.277Z","level":"info","message":"Plugin directory contains 11 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:45:10.277Z","level":"info","message":"Updated activation state for td-cloud-library","details":{}}
+{"timestamp":"2025-04-16T04:45:10.277Z","level":"info","message":"✅ Successfully processed td-cloud-library","details":{}}
+{"timestamp":"2025-04-16T04:45:10.277Z","level":"info","message":"\nProcessing plugin: td-composer","details":{}}
+{"timestamp":"2025-04-16T04:45:10.277Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/td-composer","details":{}}
+{"timestamp":"2025-04-16T04:45:10.277Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/td-composer.zip","details":{}}
+{"timestamp":"2025-04-16T04:45:11.646Z","level":"info","message":"Removing existing td-composer directory...","details":{}}
+{"timestamp":"2025-04-16T04:45:11.804Z","level":"info","message":"Downloading td-composer...","details":{}}
+{"timestamp":"2025-04-16T04:45:16.817Z","level":"info","message":"Extracting td-composer...","details":{}}
+{"timestamp":"2025-04-16T04:45:17.276Z","level":"info","message":"Verifying td-composer contents...","details":{}}
+{"timestamp":"2025-04-16T04:45:17.276Z","level":"info","message":"Plugin directory contains 9 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:45:17.276Z","level":"info","message":"Updated activation state for td-composer","details":{}}
+{"timestamp":"2025-04-16T04:45:17.276Z","level":"info","message":"✅ Successfully processed td-composer","details":{}}
+{"timestamp":"2025-04-16T04:45:17.276Z","level":"info","message":"\nProcessing plugin: updraftplus","details":{}}
+{"timestamp":"2025-04-16T04:45:17.276Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/updraftplus","details":{}}
+{"timestamp":"2025-04-16T04:45:17.276Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/updraftplus.zip","details":{}}
+{"timestamp":"2025-04-16T04:45:18.670Z","level":"info","message":"Removing existing updraftplus directory...","details":{}}
+{"timestamp":"2025-04-16T04:45:18.743Z","level":"info","message":"Downloading updraftplus...","details":{}}
+{"timestamp":"2025-04-16T04:45:22.030Z","level":"info","message":"Extracting updraftplus...","details":{}}
+{"timestamp":"2025-04-16T04:45:22.214Z","level":"info","message":"Verifying updraftplus contents...","details":{}}
+{"timestamp":"2025-04-16T04:45:22.214Z","level":"info","message":"Plugin directory contains 21 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:45:22.214Z","level":"info","message":"Updated activation state for updraftplus","details":{}}
+{"timestamp":"2025-04-16T04:45:22.214Z","level":"info","message":"✅ Successfully processed updraftplus","details":{}}
+{"timestamp":"2025-04-16T04:45:22.214Z","level":"info","message":"\nProcessing plugin: wordfence","details":{}}
+{"timestamp":"2025-04-16T04:45:22.214Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/wordfence","details":{}}
+{"timestamp":"2025-04-16T04:45:22.215Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/wordfence.zip","details":{}}
+{"timestamp":"2025-04-16T04:45:23.562Z","level":"info","message":"Removing existing wordfence directory...","details":{}}
+{"timestamp":"2025-04-16T04:45:23.599Z","level":"info","message":"Downloading wordfence...","details":{}}
+{"timestamp":"2025-04-16T04:45:30.525Z","level":"info","message":"Extracting wordfence...","details":{}}
+{"timestamp":"2025-04-16T04:45:30.695Z","level":"info","message":"Verifying wordfence contents...","details":{}}
+{"timestamp":"2025-04-16T04:45:30.695Z","level":"info","message":"Plugin directory contains 17 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:45:30.695Z","level":"info","message":"Updated activation state for wordfence","details":{}}
+{"timestamp":"2025-04-16T04:45:30.695Z","level":"info","message":"✅ Successfully processed wordfence","details":{}}
+{"timestamp":"2025-04-16T04:45:30.695Z","level":"info","message":"\nProcessing plugin: wp-security-audit-log","details":{}}
+{"timestamp":"2025-04-16T04:45:30.695Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/wp-security-audit-log","details":{}}
+{"timestamp":"2025-04-16T04:45:30.695Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/wp-security-audit-log.zip","details":{}}
+{"timestamp":"2025-04-16T04:45:32.103Z","level":"info","message":"Removing existing wp-security-audit-log directory...","details":{}}
+{"timestamp":"2025-04-16T04:45:32.128Z","level":"info","message":"Downloading wp-security-audit-log...","details":{}}
+{"timestamp":"2025-04-16T04:45:34.600Z","level":"info","message":"Extracting wp-security-audit-log...","details":{}}
+{"timestamp":"2025-04-16T04:45:34.693Z","level":"info","message":"Verifying wp-security-audit-log contents...","details":{}}
+{"timestamp":"2025-04-16T04:45:34.693Z","level":"info","message":"Plugin directory contains 14 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:45:34.694Z","level":"info","message":"Updated activation state for wp-security-audit-log","details":{}}
+{"timestamp":"2025-04-16T04:45:34.694Z","level":"info","message":"✅ Successfully processed wp-security-audit-log","details":{}}
+{"timestamp":"2025-04-16T04:45:34.694Z","level":"info","message":"\nProcessing plugin: wpforms-lite","details":{}}
+{"timestamp":"2025-04-16T04:45:34.694Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/wpforms-lite","details":{}}
+{"timestamp":"2025-04-16T04:45:34.694Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/wpforms-lite.zip","details":{}}
+{"timestamp":"2025-04-16T04:45:36.037Z","level":"info","message":"Removing existing wpforms-lite directory...","details":{}}
+{"timestamp":"2025-04-16T04:45:36.154Z","level":"info","message":"Downloading wpforms-lite...","details":{}}
+{"timestamp":"2025-04-16T04:45:40.269Z","level":"info","message":"Extracting wpforms-lite...","details":{}}
+{"timestamp":"2025-04-16T04:45:40.554Z","level":"info","message":"Verifying wpforms-lite contents...","details":{}}
+{"timestamp":"2025-04-16T04:45:40.554Z","level":"info","message":"Plugin directory contains 11 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:45:40.555Z","level":"info","message":"Updated activation state for wpforms-lite","details":{}}
+{"timestamp":"2025-04-16T04:45:40.555Z","level":"info","message":"✅ Successfully processed wpforms-lite","details":{}}
+{"timestamp":"2025-04-16T04:45:40.555Z","level":"info","message":"\nProcessing plugin: wp-mail-smtp","details":{}}
+{"timestamp":"2025-04-16T04:45:40.555Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/wp-mail-smtp","details":{}}
+{"timestamp":"2025-04-16T04:45:40.555Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/wp-mail-smtp.zip","details":{}}
+{"timestamp":"2025-04-16T04:45:41.904Z","level":"info","message":"Removing existing wp-mail-smtp directory...","details":{}}
+{"timestamp":"2025-04-16T04:45:41.947Z","level":"info","message":"Downloading wp-mail-smtp...","details":{}}
+{"timestamp":"2025-04-16T04:45:44.161Z","level":"info","message":"Extracting wp-mail-smtp...","details":{}}
+{"timestamp":"2025-04-16T04:45:44.257Z","level":"info","message":"Verifying wp-mail-smtp contents...","details":{}}
+{"timestamp":"2025-04-16T04:45:44.257Z","level":"info","message":"Plugin directory contains 8 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:45:44.257Z","level":"info","message":"Updated activation state for wp-mail-smtp","details":{}}
+{"timestamp":"2025-04-16T04:45:44.257Z","level":"info","message":"✅ Successfully processed wp-mail-smtp","details":{}}
+{"timestamp":"2025-04-16T04:45:44.258Z","level":"info","message":"\nProcessing plugin: wordpress-seo","details":{}}
+{"timestamp":"2025-04-16T04:45:44.258Z","level":"info","message":"Plugin directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/wordpress-seo","details":{}}
+{"timestamp":"2025-04-16T04:45:44.258Z","level":"info","message":"Plugin zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/plugins/wordpress-seo.zip","details":{}}
+{"timestamp":"2025-04-16T04:45:45.670Z","level":"info","message":"Removing existing wordpress-seo directory...","details":{}}
+{"timestamp":"2025-04-16T04:45:45.745Z","level":"info","message":"Downloading wordpress-seo...","details":{}}
+{"timestamp":"2025-04-16T04:45:48.723Z","level":"info","message":"Extracting wordpress-seo...","details":{}}
+{"timestamp":"2025-04-16T04:45:48.890Z","level":"info","message":"Verifying wordpress-seo contents...","details":{}}
+{"timestamp":"2025-04-16T04:45:48.890Z","level":"info","message":"Plugin directory contains 17 files/directories","details":{}}
+{"timestamp":"2025-04-16T04:45:48.890Z","level":"info","message":"Updated activation state for wordpress-seo","details":{}}
+{"timestamp":"2025-04-16T04:45:48.890Z","level":"info","message":"✅ Successfully processed wordpress-seo","details":{}}
+{"timestamp":"2025-04-16T04:45:48.890Z","level":"info","message":"\n✅ Plugin processing completed successfully","details":{}}
