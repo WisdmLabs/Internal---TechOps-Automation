@@ -214,11 +214,52 @@ async function main() {
         const checker = new UpdateChecker();
         const checkType = process.env.CHECK_TYPE || 'all';
         
-        // First, ensure we have the latest versions from WordPress
-        await checker.versionChecker.checkAllUpdates();
+        // Get current versions from WordPress site
+        const versions = await checker.loadVersions();
         
-        // Then check for any updates and create GitHub issues if needed
-        await checker.checkUpdates(checkType);
+        // Check updates based on type
+        let updates = { plugins: {}, themes: {} };
+        
+        if (checkType === 'plugins') {
+            checker.logger.info('Checking only plugin updates...');
+            for (const [slug, version] of Object.entries(versions.plugins)) {
+                const updateInfo = await checker.versionChecker.checkPluginUpdates(slug, version);
+                if (updateInfo) {
+                    updates.plugins[slug] = updateInfo;
+                }
+            }
+        } else if (checkType === 'themes') {
+            checker.logger.info('Checking only theme updates...');
+            for (const [slug, version] of Object.entries(versions.themes)) {
+                const updateInfo = await checker.versionChecker.checkThemeUpdates(slug, version);
+                if (updateInfo) {
+                    updates.themes[slug] = updateInfo;
+                }
+            }
+        } else {
+            checker.logger.info('Checking all updates...');
+            updates = await checker.versionChecker.checkAllUpdates();
+        }
+
+        // Print the report
+        checker.logger.info('Update check completed. Report:');
+        console.log(JSON.stringify(updates, null, 2));
+
+        // Create GitHub issue if updates found
+        const hasUpdates = Object.keys(updates.plugins).length > 0 || Object.keys(updates.themes).length > 0;
+        if (hasUpdates) {
+            if (!process.env.GITHUB_REPOSITORY) {
+                checker.logger.error('Missing GITHUB_REPOSITORY environment variable');
+                return;
+            }
+            
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+            const issueBody = await checker.generateIssueBody(updates);
+            const title = `WordPress Updates Available - ${new Date().toISOString().split('T')[0]}`;
+            await checker.createGitHubIssue(checker.octokit, owner, repo, title, issueBody);
+        } else {
+            checker.logger.info('No updates available');
+        }
     } catch (error) {
         console.error('Error running update check:', error);
         process.exit(1);

@@ -96,7 +96,8 @@ class VersionChecker {
         try {
             const response = await this.wpApi.get(`https://api.wordpress.org/plugins/info/1.0/${slug}.json`);
             if (!response.data || !response.data.version) {
-                throw new Error(`No version information found for plugin: ${slug}`);
+                this.logger.info(`Notice: Plugin '${slug}' not found on WordPress.org. This might be a premium or custom developed plugin.`);
+                return null;
             }
             return {
                 version: response.data.version,
@@ -104,7 +105,7 @@ class VersionChecker {
                 last_updated: response.data.last_updated || 'N/A'
             };
         } catch (error) {
-            this.logger.error(`Error fetching WordPress.org plugin info for ${slug}: ${error.message}`);
+            this.logger.info(`Notice: Plugin '${slug}' not found on WordPress.org. This might be a premium or custom developed plugin.`);
             return null;
         }
     }
@@ -113,7 +114,8 @@ class VersionChecker {
         try {
             const response = await this.wpApi.get(`https://api.wordpress.org/themes/info/1.1/?action=theme_information&request[slug]=${slug}`);
             if (!response.data || !response.data.version) {
-                throw new Error(`No version information found for theme: ${slug}`);
+                this.logger.info(`Notice: Theme '${slug}' not found on WordPress.org. This might be a premium or custom developed theme.`);
+                return null;
             }
             return {
                 version: response.data.version,
@@ -121,7 +123,7 @@ class VersionChecker {
                 last_updated: response.data.last_updated || 'N/A'
             };
         } catch (error) {
-            this.logger.error(`Error fetching WordPress.org theme info for ${slug}: ${error.message}`);
+            this.logger.info(`Notice: Theme '${slug}' not found on WordPress.org. This might be a premium or custom developed theme.`);
             return null;
         }
     }
