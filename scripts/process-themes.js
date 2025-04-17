@@ -32,6 +32,10 @@ async function processThemes(themesList) {
 
         logger.info(`Processing ${themesToProcess.length} themes...`);
 
+        // Create activation states object
+        const activationStates = {};
+        
+        // Process each theme and record its activation state
         for (const theme of themesToProcess) {
             try {
                 const themeDir = path.join(BASE_DIR, theme.slug);
@@ -40,6 +44,10 @@ async function processThemes(themesList) {
                 logger.info(`\nProcessing theme: ${theme.slug}`);
                 logger.info(`Theme directory path: ${themeDir}`);
                 logger.info(`Theme zip path: ${zipPath}`);
+
+                // Record activation state
+                activationStates[theme.slug] = theme.active || false;
+                logger.info(`Theme ${theme.slug} activation state: ${theme.active ? 'active' : 'inactive'}`);
 
                 // Remove existing theme directory if it exists
                 if (fs.existsSync(themeDir)) {
@@ -93,6 +101,11 @@ async function processThemes(themesList) {
                 // The shell script will handle restoration from backup
             }
         }
+
+        // Write activation states to file
+        const activationStatesPath = path.join(BASE_DIR, 'theme-activation-states.json');
+        fs.writeFileSync(activationStatesPath, JSON.stringify(activationStates, null, 2));
+        logger.info(`Created theme activation states file at ${activationStatesPath}`);
 
         logger.info('\n✅ Theme processing completed successfully');
     } catch (error) {

@@ -57,8 +57,8 @@ jobs:
             exit 1
           fi
           
-          if [[ -f wp-content/themes/activation-states.json ]]; then
-            REPORT_CONTENT=$(cat wp-content/themes/activation-states.json)
+          if [[ -f wp-content/themes/theme-sync-report.json ]]; then
+            REPORT_CONTENT=$(cat wp-content/themes/theme-sync-report.json)
             if echo "$REPORT_CONTENT" | grep -q '"sync_status":"error"'; then
               echo "theme_sync_successful=false" >> $GITHUB_OUTPUT
               echo "theme_sync_error<<EOF" >> $GITHUB_OUTPUT
@@ -103,7 +103,7 @@ jobs:
           
           if [[ -f wp-content/plugins/sync-report.json ]]; then
             REPORT_CONTENT=$(cat wp-content/plugins/sync-report.json)
-            if echo "$REPORT_CONTENT" | grep -q '"errors":'; then
+            if echo "$REPORT_CONTENT" | grep -q '"sync_status":"error"'; then
               echo "plugin_sync_successful=false" >> $GITHUB_OUTPUT
               echo "plugin_sync_error<<EOF" >> $GITHUB_OUTPUT
               echo "$REPORT_CONTENT" >> $GITHUB_OUTPUT
@@ -118,6 +118,42 @@ jobs:
             echo "plugin_sync_successful=false" >> $GITHUB_OUTPUT
             echo "plugin_sync_error=No plugin sync report generated" >> $GITHUB_OUTPUT
             echo "❌ No plugin sync report found"
+            exit 1
+          fi
+
+      - name: Upload theme sync report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: theme-sync-report
+          path: wp-content/themes/theme-sync-report.json
+          retention-days: 7
+
+      - name: Upload plugin sync report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: plugin-sync-report
+          path: wp-content/plugins/sync-report.json
+          retention-days: 7
+
+      - name: Check sync status
+        if: always()
+        run: |
+          THEME_SYNC_SUCCESS=${{ steps.theme_sync_states.outputs.theme_sync_successful }}
+          PLUGIN_SYNC_SUCCESS=${{ steps.plugin_sync_states.outputs.plugin_sync_successful }}
+          
+          if [[ "$THEME_SYNC_SUCCESS" != "true" ]]; then
+            echo "::warning::Theme activation sync failed"
+            echo "Theme sync error: ${{ steps.theme_sync_states.outputs.theme_sync_error }}"
+          fi
+          
+          if [[ "$PLUGIN_SYNC_SUCCESS" != "true" ]]; then
+            echo "::warning::Plugin activation sync failed"
+            echo "Plugin sync error: ${{ steps.plugin_sync_states.outputs.plugin_sync_error }}"
+          fi
+          
+          if [[ "$THEME_SYNC_SUCCESS" != "true" || "$PLUGIN_SYNC_SUCCESS" != "true" ]]; then
             exit 1
           fi
 
