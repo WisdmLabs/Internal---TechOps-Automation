@@ -54,12 +54,8 @@ jobs:
           STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
           CHECK_TYPE: ${{ github.event.inputs.check_type || 'all' }}
         run: |
-          # Run the update check and capture output
-          node scripts/check-updates.js | tee update_report.txt
-          
-          # Print the report in workflow
-          echo "Update Check Report:"
-          cat update_report.txt
+          # Run the update check and save only the JSON report
+          node scripts/check-updates.js > updates.json
 
       - name: Check for changes
         id: check-changes
@@ -88,8 +84,8 @@ jobs:
             
             Changes include:
             - Checked for updates on plugins and themes
-            - created github issues if updates are available
-            - generated report with details
+            - Created GitHub issues if updates are available
+            - Generated updates.json with details
           delete-branch: false
 
       - name: Handle PR Creation Failure

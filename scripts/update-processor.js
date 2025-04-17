@@ -17,7 +17,7 @@ class UpdateProcessor {
 
     async readUpdateReport() {
         try {
-            const reportPath = path.join(process.cwd(), 'update_report.txt');
+            const reportPath = path.join(process.cwd(), 'updates.json');
             const reportContent = await fs.readFile(reportPath, 'utf8');
             this.updateReport = JSON.parse(reportContent);
             this.logger.info('Successfully read update report');
