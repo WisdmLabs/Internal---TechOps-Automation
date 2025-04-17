@@ -3,6 +3,7 @@ const semver = require('semver');
 const fs = require('fs').promises;
 const path = require('path');
 const Logger = require('./logger');
+const secrets = require('./secrets');
 
 class VersionChecker {
     constructor() {
@@ -10,21 +11,32 @@ class VersionChecker {
         this.configDir = path.join(process.cwd(), 'config');
         this.versionsFile = path.join(this.configDir, 'versions.json');
         
-        // Get environment variables - only using staging credentials
+        // Get environment variables and secrets
         this.siteUrl = process.env.STAGING_SITE_URL;
         this.authToken = process.env.STAGING_SITE_AUTH_TOKEN;
         
-        if (!this.siteUrl || !this.authToken) {
-            this.logger.error('Missing required environment variables: STAGING_SITE_URL and STAGING_SITE_AUTH_TOKEN');
-            throw new Error('Missing required environment variables: STAGING_SITE_URL and STAGING_SITE_AUTH_TOKEN');
+        // Validate environment variables and secrets
+        if (!this.siteUrl) {
+            this.logger.error('Missing required repository variable: STAGING_SITE_URL');
+            throw new Error('Missing required repository variable: STAGING_SITE_URL');
         }
         
-        // Configure axios instance with auth
+        if (!this.authToken) {
+            this.logger.error('Missing required repository secret: STAGING_SITE_AUTH_TOKEN');
+            throw new Error('Missing required repository secret: STAGING_SITE_AUTH_TOKEN');
+        }
+
+        // Remove any trailing slashes from the URL
+        this.siteUrl = this.siteUrl.replace(/\/+$/, '');
+        
+        // Configure axios instance with auth - token is already in base64 format
         this.api = axios.create({
             headers: {
                 'Authorization': `Basic ${this.authToken}`,
-                'Accept': 'application/json'
-            }
+                'Accept': 'application/json',
+                'User-Agent': 'TechOps-Version-Checker'
+            },
+            timeout: 10000 // 10 second timeout
         });
     }
 
