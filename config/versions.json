@@ -1,4 +1,134 @@
 {
-  "plugins": {},
-  "themes": {}
+  "plugins": {
+    "akismet": {
+      "currentVersion": "5.3.7",
+      "normalizedVersion": "5.3.7"
+    },
+    "bbpress": {
+      "currentVersion": "2.6.12",
+      "normalizedVersion": "2.6.12"
+    },
+    "breeze": {
+      "currentVersion": "2.2.7",
+      "normalizedVersion": "2.2.7"
+    },
+    "advanced-nocaptcha-recaptcha": {
+      "currentVersion": "7.5.0",
+      "normalizedVersion": "7.5.0"
+    },
+    "classic-editor": {
+      "currentVersion": "1.6.7",
+      "normalizedVersion": "1.6.7"
+    },
+    "contact-form-7": {
+      "currentVersion": "6.0.5",
+      "normalizedVersion": "6.0.5"
+    },
+    "db-access-adminer": {
+      "currentVersion": "2.1.0",
+      "normalizedVersion": "2.1.0"
+    },
+    "download-plugins-dashboard": {
+      "currentVersion": "1.9.4",
+      "normalizedVersion": "1.9.4"
+    },
+    "email-log": {
+      "currentVersion": "2.4.9",
+      "normalizedVersion": "2.4.9"
+    },
+    "hello.php": {
+      "currentVersion": "1.7.2",
+      "normalizedVersion": "1.7.2"
+    },
+    "googleanalytics.php": {
+      "currentVersion": "1.7.2",
+      "normalizedVersion": "1.7.2"
+    },
+    "hcaptcha-for-forms-and-more": {
+      "currentVersion": "4.11.0",
+      "normalizedVersion": "4.11.0"
+    },
+    "wp-maintenance-mode": {
+      "currentVersion": "2.6.16",
+      "normalizedVersion": "2.6.16"
+    },
+    "limit-login-attempts-reloaded": {
+      "currentVersion": "2.26.18",
+      "normalizedVersion": "2.26.18"
+    },
+    "object-cache-pro": {
+      "currentVersion": "1.22.0",
+      "normalizedVersion": "1.22.0"
+    },
+    "otter-blocks": {
+      "currentVersion": "3.0.10",
+      "normalizedVersion": "3.0.10"
+    },
+    "spinupwp": {
+      "currentVersion": "1.7.1",
+      "normalizedVersion": "1.7.1"
+    },
+    "stop-emails": {
+      "currentVersion": "1.2.1",
+      "normalizedVersion": "1.2.1"
+    },
+    "td-cloud-library": {
+      "currentVersion": "3.7 | built on 26.09.2024 10:39",
+      "normalizedVersion": "0.0.0"
+    },
+    "td-composer": {
+      "currentVersion": "5.2 | built on 26.09.2024 10:39",
+      "normalizedVersion": "0.0.0"
+    },
+    "techops-content-sync": {
+      "currentVersion": "1.0.0",
+      "normalizedVersion": "1.0.0"
+    },
+    "updraftplus": {
+      "currentVersion": "2.23.3.26",
+      "normalizedVersion": "2.23.3-26"
+    },
+    "wordfence": {
+      "currentVersion": "8.0.3",
+      "normalizedVersion": "8.0.3"
+    },
+    "wp-security-audit-log": {
+      "currentVersion": "5.3.3",
+      "normalizedVersion": "5.3.3"
+    },
+    "wpforms-lite": {
+      "currentVersion": "1.9.4.2",
+      "normalizedVersion": "1.9.4-2"
+    },
+    "wp-mail-smtp": {
+      "currentVersion": "4.4.0",
+      "normalizedVersion": "4.4.0"
+    },
+    "wordpress-seo": {
+      "currentVersion": "24.6",
+      "normalizedVersion": "24.6.0"
+    }
+  },
+  "themes": {
+    "Newspaper": {
+      "currentVersion": "12.6.8",
+      "normalizedVersion": "12.6.8"
+    },
+    "effectivenews": {
+      "currentVersion": "6.1",
+      "normalizedVersion": "6.1.0"
+    },
+    "twentytwentyfive": {
+      "currentVersion": "1.1",
+      "normalizedVersion": "1.1.0"
+    },
+    "twentytwentyfour": {
+      "currentVersion": "1.3",
+      "normalizedVersion": "1.3.0"
+    },
+    "twentytwentythree": {
+      "currentVersion": "1.6",
+      "normalizedVersion": "1.6.0"
+    }
+  }
 }
