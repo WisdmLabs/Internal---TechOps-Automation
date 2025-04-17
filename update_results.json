@@ -1,0 +1,137 @@
+{
+  "processed": [
+    {
+      "type": "plugin",
+      "slug": "bbpress",
+      "from": "2.6.12",
+      "to": "2.6.13"
+    },
+    {
+      "type": "plugin",
+      "slug": "breeze",
+      "from": "2.2.7",
+      "to": "2.2.9"
+    },
+    {
+      "type": "plugin",
+      "slug": "contact-form-7",
+      "from": "6.0.5",
+      "to": "6.0.6"
+    },
+    {
+      "type": "plugin",
+      "slug": "hcaptcha-for-forms-and-more",
+      "from": "4.11.0",
+      "to": "4.12.0"
+    },
+    {
+      "type": "plugin",
+      "slug": "wp-maintenance-mode",
+      "from": "2.6.16",
+      "to": "2.6.17"
+    },
+    {
+      "type": "plugin",
+      "slug": "otter-blocks",
+      "from": "3.0.10",
+      "to": "3.0.11"
+    },
+    {
+      "type": "plugin",
+      "slug": "wordfence",
+      "from": "8.0.3",
+      "to": "8.0.5"
+    },
+    {
+      "type": "plugin",
+      "slug": "wp-security-audit-log",
+      "from": "5.3.3",
+      "to": "5.3.4.1"
+    },
+    {
+      "type": "plugin",
+      "slug": "wordpress-seo",
+      "from": "24.6",
+      "to": "24.9"
+    },
+    {
+      "type": "theme",
+      "slug": "twentytwentyfive",
+      "from": "1.1",
+      "to": "1.2"
+    }
+  ],
+  "failed": [],
+  "skipped": [
+    {
+      "type": "plugin",
+      "slug": "akismet",
+      "reason": "No update available"
+    },
+    {
+      "type": "plugin",
+      "slug": "advanced-nocaptcha-recaptcha",
+      "reason": "No update available"
+    },
+    {
+      "type": "plugin",
+      "slug": "classic-editor",
+      "reason": "No update available"
+    },
+    {
+      "type": "plugin",
+      "slug": "db-access-adminer",
+      "reason": "No update available"
+    },
+    {
+      "type": "plugin",
+      "slug": "download-plugins-dashboard",
+      "reason": "No update available"
+    },
+    {
+      "type": "plugin",
+      "slug": "email-log",
+      "reason": "No update available"
+    },
+    {
+      "type": "plugin",
+      "slug": "limit-login-attempts-reloaded",
+      "reason": "No update available"
+    },
+    {
+      "type": "plugin",
+      "slug": "spinupwp",
+      "reason": "No update available"
+    },
+    {
+      "type": "plugin",
+      "slug": "stop-emails",
+      "reason": "No update available"
+    },
+    {
+      "type": "plugin",
+      "slug": "updraftplus",
+      "reason": "No update available"
+    },
+    {
+      "type": "plugin",
+      "slug": "wpforms-lite",
+      "reason": "No update available"
+    },
+    {
+      "type": "plugin",
+      "slug": "wp-mail-smtp",
+      "reason": "No update available"
+    },
+    {
+      "type": "theme",
+      "slug": "twentytwentyfour",
+      "reason": "No update available"
+    },
+    {
+      "type": "theme",
+      "slug": "twentytwentythree",
+      "reason": "No update available"
+    }
+  ]
+}
