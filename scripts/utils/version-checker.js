@@ -11,8 +11,8 @@ class VersionChecker {
         this.versionsFile = path.join(this.configDir, 'versions.json');
         
         // Get environment variables and secrets
-        const siteUrl = process.env.STAGING_SITE_URL;
-        const authToken = process.env.STAGING_SITE_AUTH_TOKEN;
+        this.siteUrl = process.env.STAGING_SITE_URL;
+        this.authToken = process.env.STAGING_SITE_AUTH_TOKEN;
         
         // Validate environment variables and secrets
         if (!this.siteUrl) {

@@ -48,5 +48,7 @@ jobs:
       - name: Check for updates
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STAGING_SITE_URL: ${{ vars.STAGING_SITE_URL }}
+          STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
           CHECK_TYPE: ${{ github.event.inputs.check_type || 'all' }}
         run: node scripts/check-updates.js 
