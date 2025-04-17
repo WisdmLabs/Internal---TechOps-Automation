@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
-const Logger = require('./logger');
+const Logger = require('./utils/logger');
 
 const logger = new Logger('theme-activation-sync');
 const BASE_DIR = path.join(__dirname, '..', 'wp-content', 'themes');
