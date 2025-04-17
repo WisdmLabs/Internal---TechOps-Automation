@@ -2,7 +2,7 @@ name: WordPress Updates Automation
 
 on:
   schedule:
-    - cron: ${{ vars.UPDATE_CHECK_CRON || '0 0 1 * *' }}  # Default: Monthly at midnight
+    - cron: "0 0 1 * *"  # Run at midnight on the first day of every month
   workflow_dispatch:
     inputs:
       schedule_day:
