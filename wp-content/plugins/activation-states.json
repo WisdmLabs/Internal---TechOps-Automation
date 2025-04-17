@@ -78,7 +78,7 @@
     },
     {
       "slug": "wordfence",
-      "active": true
+      "active": false
     },
     {
       "slug": "wp-security-audit-log",
