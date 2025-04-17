@@ -487,3 +487,56 @@
 {"timestamp":"2025-04-17T11:11:34.859Z","level":"info","message":"✅ Successfully processed twentytwentythree","details":{}}
 {"timestamp":"2025-04-17T11:11:34.860Z","level":"info","message":"Created theme activation states file at /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/themes/theme-activation-states.json","details":{}}
 {"timestamp":"2025-04-17T11:11:34.860Z","level":"info","message":"\n✅ Theme processing completed successfully","details":{}}
+{"timestamp":"2025-04-17T11:29:30.419Z","level":"info","message":"Processing 5 themes...","details":{}}
+{"timestamp":"2025-04-17T11:29:30.422Z","level":"info","message":"\nProcessing theme: Newspaper","details":{}}
+{"timestamp":"2025-04-17T11:29:30.422Z","level":"info","message":"Theme directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/themes/Newspaper","details":{}}
+{"timestamp":"2025-04-17T11:29:30.422Z","level":"info","message":"Theme zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/themes/Newspaper.zip","details":{}}
+{"timestamp":"2025-04-17T11:29:30.422Z","level":"info","message":"Theme Newspaper activation state: active","details":{}}
+{"timestamp":"2025-04-17T11:29:30.422Z","level":"info","message":"Removing existing Newspaper directory...","details":{}}
+{"timestamp":"2025-04-17T11:29:30.432Z","level":"info","message":"Downloading Newspaper...","details":{}}
+{"timestamp":"2025-04-17T11:29:32.076Z","level":"info","message":"Extracting Newspaper...","details":{}}
+{"timestamp":"2025-04-17T11:29:32.111Z","level":"info","message":"Verifying Newspaper contents...","details":{}}
+{"timestamp":"2025-04-17T11:29:32.111Z","level":"info","message":"Theme directory contains 34 files/directories","details":{}}
+{"timestamp":"2025-04-17T11:29:32.111Z","level":"info","message":"✅ Successfully processed Newspaper","details":{}}
+{"timestamp":"2025-04-17T11:29:32.112Z","level":"info","message":"\nProcessing theme: effectivenews","details":{}}
+{"timestamp":"2025-04-17T11:29:32.112Z","level":"info","message":"Theme directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/themes/effectivenews","details":{}}
+{"timestamp":"2025-04-17T11:29:32.112Z","level":"info","message":"Theme zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/themes/effectivenews.zip","details":{}}
+{"timestamp":"2025-04-17T11:29:32.112Z","level":"info","message":"Theme effectivenews activation state: inactive","details":{}}
+{"timestamp":"2025-04-17T11:29:32.112Z","level":"info","message":"Removing existing effectivenews directory...","details":{}}
+{"timestamp":"2025-04-17T11:29:32.196Z","level":"info","message":"Downloading effectivenews...","details":{}}
+{"timestamp":"2025-04-17T11:29:35.769Z","level":"info","message":"Extracting effectivenews...","details":{}}
+{"timestamp":"2025-04-17T11:29:36.047Z","level":"info","message":"Verifying effectivenews contents...","details":{}}
+{"timestamp":"2025-04-17T11:29:36.047Z","level":"info","message":"Theme directory contains 42 files/directories","details":{}}
+{"timestamp":"2025-04-17T11:29:36.047Z","level":"info","message":"✅ Successfully processed effectivenews","details":{}}
+{"timestamp":"2025-04-17T11:29:36.047Z","level":"info","message":"\nProcessing theme: twentytwentyfive","details":{}}
+{"timestamp":"2025-04-17T11:29:36.048Z","level":"info","message":"Theme directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/themes/twentytwentyfive","details":{}}
+{"timestamp":"2025-04-17T11:29:36.048Z","level":"info","message":"Theme zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/themes/twentytwentyfive.zip","details":{}}
+{"timestamp":"2025-04-17T11:29:36.048Z","level":"info","message":"Theme twentytwentyfive activation state: inactive","details":{}}
+{"timestamp":"2025-04-17T11:29:36.048Z","level":"info","message":"Removing existing twentytwentyfive directory...","details":{}}
+{"timestamp":"2025-04-17T11:29:36.059Z","level":"info","message":"Downloading twentytwentyfive...","details":{}}
+{"timestamp":"2025-04-17T11:29:37.965Z","level":"info","message":"Extracting twentytwentyfive...","details":{}}
+{"timestamp":"2025-04-17T11:29:38.029Z","level":"info","message":"Verifying twentytwentyfive contents...","details":{}}
+{"timestamp":"2025-04-17T11:29:38.029Z","level":"info","message":"Theme directory contains 10 files/directories","details":{}}
+{"timestamp":"2025-04-17T11:29:38.029Z","level":"info","message":"✅ Successfully processed twentytwentyfive","details":{}}
+{"timestamp":"2025-04-17T11:29:38.029Z","level":"info","message":"\nProcessing theme: twentytwentyfour","details":{}}
+{"timestamp":"2025-04-17T11:29:38.030Z","level":"info","message":"Theme directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/themes/twentytwentyfour","details":{}}
+{"timestamp":"2025-04-17T11:29:38.030Z","level":"info","message":"Theme zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/themes/twentytwentyfour.zip","details":{}}
+{"timestamp":"2025-04-17T11:29:38.030Z","level":"info","message":"Theme twentytwentyfour activation state: inactive","details":{}}
+{"timestamp":"2025-04-17T11:29:38.030Z","level":"info","message":"Removing existing twentytwentyfour directory...","details":{}}
+{"timestamp":"2025-04-17T11:29:38.035Z","level":"info","message":"Downloading twentytwentyfour...","details":{}}
+{"timestamp":"2025-04-17T11:29:39.537Z","level":"info","message":"Extracting twentytwentyfour...","details":{}}
+{"timestamp":"2025-04-17T11:29:39.565Z","level":"info","message":"Verifying twentytwentyfour contents...","details":{}}
+{"timestamp":"2025-04-17T11:29:39.565Z","level":"info","message":"Theme directory contains 10 files/directories","details":{}}
+{"timestamp":"2025-04-17T11:29:39.565Z","level":"info","message":"✅ Successfully processed twentytwentyfour","details":{}}
+{"timestamp":"2025-04-17T11:29:39.565Z","level":"info","message":"\nProcessing theme: twentytwentythree","details":{}}
+{"timestamp":"2025-04-17T11:29:39.565Z","level":"info","message":"Theme directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/themes/twentytwentythree","details":{}}
+{"timestamp":"2025-04-17T11:29:39.565Z","level":"info","message":"Theme zip path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/themes/twentytwentythree.zip","details":{}}
+{"timestamp":"2025-04-17T11:29:39.565Z","level":"info","message":"Theme twentytwentythree activation state: inactive","details":{}}
+{"timestamp":"2025-04-17T11:29:39.565Z","level":"info","message":"Removing existing twentytwentythree directory...","details":{}}
+{"timestamp":"2025-04-17T11:29:39.568Z","level":"info","message":"Downloading twentytwentythree...","details":{}}
+{"timestamp":"2025-04-17T11:29:41.033Z","level":"info","message":"Extracting twentytwentythree...","details":{}}
+{"timestamp":"2025-04-17T11:29:41.052Z","level":"info","message":"Verifying twentytwentythree contents...","details":{}}
+{"timestamp":"2025-04-17T11:29:41.052Z","level":"info","message":"Theme directory contains 9 files/directories","details":{}}
+{"timestamp":"2025-04-17T11:29:41.053Z","level":"info","message":"✅ Successfully processed twentytwentythree","details":{}}
+{"timestamp":"2025-04-17T11:29:41.053Z","level":"info","message":"Created theme activation states file at /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/wp-content/themes/theme-activation-states.json","details":{}}
+{"timestamp":"2025-04-17T11:29:41.053Z","level":"info","message":"\n✅ Theme processing completed successfully","details":{}}
