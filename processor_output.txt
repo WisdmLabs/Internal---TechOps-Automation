@@ -1,0 +1,6 @@
+
+> wordpress-update-checker@1.0.0 process-updates
+> node scripts/update-processor.js
+
+[31m[ERROR] Error reading update report: Unexpected token  in JSON at position 0[0m
+[31m[ERROR] Error processing updates: Unexpected token  in JSON at position 0[0m

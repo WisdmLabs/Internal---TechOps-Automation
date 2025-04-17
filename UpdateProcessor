@@ -1,0 +1,2 @@
+{"timestamp":"2025-04-17T17:09:36.834Z","level":"error","message":"Error reading update report: Unexpected token \u001b in JSON at position 0","details":{}}
+{"timestamp":"2025-04-17T17:09:36.836Z","level":"error","message":"Error processing updates: Unexpected token \u001b in JSON at position 0","details":{}}
