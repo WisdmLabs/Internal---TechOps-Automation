@@ -1,0 +1,52 @@
+name: Check WordPress Updates
+
+on:
+  schedule:
+    # Run at 00:00 on the 1st of every month
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+    inputs:
+      schedule_day:
+        description: 'Day of the month to run (1-31)'
+        required: false
+        default: '1'
+      schedule_time:
+        description: 'Time to run (HH:MM)'
+        required: false
+        default: '00:00'
+      timezone:
+        description: 'Timezone for the schedule'
+        required: false
+        default: 'UTC'
+      check_type:
+        description: 'Type of updates to check'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - plugins
+          - themes
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Check for updates
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHECK_TYPE: ${{ github.event.inputs.check_type || 'all' }}
+        run: node scripts/check-updates.js 

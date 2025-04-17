@@ -2,3 +2,5 @@
 *.zip
 *.tmp
 wp-content/**/*.zip
+# Log files
+sync-*.log

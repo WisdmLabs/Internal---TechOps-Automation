@@ -1,16 +1,17 @@
 {
-  "name": "techops-content-sync",
+  "name": "wordpress-update-checker",
   "version": "1.0.0",
-  "description": "WordPress content synchronization tool",
-  "main": "scripts/download-content.sh",
+  "description": "Automated WordPress plugin and theme update checker",
+  "main": "scripts/check-updates.js",
   "scripts": {
-    "start": "bash scripts/download-content.sh"
+    "check-updates": "node scripts/check-updates.js"
   },
   "dependencies": {
-    "node-fetch": "^2.6.1",
-    "axios": "^1.6.7"
+    "@octokit/rest": "^19.0.7",
+    "axios": "^1.6.2",
+    "semver": "^7.5.4"
   },
-  "devDependencies": {
-    "jest": "^27.0.6"
+  "engines": {
+    "node": ">=18.0.0"
   }
 } 
