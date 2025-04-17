@@ -3,7 +3,6 @@ const semver = require('semver');
 const fs = require('fs').promises;
 const path = require('path');
 const Logger = require('./logger');
-const secrets = require('./secrets');
 
 class VersionChecker {
     constructor() {
