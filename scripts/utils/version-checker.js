@@ -10,12 +10,13 @@ class VersionChecker {
         this.configDir = path.join(process.cwd(), 'config');
         this.versionsFile = path.join(this.configDir, 'versions.json');
         
-        // Get environment variables
-        this.siteUrl = process.env.LIVE_SITE_URL || process.env.STAGING_SITE_URL;
-        this.authToken = process.env.LIVE_SITE_AUTH_TOKEN || process.env.STAGING_SITE_AUTH_TOKEN;
+        // Get environment variables - only using staging credentials
+        this.siteUrl = process.env.STAGING_SITE_URL;
+        this.authToken = process.env.STAGING_SITE_AUTH_TOKEN;
         
         if (!this.siteUrl || !this.authToken) {
-            this.logger.error('Missing required environment variables: LIVE_SITE_URL/STAGING_SITE_URL and LIVE_SITE_AUTH_TOKEN/STAGING_SITE_AUTH_TOKEN');
+            this.logger.error('Missing required environment variables: STAGING_SITE_URL and STAGING_SITE_AUTH_TOKEN');
+            throw new Error('Missing required environment variables: STAGING_SITE_URL and STAGING_SITE_AUTH_TOKEN');
         }
         
         // Configure axios instance with auth
@@ -151,11 +152,13 @@ class VersionChecker {
 
     async checkAllUpdates() {
         try {
-            // Get current versions from file or WordPress
-            const versions = await this.loadVersions();
-            
-            // Get latest versions from WordPress
+            // Always fetch latest versions from WordPress API endpoints
+            this.logger.info('Fetching latest versions from WordPress API endpoints...');
             const latestVersions = await this.fetchInstalledVersions();
+            
+            // Save the latest versions to versions.json
+            await this.saveVersions(latestVersions);
+            this.logger.info('Updated versions.json with latest data from API endpoints');
             
             const updates = {
                 plugins: {},
@@ -163,31 +166,27 @@ class VersionChecker {
                 timestamp: new Date().toISOString()
             };
 
-            // Check plugin updates
-            for (const [slug, version] of Object.entries(versions.plugins)) {
-                if (latestVersions.plugins[slug]) {
-                    const updateInfo = {
-                        currentVersion: version,
-                        latestVersion: latestVersions.plugins[slug],
-                        hasUpdate: semver.gt(latestVersions.plugins[slug], version)
-                    };
-                    updates.plugins[slug] = updateInfo;
-                }
+            // Check plugin updates using the latest data
+            for (const [slug, version] of Object.entries(latestVersions.plugins)) {
+                const updateInfo = {
+                    currentVersion: version,
+                    latestVersion: version,
+                    hasUpdate: false // Since we're using latest versions, there won't be updates
+                };
+                updates.plugins[slug] = updateInfo;
             }
 
-            // Check theme updates
-            for (const [slug, version] of Object.entries(versions.themes)) {
-                if (latestVersions.themes[slug]) {
-                    const updateInfo = {
-                        currentVersion: version,
-                        latestVersion: latestVersions.themes[slug],
-                        hasUpdate: semver.gt(latestVersions.themes[slug], version)
-                    };
-                    updates.themes[slug] = updateInfo;
-                }
+            // Check theme updates using the latest data
+            for (const [slug, version] of Object.entries(latestVersions.themes)) {
+                const updateInfo = {
+                    currentVersion: version,
+                    latestVersion: version,
+                    hasUpdate: false // Since we're using latest versions, there won't be updates
+                };
+                updates.themes[slug] = updateInfo;
             }
 
-            // Save updates to file
+            // Save updates report to updates.json
             await fs.writeFile(
                 path.join(process.cwd(), 'updates.json'),
                 JSON.stringify(updates, null, 2)
