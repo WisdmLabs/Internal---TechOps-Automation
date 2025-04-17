@@ -7,25 +7,41 @@ const Logger = require('./logger');
 class VersionChecker {
     constructor() {
         this.logger = new Logger('VersionChecker');
-        this.versionsFile = path.join(process.cwd(), 'config', 'versions.json');
+        this.configDir = path.join(process.cwd(), 'config');
+        this.versionsFile = path.join(this.configDir, 'versions.json');
         this.wordpressApi = 'https://api.wordpress.org';
     }
 
     async loadVersions() {
         try {
-            const data = await fs.readFile(this.versionsFile, 'utf8');
-            return JSON.parse(data);
-        } catch (error) {
-            if (error.code === 'ENOENT') {
-                this.logger.info('No versions file found, creating new one');
-                return { plugins: {}, themes: {} };
+            // Create config directory if it doesn't exist
+            try {
+                await fs.access(this.configDir);
+            } catch (error) {
+                this.logger.info('Config directory not found. Creating it...');
+                await fs.mkdir(this.configDir, { recursive: true });
             }
-            throw error;
+
+            // Try to read the versions file
+            try {
+                const data = await fs.readFile(this.versionsFile, 'utf8');
+                return JSON.parse(data);
+            } catch (error) {
+                if (error.code === 'ENOENT') {
+                    this.logger.info('No versions file found, creating new one');
+                    const defaultVersions = { plugins: {}, themes: {} };
+                    await fs.writeFile(this.versionsFile, JSON.stringify(defaultVersions, null, 2));
+                    return defaultVersions;
+                }
+                throw error;
+            }
+        } catch (error) {
+            this.logger.error(`Error handling versions file: ${error.message}`);
+            return { plugins: {}, themes: {} };
         }
     }
 
     async saveVersions(versions) {
-        await fs.mkdir(path.dirname(this.versionsFile), { recursive: true });
         await fs.writeFile(this.versionsFile, JSON.stringify(versions, null, 2));
         this.logger.info('Versions file updated successfully');
     }

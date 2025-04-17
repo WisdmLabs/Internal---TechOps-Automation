@@ -13,15 +13,33 @@ class UpdateChecker {
         this.octokit = new Octokit({
             auth: process.env.GITHUB_TOKEN
         });
-        this.versionsFile = path.join(process.cwd(), 'config', 'versions.json');
+        this.configDir = path.join(process.cwd(), 'config');
+        this.versionsFile = path.join(this.configDir, 'versions.json');
     }
 
     async loadVersions() {
         try {
-            const data = await fs.readFile(this.versionsFile, 'utf8');
-            return JSON.parse(data);
+            // Create config directory if it doesn't exist
+            try {
+                await fs.access(this.configDir);
+            } catch (error) {
+                this.logger.info('Config directory not found. Creating it...');
+                await fs.mkdir(this.configDir, { recursive: true });
+            }
+
+            // Try to read the versions file
+            try {
+                const data = await fs.readFile(this.versionsFile, 'utf8');
+                return JSON.parse(data);
+            } catch (error) {
+                // If file doesn't exist, create it with default structure
+                this.logger.info('Versions file not found. Creating default versions.json...');
+                const defaultVersions = { plugins: {}, themes: {} };
+                await fs.writeFile(this.versionsFile, JSON.stringify(defaultVersions, null, 2));
+                return defaultVersions;
+            }
         } catch (error) {
-            this.logger.error(`Error loading versions file: ${error.message}`);
+            this.logger.error(`Error handling versions file: ${error.message}`);
             return { plugins: {}, themes: {} };
         }
     }
