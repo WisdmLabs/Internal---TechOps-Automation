@@ -61,40 +61,38 @@ jobs:
           echo "Update Check Report:"
           cat update_report.txt
 
-      - name: Create Pull Request
-        if: success()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check for changes
+        id: check-changes
         run: |
-          # Get the current date for PR title
-          DATE=$(date +'%Y-%m-%d')
-          
-          # Check if there are any changes
           if [[ -n "$(git status --porcelain)" ]]; then
-            # Configure Git
-            git config --global user.name 'GitHub Actions'
-            git config --global user.email 'actions@github.com'
-            
-            # Create a new branch for the changes
-            BRANCH_NAME="wordpress-updates-${DATE}"
-            git checkout -b $BRANCH_NAME
-            
-            # Commit changes
-            git add .
-            git commit -m "feat: WordPress updates check - ${DATE}"
-            
-            # Push changes
-            git push origin $BRANCH_NAME
-            
-            # Create PR using GitHub CLI
-            gh pr create \
-              --base main \
-              --head $BRANCH_NAME \
-              --title "WordPress Updates Check - ${DATE}" \
-              --body "This PR contains WordPress updates detected by the automated check on ${DATE}. Please review the changes and merge if appropriate."
+            echo "CHANGES_FOUND=true" >> $GITHUB_ENV
+            echo "Changes found in the repository"
+            # Generate a unique branch name using timestamp
+            echo "SYNC_BRANCH=sync-wordpress-content-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_ENV
           else
-            echo "No changes detected. Skipping PR creation."
+            echo "CHANGES_FOUND=false" >> $GITHUB_ENV
+            echo "No changes found in the repository"
           fi
+
+      - name: Create Pull Request to Main
+        id: create-pr
+        if: env.CHANGES_FOUND == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.TOKEN_FOR_TECHOPS_AUTOMATION }}
+          base: main
+          branch: ${{ env.SYNC_BRANCH }}
+          title: "Sync WordPress Content from Live Site"
+          body: |
+            This PR syncs the latest WordPress content changes from live site to release branch.
+            
+            Changes include:
+            - Checked for updates on plugins and themes
+            - created github issues if updates are available
+            - generated report with details
+            
+            Note: After merging this PR, the activation sync workflow will automatically run.
+          delete-branch: false
 
       - name: Handle PR Creation Failure
         if: failure()

@@ -1,4 +1,4 @@
-name: WordPress Updates Automation
+name: Run WordPress Updates
 
 on:
   schedule:
