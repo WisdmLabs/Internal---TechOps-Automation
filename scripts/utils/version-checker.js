@@ -9,7 +9,60 @@ class VersionChecker {
         this.logger = new Logger('VersionChecker');
         this.configDir = path.join(process.cwd(), 'config');
         this.versionsFile = path.join(this.configDir, 'versions.json');
-        this.wordpressApi = 'https://api.wordpress.org';
+        
+        // Get environment variables
+        this.siteUrl = process.env.LIVE_SITE_URL || process.env.STAGING_SITE_URL;
+        this.authToken = process.env.LIVE_SITE_AUTH_TOKEN || process.env.STAGING_SITE_AUTH_TOKEN;
+        
+        if (!this.siteUrl || !this.authToken) {
+            this.logger.error('Missing required environment variables: LIVE_SITE_URL/STAGING_SITE_URL and LIVE_SITE_AUTH_TOKEN/STAGING_SITE_AUTH_TOKEN');
+        }
+        
+        // Configure axios instance with auth
+        this.api = axios.create({
+            headers: {
+                'Authorization': `Basic ${this.authToken}`,
+                'Accept': 'application/json'
+            }
+        });
+    }
+
+    async fetchInstalledVersions() {
+        try {
+            // Fetch both plugins and themes in parallel
+            const [pluginsResponse, themesResponse] = await Promise.all([
+                this.api.get(`${this.siteUrl}/wp-json/techops/v1/plugins/list`),
+                this.api.get(`${this.siteUrl}/wp-json/techops/v1/themes/list`)
+            ]);
+
+            const versions = {
+                plugins: {},
+                themes: {}
+            };
+
+            // Process plugins
+            if (pluginsResponse.data && Array.isArray(pluginsResponse.data)) {
+                pluginsResponse.data.forEach(plugin => {
+                    if (plugin.slug && plugin.version) {
+                        versions.plugins[plugin.slug] = plugin.version;
+                    }
+                });
+            }
+
+            // Process themes
+            if (themesResponse.data && Array.isArray(themesResponse.data)) {
+                themesResponse.data.forEach(theme => {
+                    if (theme.slug && theme.version) {
+                        versions.themes[theme.slug] = theme.version;
+                    }
+                });
+            }
+
+            return versions;
+        } catch (error) {
+            this.logger.error(`Error fetching installed versions: ${error.message}`);
+            throw error;
+        }
     }
 
     async loadVersions() {
@@ -22,16 +75,16 @@ class VersionChecker {
                 await fs.mkdir(this.configDir, { recursive: true });
             }
 
-            // Try to read the versions file
+            // Try to read the versions file or fetch from WordPress
             try {
                 const data = await fs.readFile(this.versionsFile, 'utf8');
                 return JSON.parse(data);
             } catch (error) {
                 if (error.code === 'ENOENT') {
-                    this.logger.info('No versions file found, creating new one');
-                    const defaultVersions = { plugins: {}, themes: {} };
-                    await fs.writeFile(this.versionsFile, JSON.stringify(defaultVersions, null, 2));
-                    return defaultVersions;
+                    this.logger.info('No versions file found. Fetching from WordPress...');
+                    const versions = await this.fetchInstalledVersions();
+                    await this.saveVersions(versions);
+                    return versions;
                 }
                 throw error;
             }
@@ -48,75 +101,103 @@ class VersionChecker {
 
     async checkPluginUpdates(pluginSlug, currentVersion) {
         try {
-            const response = await axios.get(`${this.wordpressApi}/plugins/info/1.0/${pluginSlug}.json`);
-            const latestVersion = response.data.version;
-            const requires = response.data.requires;
-            const lastUpdated = response.data.last_updated;
+            // First check if plugin exists in WordPress site
+            const response = await this.api.get(`${this.siteUrl}/wp-json/techops/v1/plugins/list`);
+            const plugin = response.data.find(p => p.slug === pluginSlug);
+            
+            if (!plugin) {
+                this.logger.warn(`Plugin ${pluginSlug} not found in WordPress site`);
+                return null;
+            }
 
+            // Compare versions
             return {
                 currentVersion,
-                latestVersion,
-                requires,
-                lastUpdated,
-                hasUpdate: semver.gt(latestVersion, currentVersion)
+                latestVersion: plugin.version,
+                requires: plugin.requires || 'N/A',
+                lastUpdated: plugin.last_updated || 'N/A',
+                hasUpdate: semver.gt(plugin.version, currentVersion)
             };
         } catch (error) {
-            console.error(`Error checking updates for plugin ${pluginSlug}:`, error.message);
+            this.logger.error(`Error checking updates for plugin ${pluginSlug}: ${error.message}`);
             return null;
         }
     }
 
     async checkThemeUpdates(themeSlug, currentVersion) {
         try {
-            const response = await axios.get(`${this.wordpressApi}/themes/info/1.1/?action=theme_information&request[slug]=${themeSlug}`);
-            const latestVersion = response.data.version;
-            const requires = response.data.requires;
-            const lastUpdated = response.data.last_updated;
+            // First check if theme exists in WordPress site
+            const response = await this.api.get(`${this.siteUrl}/wp-json/techops/v1/themes/list`);
+            const theme = response.data.find(t => t.slug === themeSlug);
+            
+            if (!theme) {
+                this.logger.warn(`Theme ${themeSlug} not found in WordPress site`);
+                return null;
+            }
 
+            // Compare versions
             return {
                 currentVersion,
-                latestVersion,
-                requires,
-                lastUpdated,
-                hasUpdate: semver.gt(latestVersion, currentVersion)
+                latestVersion: theme.version,
+                requires: theme.requires || 'N/A',
+                lastUpdated: theme.last_updated || 'N/A',
+                hasUpdate: semver.gt(theme.version, currentVersion)
             };
         } catch (error) {
-            console.error(`Error checking updates for theme ${themeSlug}:`, error.message);
+            this.logger.error(`Error checking updates for theme ${themeSlug}: ${error.message}`);
             return null;
         }
     }
 
     async checkAllUpdates() {
-        const versions = await this.loadVersions();
-        const updates = {
-            plugins: {},
-            themes: {},
-            timestamp: new Date().toISOString()
-        };
+        try {
+            // Get current versions from file or WordPress
+            const versions = await this.loadVersions();
+            
+            // Get latest versions from WordPress
+            const latestVersions = await this.fetchInstalledVersions();
+            
+            const updates = {
+                plugins: {},
+                themes: {},
+                timestamp: new Date().toISOString()
+            };
 
-        // Check plugin updates
-        for (const [slug, version] of Object.entries(versions.plugins)) {
-            const updateInfo = await this.checkPluginUpdates(slug, version);
-            if (updateInfo) {
-                updates.plugins[slug] = updateInfo;
+            // Check plugin updates
+            for (const [slug, version] of Object.entries(versions.plugins)) {
+                if (latestVersions.plugins[slug]) {
+                    const updateInfo = {
+                        currentVersion: version,
+                        latestVersion: latestVersions.plugins[slug],
+                        hasUpdate: semver.gt(latestVersions.plugins[slug], version)
+                    };
+                    updates.plugins[slug] = updateInfo;
+                }
             }
-        }
 
-        // Check theme updates
-        for (const [slug, version] of Object.entries(versions.themes)) {
-            const updateInfo = await this.checkThemeUpdates(slug, version);
-            if (updateInfo) {
-                updates.themes[slug] = updateInfo;
+            // Check theme updates
+            for (const [slug, version] of Object.entries(versions.themes)) {
+                if (latestVersions.themes[slug]) {
+                    const updateInfo = {
+                        currentVersion: version,
+                        latestVersion: latestVersions.themes[slug],
+                        hasUpdate: semver.gt(latestVersions.themes[slug], version)
+                    };
+                    updates.themes[slug] = updateInfo;
+                }
             }
+
+            // Save updates to file
+            await fs.writeFile(
+                path.join(process.cwd(), 'updates.json'),
+                JSON.stringify(updates, null, 2)
+            );
+
+            return updates;
+        } catch (error) {
+            this.logger.error(`Error checking all updates: ${error.message}`);
+            throw error;
         }
-
-        // Save updates to file
-        await fs.writeFile(
-            path.join(process.cwd(), 'updates.json'),
-            JSON.stringify(updates, null, 2)
-        );
-
-        return updates;
     }
 }
 

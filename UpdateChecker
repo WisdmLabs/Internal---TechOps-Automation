@@ -1,0 +1,12 @@
+{"timestamp":"2025-04-17T13:31:12.568Z","level":"info","message":"Current working directory: /home/mithilesh/TECHOPS-GIT-AUTOMATION/Internal---TechOps-Automation","details":{}}
+{"timestamp":"2025-04-17T13:31:12.571Z","level":"info","message":"Config directory path: /home/mithilesh/TECHOPS-GIT-AUTOMATION/Internal---TechOps-Automation/config","details":{}}
+{"timestamp":"2025-04-17T13:31:12.571Z","level":"info","message":"Versions file path: /home/mithilesh/TECHOPS-GIT-AUTOMATION/Internal---TechOps-Automation/config/versions.json","details":{}}
+{"timestamp":"2025-04-17T13:31:12.572Z","level":"info","message":"Directory exists: /home/mithilesh/TECHOPS-GIT-AUTOMATION/Internal---TechOps-Automation","details":{}}
+{"timestamp":"2025-04-17T13:31:12.577Z","level":"info","message":"Write permissions verified for: /home/mithilesh/TECHOPS-GIT-AUTOMATION/Internal---TechOps-Automation","details":{}}
+{"timestamp":"2025-04-17T13:31:12.577Z","level":"info","message":"Config directory not found. Creating it...","details":{}}
+{"timestamp":"2025-04-17T13:31:12.577Z","level":"info","message":"Successfully created config directory at: /home/mithilesh/TECHOPS-GIT-AUTOMATION/Internal---TechOps-Automation/config","details":{}}
+{"timestamp":"2025-04-17T13:31:12.578Z","level":"info","message":"Directory exists: /home/mithilesh/TECHOPS-GIT-AUTOMATION/Internal---TechOps-Automation/config","details":{}}
+{"timestamp":"2025-04-17T13:31:12.579Z","level":"info","message":"Write permissions verified for: /home/mithilesh/TECHOPS-GIT-AUTOMATION/Internal---TechOps-Automation/config","details":{}}
+{"timestamp":"2025-04-17T13:31:12.579Z","level":"info","message":"Versions file not found. Creating default versions.json...","details":{}}
+{"timestamp":"2025-04-17T13:31:12.580Z","level":"info","message":"Successfully created versions file at: /home/mithilesh/TECHOPS-GIT-AUTOMATION/Internal---TechOps-Automation/config/versions.json","details":{}}
+{"timestamp":"2025-04-17T13:31:12.580Z","level":"info","message":"No updates available","details":{}}
