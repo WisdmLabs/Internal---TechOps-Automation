@@ -123,7 +123,7 @@ jobs:
 
       - name: Upload theme sync report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: theme-sync-report
           path: wp-content/themes/theme-sync-report.json
@@ -131,7 +131,7 @@ jobs:
 
       - name: Upload plugin sync report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: plugin-sync-report
           path: wp-content/plugins/sync-report.json
