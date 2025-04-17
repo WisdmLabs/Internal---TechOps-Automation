@@ -22,23 +22,53 @@ function validateEnvironment() {
 
 // Make API request with error handling
 async function makeApiRequest(method, endpoint, data = null) {
-  try {
-    const response = await axios({
-      method,
-      url: `${process.env.STAGING_SITE_URL}/wp-json/wp/v2/${endpoint}`,
-      headers: {
-        'Authorization': `Bearer ${process.env.STAGING_SITE_AUTH_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      data
-    });
-    return response.data;
-  } catch (error) {
-    logger.error(`API request failed: ${error.message}`);
-    if (error.response) {
-      logger.error(`Status: ${error.response.status}`);
-      logger.error(`Response: ${JSON.stringify(error.response.data)}`);
+  const retries = 3;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      logger.info(`Making API request (Attempt ${attempt}/${retries})`, { 
+        method,
+        endpoint
+      });
+
+      const response = await axios({
+        method,
+        url: `${process.env.STAGING_SITE_URL}/wp-json/techops/v1/themes/${endpoint}`,
+        headers: {
+          'Authorization': `Basic ${process.env.STAGING_SITE_AUTH_TOKEN}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        data
+      });
+      return response.data;
+    } catch (error) {
+      logger.error(`API request failed (Attempt ${attempt}/${retries}): ${error.message}`);
+      if (error.response) {
+        logger.error(`Status: ${error.response.status}`);
+        logger.error(`Response: ${JSON.stringify(error.response.data)}`);
+      }
+      
+      if (attempt === retries) {
+        throw error;
+      }
+      
+      // Exponential backoff
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
     }
+  }
+}
+
+// Get current theme states
+async function getCurrentThemeStates() {
+  logger.info('Fetching current theme states');
+  try {
+    const themes = await makeApiRequest('GET', 'list');
+    return themes.reduce((acc, theme) => {
+      acc[theme.slug] = theme.active;
+      return acc;
+    }, {});
+  } catch (error) {
+    logger.error('Failed to fetch current theme states');
     throw error;
   }
 }
@@ -47,7 +77,10 @@ async function makeApiRequest(method, endpoint, data = null) {
 async function activateTheme(themeSlug) {
   logger.info(`Activating theme: ${themeSlug}`);
   try {
-    await makeApiRequest('POST', 'themes/activate', { theme: themeSlug });
+    const result = await makeApiRequest('POST', `activate/${themeSlug}`, { theme: themeSlug });
+    if (!result.success) {
+      throw new Error('Theme activation failed');
+    }
     logger.info(`Successfully activated theme: ${themeSlug}`);
     return true;
   } catch (error) {
@@ -60,27 +93,15 @@ async function activateTheme(themeSlug) {
 async function deactivateTheme(themeSlug) {
   logger.info(`Deactivating theme: ${themeSlug}`);
   try {
-    await makeApiRequest('POST', 'themes/deactivate', { theme: themeSlug });
+    const result = await makeApiRequest('POST', `deactivate/${themeSlug}`, { theme: themeSlug });
+    if (!result.success) {
+      throw new Error('Theme deactivation failed');
+    }
     logger.info(`Successfully deactivated theme: ${themeSlug}`);
     return true;
   } catch (error) {
     logger.error(`Failed to deactivate theme ${themeSlug}: ${error.message}`);
     return false;
-  }
-}
-
-// Get current theme states
-async function getCurrentThemeStates() {
-  logger.info('Fetching current theme states');
-  try {
-    const themes = await makeApiRequest('GET', 'themes');
-    return themes.reduce((acc, theme) => {
-      acc[theme.slug] = theme.active;
-      return acc;
-    }, {});
-  } catch (error) {
-    logger.error('Failed to fetch current theme states');
-    throw error;
   }
 }
 
