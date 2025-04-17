@@ -35,6 +35,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -48,5 +50,45 @@ jobs:
       - name: Check for updates
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STAGING_SITE_URL: ${{ vars.STAGING_SITE_URL }}
+          STAGING_SITE_AUTH_TOKEN: ${{ secrets.STAGING_SITE_AUTH_TOKEN }}
           CHECK_TYPE: ${{ github.event.inputs.check_type || 'all' }}
-        run: node scripts/check-updates.js 
+        run: |
+          # Run the update check and save only the JSON report
+          node scripts/check-updates.js > updates.json
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "CHANGES_FOUND=true" >> $GITHUB_ENV
+            echo "Changes found in the repository"
+            # Generate a unique branch name using timestamp
+            echo "SYNC_BRANCH=sync-wordpress-content-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_ENV
+          else
+            echo "CHANGES_FOUND=false" >> $GITHUB_ENV
+            echo "No changes found in the repository"
+          fi
+
+      - name: Create Pull Request to Main
+        id: create-pr
+        if: env.CHANGES_FOUND == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.TOKEN_FOR_TECHOPS_AUTOMATION }}
+          base: main
+          branch: ${{ env.SYNC_BRANCH }}
+          title: "Sync WordPress Update Check Reports from Staging Site"
+          body: |
+            This PR syncs update check report to main branch.
+            
+            Changes include:
+            - Checked for updates on plugins and themes
+            - Created GitHub issues if updates are available
+            - Generated updates.json with details
+          delete-branch: false
+
+      - name: Handle PR Creation Failure
+        if: failure()
+        run: |
+          echo "Failed to create PR. Please check the workflow logs for more details." 

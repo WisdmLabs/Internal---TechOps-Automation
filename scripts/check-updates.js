@@ -10,18 +10,103 @@ class UpdateChecker {
     constructor() {
         this.logger = new Logger('UpdateChecker');
         this.versionChecker = new VersionChecker();
+        
+        // Get environment variables
+        const githubToken = process.env.GITHUB_TOKEN;
+        if (!githubToken) {
+            this.logger.error('Missing required environment variable: GITHUB_TOKEN');
+        }
+        
         this.octokit = new Octokit({
-            auth: process.env.GITHUB_TOKEN
+            auth: githubToken
         });
-        this.versionsFile = path.join(process.cwd(), 'config', 'versions.json');
+        
+        this.configDir = path.join(process.cwd(), 'config');
+        this.versionsFile = path.join(this.configDir, 'versions.json');
+    }
+
+    async checkDirectoryPermissions(dirPath) {
+        try {
+            // Check if directory exists
+            try {
+                await fs.access(dirPath);
+                this.logger.info(`Directory exists: ${dirPath}`);
+            } catch (error) {
+                this.logger.info(`Directory does not exist: ${dirPath}`);
+                return true; // Directory doesn't exist, so we can create it
+            }
+
+            // Try to write a test file
+            const testFile = path.join(dirPath, '.write-test');
+            try {
+                await fs.writeFile(testFile, 'test');
+                await fs.unlink(testFile);
+                this.logger.info(`Write permissions verified for: ${dirPath}`);
+                return true;
+            } catch (error) {
+                this.logger.error(`No write permissions for directory: ${dirPath}`);
+                this.logger.error(`Error: ${error.message}`);
+                return false;
+            }
+        } catch (error) {
+            this.logger.error(`Error checking directory permissions: ${error.message}`);
+            return false;
+        }
     }
 
     async loadVersions() {
         try {
-            const data = await fs.readFile(this.versionsFile, 'utf8');
-            return JSON.parse(data);
+            this.logger.info(`Current working directory: ${process.cwd()}`);
+            this.logger.info(`Config directory path: ${this.configDir}`);
+            this.logger.info(`Versions file path: ${this.versionsFile}`);
+
+            // Check parent directory permissions
+            const parentDir = path.dirname(this.configDir);
+            const hasPermissions = await this.checkDirectoryPermissions(parentDir);
+            if (!hasPermissions) {
+                throw new Error(`No write permissions in parent directory: ${parentDir}`);
+            }
+
+            // Create config directory if it doesn't exist
+            try {
+                await fs.access(this.configDir);
+                this.logger.info('Config directory exists');
+            } catch (error) {
+                this.logger.info('Config directory not found. Creating it...');
+                try {
+                    await fs.mkdir(this.configDir, { recursive: true });
+                    this.logger.info(`Successfully created config directory at: ${this.configDir}`);
+                } catch (mkdirError) {
+                    this.logger.error(`Failed to create config directory: ${mkdirError.message}`);
+                    throw mkdirError;
+                }
+            }
+
+            // Verify config directory permissions
+            const configDirPermissions = await this.checkDirectoryPermissions(this.configDir);
+            if (!configDirPermissions) {
+                throw new Error(`No write permissions in config directory: ${this.configDir}`);
+            }
+
+            // Try to read the versions file or fetch from WordPress
+            try {
+                const data = await fs.readFile(this.versionsFile, 'utf8');
+                this.logger.info('Successfully read versions file');
+                return JSON.parse(data);
+            } catch (error) {
+                if (error.code === 'ENOENT') {
+                    this.logger.info('Versions file not found. Fetching from WordPress...');
+                    const versions = await this.versionChecker.fetchInstalledVersions();
+                    await fs.writeFile(this.versionsFile, JSON.stringify(versions, null, 2));
+                    this.logger.info(`Successfully created versions file at: ${this.versionsFile}`);
+                    return versions;
+                }
+                this.logger.error(`Error reading versions file: ${error.message}`);
+                throw error;
+            }
         } catch (error) {
-            this.logger.error(`Error loading versions file: ${error.message}`);
+            this.logger.error(`Error handling versions file: ${error.message}`);
+            this.logger.error(`Stack trace: ${error.stack}`);
             return { plugins: {}, themes: {} };
         }
     }
@@ -102,6 +187,11 @@ class UpdateChecker {
             const hasUpdates = Object.keys(updates.plugins).length > 0 || Object.keys(updates.themes).length > 0;
             
             if (hasUpdates) {
+                if (!process.env.GITHUB_REPOSITORY) {
+                    this.logger.error('Missing GITHUB_REPOSITORY environment variable');
+                    return updates;
+                }
+                
                 const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
                 const issueBody = await this.generateIssueBody(updates);
                 const title = `WordPress Updates Available - ${new Date().toISOString().split('T')[0]}`;
@@ -112,25 +202,71 @@ class UpdateChecker {
 
             return updates;
         } catch (error) {
-            this.logger.error('Error:', error.message);
-            return { plugins: {}, themes: {} };
+            this.logger.error(`Error checking all updates: ${error.message}`);
+            throw error;
         }
     }
 }
 
-// If running directly (not imported as a module)
-if (require.main === module) {
-    const checker = new UpdateChecker();
-    const checkType = process.argv[2] || 'all';
-    
-    checker.checkUpdates(checkType)
-        .then(updates => {
-            process.exit(Object.keys(updates.plugins).length > 0 || Object.keys(updates.themes).length > 0 ? 1 : 0);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            process.exit(1);
-        });
+// Main execution
+async function main() {
+    try {
+        const checker = new UpdateChecker();
+        const checkType = process.env.CHECK_TYPE || 'all';
+        
+        // Get current versions from WordPress site
+        const versions = await checker.loadVersions();
+        
+        // Check updates based on type
+        let updates = { plugins: {}, themes: {} };
+        
+        if (checkType === 'plugins') {
+            checker.logger.info('Checking only plugin updates...');
+            for (const [slug, version] of Object.entries(versions.plugins)) {
+                const updateInfo = await checker.versionChecker.checkPluginUpdates(slug, version);
+                if (updateInfo) {
+                    updates.plugins[slug] = updateInfo;
+                }
+            }
+        } else if (checkType === 'themes') {
+            checker.logger.info('Checking only theme updates...');
+            for (const [slug, version] of Object.entries(versions.themes)) {
+                const updateInfo = await checker.versionChecker.checkThemeUpdates(slug, version);
+                if (updateInfo) {
+                    updates.themes[slug] = updateInfo;
+                }
+            }
+        } else {
+            checker.logger.info('Checking all updates...');
+            updates = await checker.versionChecker.checkAllUpdates();
+        }
+
+        // Print the report
+        checker.logger.info('Update check completed. Report:');
+        console.log(JSON.stringify(updates, null, 2));
+
+        // Create GitHub issue if updates found
+        const hasUpdates = Object.keys(updates.plugins).length > 0 || Object.keys(updates.themes).length > 0;
+        if (hasUpdates) {
+            if (!process.env.GITHUB_REPOSITORY) {
+                checker.logger.error('Missing GITHUB_REPOSITORY environment variable');
+                return;
+            }
+            
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+            const issueBody = await checker.generateIssueBody(updates);
+            const title = `WordPress Updates Available - ${new Date().toISOString().split('T')[0]}`;
+            await checker.createGitHubIssue(checker.octokit, owner, repo, title, issueBody);
+        } else {
+            checker.logger.info('No updates available');
+        }
+    } catch (error) {
+        console.error('Error running update check:', error);
+        process.exit(1);
+    }
 }
+
+// Run the main function
+main();
 
 module.exports = UpdateChecker; 

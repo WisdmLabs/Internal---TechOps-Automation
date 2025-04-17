@@ -1,30 +1,8 @@
-name: WordPress Updates Automation
+name: Process WordPress Updates
 
 on:
-  schedule:
-    - cron: "0 0 1 * *"  # Run at midnight on the first day of every month
   workflow_dispatch:
     inputs:
-      schedule_day:
-        description: 'Day of month to run (1-31)'
-        required: false
-        type: number
-        default: 1
-      schedule_time:
-        description: 'Time to run (HH:MM)'
-        required: false
-        type: string
-        default: '00:00'
-      timezone:
-        description: 'Timezone for scheduling'
-        required: false
-        type: choice
-        options:
-          - 'Asia/Kolkata'
-          - 'UTC'
-          - 'America/New_York'
-          - 'Europe/London'
-        default: 'Asia/Kolkata'
       update_type:
         description: 'Type of updates to process'
         required: true
@@ -36,112 +14,81 @@ on:
         default: 'all'
 
 jobs:
-  configure-schedule:
+  process-updates:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
     steps:
-      - name: Update Schedule Configuration
-        uses: actions/github-script@v6
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          script: |
-            const day = ${{ github.event.inputs.schedule_day }};
-            const time = ${{ github.event.inputs.schedule_time }};
-            const [hours, minutes] = time.split(':');
-            const cron = `${minutes} ${hours} ${day} * *`;
-            
-            await github.rest.actions.createOrUpdateRepoVariable({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: 'UPDATE_CHECK_CRON',
-              value: cron
-            });
-            
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: 'Schedule Configuration Updated',
-              body: `Schedule has been updated:\n- Day: ${day}\n- Time: ${time}\n- Timezone: ${{ github.event.inputs.timezone }}\n- Cron: ${cron}`
-            });
-
-  check-and-update:
-    needs: configure-schedule
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+          fetch-depth: 0
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
-          
+      
       - name: Install dependencies
         run: npm ci
-        
-      - name: Check for updates
-        id: check-updates
-        run: node scripts/check-updates.js
+      
+      - name: Process updates
         env:
-          LIVE_SITE_URL: ${{ secrets.LIVE_SITE_URL }}
-          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          UPDATE_TYPE: ${{ github.event.inputs.update_type || 'all' }}
-          TIMEZONE: ${{ github.event.inputs.timezone || 'Asia/Kolkata' }}
-          
-      - name: Create backup
-        if: success() && hashFiles('updates.json')
+          UPDATE_TYPE: ${{ github.event.inputs.update_type }}
         run: |
-          BACKUP_DIR="_backups/$(date +%Y%m%d-%H%M%S)"
-          mkdir -p $BACKUP_DIR
-          cp -r wp-content/* $BACKUP_DIR/
-          echo "Created backup in $BACKUP_DIR"
+          # Run the update processor and capture output
+          npm run process-updates | tee processor_output.txt
           
-      - name: Download plugin updates
-        if: success() && hashFiles('updates.json') && (env.UPDATE_TYPE == 'all' || env.UPDATE_TYPE == 'plugins')
-        run: node scripts/utils/update-downloader.js plugins
-        env:
-          LIVE_SITE_URL: ${{ secrets.LIVE_SITE_URL }}
-          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
+          # Print the processing output
+          echo "Update Processing Output:"
+          cat processor_output.txt
           
-      - name: Download theme updates
-        if: success() && hashFiles('updates.json') && (env.UPDATE_TYPE == 'all' || env.UPDATE_TYPE == 'themes')
-        run: node scripts/utils/update-downloader.js themes
-        env:
-          LIVE_SITE_URL: ${{ secrets.LIVE_SITE_URL }}
-          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
-          
-      - name: Process plugin updates
-        if: success() && hashFiles('updates.json') && (env.UPDATE_TYPE == 'all' || env.UPDATE_TYPE == 'plugins')
+          # Check if update_results.json exists and contains updates
+          if [ -f "update_results.json" ]; then
+            PROCESSED_COUNT=$(jq '.processed | length' update_results.json)
+            if [ "$PROCESSED_COUNT" -gt 0 ]; then
+              echo "UPDATES_PROCESSED=true" >> $GITHUB_ENV
+            else
+              echo "UPDATES_PROCESSED=false" >> $GITHUB_ENV
+            fi
+          else
+            echo "UPDATES_PROCESSED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Check for changes
+        id: check-changes
         run: |
-          # Read updates.json and extract plugin information
-          PLUGINS=$(node -e "const updates = require('./updates.json'); console.log(JSON.stringify(Object.entries(updates.plugins).map(([slug, info]) => ({ slug, active: true }))))")
-          echo "$PLUGINS" | node scripts/process-plugins.js
-        env:
-          LIVE_SITE_URL: ${{ secrets.LIVE_SITE_URL }}
-          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
-          
-      - name: Process theme updates
-        if: success() && hashFiles('updates.json') && (env.UPDATE_TYPE == 'all' || env.UPDATE_TYPE == 'themes')
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "CHANGES_FOUND=true" >> $GITHUB_ENV
+            echo "Changes found in the repository"
+            # Generate a unique branch name using timestamp
+            echo "SYNC_BRANCH=sync-wordpress-content-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_ENV
+          else
+            echo "CHANGES_FOUND=false" >> $GITHUB_ENV
+            echo "No changes found in the repository"
+          fi
+
+      - name: Create Pull Request to Main
+        id: create-pr
+        if: env.CHANGES_FOUND == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.TOKEN_FOR_TECHOPS_AUTOMATION }}
+          base: main
+          branch: ${{ env.SYNC_BRANCH }}
+          title: "Processed Wordpress Updates"
+          body: |
+            This PR merges WordPress content updates to main branch.
+            
+            Changes include:
+            - Updated plugins
+            - Updated themes
+          delete-branch: false
+
+      - name: Handle Failure
+        if: failure()
         run: |
-          # Read updates.json and extract theme information
-          THEMES=$(node -e "const updates = require('./updates.json'); console.log(JSON.stringify(Object.entries(updates.themes).map(([slug, info]) => ({ slug, active: true }))))")
-          echo "$THEMES" | node scripts/process-themes.js
-        env:
-          LIVE_SITE_URL: ${{ secrets.LIVE_SITE_URL }}
-          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
-          
-      - name: Update versions file
-        if: success() && hashFiles('updates.json')
-        run: node scripts/utils/version-updater.js
-        env:
-          LIVE_SITE_URL: ${{ secrets.LIVE_SITE_URL }}
-          LIVE_SITE_AUTH_TOKEN: ${{ secrets.LIVE_SITE_AUTH_TOKEN }}
-          
-      - name: Commit and push changes
-        if: success() && hashFiles('updates.json')
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add .
-          git commit -m "Update WordPress plugins and themes [skip ci]"
-          git push 
+          echo "Failed to process updates or create PR. Check the logs for details."
+          if [ -f "processor_output.txt" ]; then
+            echo "Processor Output:"
+            cat processor_output.txt
+          fi 

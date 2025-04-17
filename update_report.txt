@@ -1,0 +1,208 @@
+[36m[INFO] Current working directory: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation[0m
+[36m[INFO] Config directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/config[0m
+[36m[INFO] Versions file path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/config/versions.json[0m
+[36m[INFO] Directory exists: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation[0m
+[36m[INFO] Write permissions verified for: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation[0m
+[36m[INFO] Config directory exists[0m
+[36m[INFO] Directory exists: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/config[0m
+[36m[INFO] Write permissions verified for: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/config[0m
+[36m[INFO] Successfully read versions file[0m
+[36m[INFO] Checking all updates...[0m
+[36m[INFO] Fetching current versions from WordPress site...[0m
+[36m[INFO] Saved current versions to versions.json[0m
+[36m[INFO] Checking plugin updates...[0m
+[36m[INFO] Notice: Plugin 'hello.php' not found on WordPress.org. This might be a premium or custom developed plugin.[0m
+[33m[WARN] Could not fetch WordPress.org info for plugin hello.php[0m
+[36m[INFO] Notice: Plugin 'googleanalytics.php' not found on WordPress.org. This might be a premium or custom developed plugin.[0m
+[33m[WARN] Could not fetch WordPress.org info for plugin googleanalytics.php[0m
+[36m[INFO] Notice: Plugin 'object-cache-pro' not found on WordPress.org. This might be a premium or custom developed plugin.[0m
+[33m[WARN] Could not fetch WordPress.org info for plugin object-cache-pro[0m
+[36m[INFO] Notice: Plugin 'td-cloud-library' not found on WordPress.org. This might be a premium or custom developed plugin.[0m
+[33m[WARN] Could not fetch WordPress.org info for plugin td-cloud-library[0m
+[36m[INFO] Notice: Plugin 'td-composer' not found on WordPress.org. This might be a premium or custom developed plugin.[0m
+[33m[WARN] Could not fetch WordPress.org info for plugin td-composer[0m
+[36m[INFO] Notice: Plugin 'techops-content-sync' not found on WordPress.org. This might be a premium or custom developed plugin.[0m
+[33m[WARN] Could not fetch WordPress.org info for plugin techops-content-sync[0m
+[36m[INFO] Checking theme updates...[0m
+[36m[INFO] Notice: Theme 'Newspaper' not found on WordPress.org. This might be a premium or custom developed theme.[0m
+[33m[WARN] Could not fetch WordPress.org info for theme Newspaper[0m
+[36m[INFO] Notice: Theme 'effectivenews' not found on WordPress.org. This might be a premium or custom developed theme.[0m
+[33m[WARN] Could not fetch WordPress.org info for theme effectivenews[0m
+[36m[INFO] Saved updates report to updates.json[0m
+[36m[INFO] Update check completed. Report:[0m
+{
+  "plugins": {
+    "akismet": {
+      "currentVersion": "5.3.7",
+      "latestVersion": "5.3.7",
+      "requires": "5.8",
+      "lastUpdated": "2025-04-14 11:37pm GMT",
+      "hasUpdate": false
+    },
+    "bbpress": {
+      "currentVersion": "2.6.12",
+      "latestVersion": "2.6.13",
+      "requires": "6.0",
+      "lastUpdated": "2025-04-16 11:22pm GMT",
+      "hasUpdate": true
+    },
+    "breeze": {
+      "currentVersion": "2.2.7",
+      "latestVersion": "2.2.9",
+      "requires": "6.0",
+      "lastUpdated": "2025-04-10 10:18am GMT",
+      "hasUpdate": true
+    },
+    "advanced-nocaptcha-recaptcha": {
+      "currentVersion": "7.5.0",
+      "latestVersion": "7.5.0",
+      "requires": "5.0",
+      "lastUpdated": "2025-04-16 8:27am GMT",
+      "hasUpdate": false
+    },
+    "classic-editor": {
+      "currentVersion": "1.6.7",
+      "latestVersion": "1.6.7",
+      "requires": "4.9",
+      "lastUpdated": "2024-12-03 9:03pm GMT",
+      "hasUpdate": false
+    },
+    "contact-form-7": {
+      "currentVersion": "6.0.5",
+      "latestVersion": "6.0.6",
+      "requires": "6.6",
+      "lastUpdated": "2025-04-10 6:47am GMT",
+      "hasUpdate": true
+    },
+    "db-access-adminer": {
+      "currentVersion": "2.1.0",
+      "latestVersion": "2.1.0",
+      "requires": "5.3",
+      "lastUpdated": "2023-02-22 3:00am GMT",
+      "hasUpdate": false
+    },
+    "download-plugins-dashboard": {
+      "currentVersion": "1.9.4",
+      "latestVersion": "1.9.4",
+      "requires": "3.1",
+      "lastUpdated": "2024-10-31 8:11pm GMT",
+      "hasUpdate": false
+    },
+    "email-log": {
+      "currentVersion": "2.4.9",
+      "latestVersion": "2.4.9",
+      "requires": "4.0",
+      "lastUpdated": "2024-01-28 5:04pm GMT",
+      "hasUpdate": false
+    },
+    "hcaptcha-for-forms-and-more": {
+      "currentVersion": "4.11.0",
+      "latestVersion": "4.12.0",
+      "requires": "5.3",
+      "lastUpdated": "2025-04-01 12:14pm GMT",
+      "hasUpdate": true
+    },
+    "wp-maintenance-mode": {
+      "currentVersion": "2.6.16",
+      "latestVersion": "2.6.17",
+      "requires": "4.7",
+      "lastUpdated": "2025-04-16 9:26am GMT",
+      "hasUpdate": true
+    },
+    "limit-login-attempts-reloaded": {
+      "currentVersion": "2.26.18",
+      "latestVersion": "2.26.18",
+      "requires": "3.0",
+      "lastUpdated": "2025-02-10 3:10pm GMT",
+      "hasUpdate": false
+    },
+    "otter-blocks": {
+      "currentVersion": "3.0.10",
+      "latestVersion": "3.0.11",
+      "requires": "6.2",
+      "lastUpdated": "2025-04-16 12:02pm GMT",
+      "hasUpdate": true
+    },
+    "spinupwp": {
+      "currentVersion": "1.7.1",
+      "latestVersion": "1.7.1",
+      "requires": "4.7",
+      "lastUpdated": "2024-11-19 10:30am GMT",
+      "hasUpdate": false
+    },
+    "stop-emails": {
+      "currentVersion": "1.2.1",
+      "latestVersion": "1.2.1",
+      "requires": "3.6",
+      "lastUpdated": "2025-04-16 9:11pm GMT",
+      "hasUpdate": false
+    },
+    "updraftplus": {
+      "currentVersion": "2.23.3.26",
+      "latestVersion": "1.25.5",
+      "requires": "3.2",
+      "lastUpdated": "2025-04-17 9:45am GMT",
+      "hasUpdate": false
+    },
+    "wordfence": {
+      "currentVersion": "8.0.3",
+      "latestVersion": "8.0.5",
+      "requires": "4.7",
+      "lastUpdated": "2025-04-08 3:39pm GMT",
+      "hasUpdate": true
+    },
+    "wp-security-audit-log": {
+      "currentVersion": "5.3.3",
+      "latestVersion": "5.3.4.1",
+      "requires": "5.5",
+      "lastUpdated": "2025-04-16 6:55am GMT",
+      "hasUpdate": true
+    },
+    "wpforms-lite": {
+      "currentVersion": "1.9.4.2",
+      "latestVersion": "1.9.4.2",
+      "requires": "5.5",
+      "lastUpdated": "2025-03-12 12:17pm GMT",
+      "hasUpdate": false
+    },
+    "wp-mail-smtp": {
+      "currentVersion": "4.4.0",
+      "latestVersion": "4.4.0",
+      "requires": "5.5",
+      "lastUpdated": "2025-03-05 2:42pm GMT",
+      "hasUpdate": false
+    },
+    "wordpress-seo": {
+      "currentVersion": "24.6",
+      "latestVersion": "24.9",
+      "requires": "6.6",
+      "lastUpdated": "2025-04-15 8:04am GMT",
+      "hasUpdate": true
+    }
+  },
+  "themes": {
+    "twentytwentyfive": {
+      "currentVersion": "1.1",
+      "latestVersion": "1.2",
+      "requires": "N/A",
+      "lastUpdated": "2025-04-15",
+      "hasUpdate": true
+    },
+    "twentytwentyfour": {
+      "currentVersion": "1.3",
+      "latestVersion": "1.3",
+      "requires": "N/A",
+      "lastUpdated": "2024-11-13",
+      "hasUpdate": false
+    },
+    "twentytwentythree": {
+      "currentVersion": "1.6",
+      "latestVersion": "1.6",
+      "requires": "N/A",
+      "lastUpdated": "2024-11-13",
+      "hasUpdate": false
+    }
+  },
+  "timestamp": "2025-04-17T16:08:57.408Z"
+}
+[36m[INFO] Created issue #42[0m
