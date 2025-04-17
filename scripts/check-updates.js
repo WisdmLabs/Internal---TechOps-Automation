@@ -202,25 +202,30 @@ class UpdateChecker {
 
             return updates;
         } catch (error) {
-            this.logger.error('Error:', error.message);
-            return { plugins: {}, themes: {} };
+            this.logger.error(`Error checking all updates: ${error.message}`);
+            throw error;
         }
     }
 }
 
-// If running directly (not imported as a module)
-if (require.main === module) {
-    const checker = new UpdateChecker();
-    const checkType = process.argv[2] || 'all';
-    
-    checker.checkUpdates(checkType)
-        .then(updates => {
-            process.exit(Object.keys(updates.plugins).length > 0 || Object.keys(updates.themes).length > 0 ? 1 : 0);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            process.exit(1);
-        });
+// Main execution
+async function main() {
+    try {
+        const checker = new UpdateChecker();
+        const checkType = process.env.CHECK_TYPE || 'all';
+        
+        // First, ensure we have the latest versions from WordPress
+        await checker.versionChecker.checkAllUpdates();
+        
+        // Then check for any updates and create GitHub issues if needed
+        await checker.checkUpdates(checkType);
+    } catch (error) {
+        console.error('Error running update check:', error);
+        process.exit(1);
+    }
 }
+
+// Run the main function
+main();
 
 module.exports = UpdateChecker; 
