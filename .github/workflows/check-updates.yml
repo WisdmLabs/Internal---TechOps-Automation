@@ -82,16 +82,14 @@ jobs:
           token: ${{ secrets.TOKEN_FOR_TECHOPS_AUTOMATION }}
           base: main
           branch: ${{ env.SYNC_BRANCH }}
-          title: "Sync WordPress Content from Live Site"
+          title: "Sync WordPress Update Check Reports from Staging Site"
           body: |
-            This PR syncs the latest WordPress content changes from live site to release branch.
+            This PR syncs update check report to main branch.
             
             Changes include:
             - Checked for updates on plugins and themes
             - created github issues if updates are available
             - generated report with details
-            
-            Note: After merging this PR, the activation sync workflow will automatically run.
           delete-branch: false
 
       - name: Handle PR Creation Failure
