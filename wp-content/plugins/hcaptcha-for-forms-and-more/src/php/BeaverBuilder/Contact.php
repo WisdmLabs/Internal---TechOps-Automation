@@ -1,6 +1,6 @@
 <?php
 /**
- * The Contact class file.
+ * Contact class file.
  *
  * @package hcaptcha-wp
  */
@@ -17,7 +17,6 @@ use stdClass;
  * Class Contact.
  */
 class Contact extends Base {
-
 	/**
 	 * Nonce action.
 	 */
@@ -41,7 +40,7 @@ class Contact extends Base {
 	}
 
 	/**
-	 * Filters the Beaver Builder Contact Form submit button HTML and adds hCaptcha.
+	 * Filters the Beaver Builder Contact Form submit button html and adds hcaptcha.
 	 *
 	 * @param string|mixed    $out    Button html.
 	 * @param FLBuilderModule $module Button module.

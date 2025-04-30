@@ -1,4 +1,4 @@
-/* globals HCaptchaAutoVerifyObject, hCaptchaBindEvents */
+/* globals HCaptchaAutoVerifyObject */
 
 document.addEventListener( 'DOMContentLoaded', () => {
 	const formSelector = 'form';
@@ -55,7 +55,9 @@ document.addEventListener( 'DOMContentLoaded', () => {
 				resultContainer.innerHTML = error;
 			}
 
-			hCaptchaBindEvents();
+			const currentHCaptcha = currentFormElement.querySelector( hCaptchaAjaxSelector );
+
+			window.hCaptchaReset( currentHCaptcha );
 		} );
 
 		return formElement;
