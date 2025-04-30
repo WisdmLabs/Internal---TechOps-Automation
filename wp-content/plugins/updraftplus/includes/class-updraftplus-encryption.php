@@ -17,7 +17,7 @@ class UpdraftPlus_Encryption {
 	
 		global $updraftplus;
 	
-		$ensure_phpseclib = $updraftplus->ensure_phpseclib('Crypt_Rijndael');
+		$ensure_phpseclib = $updraftplus->ensure_phpseclib();
 		
 		if (is_wp_error($ensure_phpseclib)) {
 			$updraftplus->log("Failed to load phpseclib classes (".$ensure_phpseclib->get_error_code()."): ".$ensure_phpseclib->get_error_message());
@@ -33,7 +33,7 @@ class UpdraftPlus_Encryption {
 		if (false === ($decrypted_handle = fopen($decrypted_path, 'wb+'))) return false;
 
 		// setup encryption
-		$rijndael = new Crypt_Rijndael();
+		$rijndael = new phpseclib_Crypt_Rijndael();
 		$rijndael->setKey($key);
 		$rijndael->disablePadding();
 		$rijndael->enableContinuousBuffer();
@@ -145,11 +145,12 @@ class UpdraftPlus_Encryption {
 		global $updraftplus;
 
 		if (!function_exists('mcrypt_encrypt') && !extension_loaded('openssl')) {
+			/* translators: %s: The name of the missing encryption module. */
 			$updraftplus->log(sprintf(__('Your web-server does not have the %s module installed.', 'updraftplus'), 'PHP/mcrypt / PHP/OpenSSL').' '.__('Without it, encryption will be a lot slower.', 'updraftplus'), 'warning', 'nocrypt');
 		}
 
 		// include Rijndael library from phpseclib
-		$ensure_phpseclib = $updraftplus->ensure_phpseclib('Crypt_Rijndael');
+		$ensure_phpseclib = $updraftplus->ensure_phpseclib();
 		
 		if (is_wp_error($ensure_phpseclib)) {
 			$updraftplus->log("Failed to load phpseclib classes (".$ensure_phpseclib->get_error_code()."): ".$ensure_phpseclib->get_error_message());
@@ -176,7 +177,7 @@ class UpdraftPlus_Encryption {
 		$resumption = false;
 
 		// setup encryption
-		$rijndael = new Crypt_Rijndael();
+		$rijndael = new phpseclib_Crypt_Rijndael();
 		$rijndael->setKey($key);
 		$rijndael->disablePadding();
 		$rijndael->enableContinuousBuffer();
@@ -244,11 +245,11 @@ class UpdraftPlus_Encryption {
 			if (!$resumption) {
 				$updraftplus->log("Could not resume the encryption will now try to start again");
 				// remove the existing encrypted file as it's no good to us now
-				@unlink($encrypted_path);// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged
+				@unlink($encrypted_path);// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged -- Silenced to suppress errors that may arise if the file doesn't exist.
 				// reset the data encrypted so that the loop can be entered
 				$data_encrypted = 0;
 				// setup encryption to reset the IV
-				$rijndael = new Crypt_Rijndael();
+				$rijndael = new phpseclib_Crypt_Rijndael();
 				$rijndael->setKey($key);
 				$rijndael->disablePadding();
 				$rijndael->enableContinuousBuffer();
@@ -333,7 +334,7 @@ class UpdraftPlus_Encryption {
 		
 		if ('' == $encryption) {
 			header('Content-type: text/plain');
-			_e("Decryption failed. The database file is encrypted, but you have no encryption key entered.", 'updraftplus');
+			echo esc_html(__('Decryption failed.', 'updraftplus').' '.__('The database file is encrypted, but you have no encryption key entered.', 'updraftplus'));
 			$updraftplus->log('Decryption of database failed: the database file is encrypted, but you have no encryption key entered.', 'error');
 		} else {
 
@@ -351,7 +352,7 @@ class UpdraftPlus_Encryption {
 				unlink($decrypted_file['fullpath']);
 			} else {
 				header('Content-type: text/plain');
-				echo __("Decryption failed. The most likely cause is that you used the wrong key.", 'updraftplus')." ".__('The decryption key used:', 'updraftplus').' '.$encryption;
+				echo esc_html(__('Decryption failed.', 'updraftplus').' '.__('The most likely cause is that you used the wrong key.', 'updraftplus').' '.__('The decryption key used:', 'updraftplus').' '.$encryption);
 				
 			}
 		}

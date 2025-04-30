@@ -44,7 +44,7 @@ class UpdraftPlus_Backup_History {
 	 */
 	public static function add_jobdata($backup_history) {
 	
-		global $wpdb;
+		global $wpdb, $updraftplus;
 		$table = is_multisite() ? $wpdb->sitemeta : $wpdb->options;
 		$key_column = is_multisite() ? 'meta_key' : 'option_name';
 		$value_column = is_multisite() ? 'meta_value' : 'option_value';
@@ -84,7 +84,7 @@ class UpdraftPlus_Backup_History {
 				// The 16 here is the length of 'updraft_jobdata_'
 				$nonce = substr($values->$key_column, 16);
 				if (empty($nonces_map[$nonce]) || empty($values->$value_column)) continue;
-				$jobdata = maybe_unserialize($values->$value_column);
+				$jobdata = $updraftplus->unserialize($values->$value_column);
 				$backup_history[$nonces_map[$nonce]]['jobdata'] = empty($jobdata) ? array() : $jobdata;
 			}
 			foreach ($columns as $nonce) {
@@ -233,7 +233,7 @@ class UpdraftPlus_Backup_History {
 		$changed = UpdraftPlus_Options::update_updraft_option('updraft_backup_history', $backup_history, $use_cache, 'no');
 
 		if (!$changed && '' !== $wpdb->last_error && $wpdb_previous_last_error != $wpdb->last_error) {
-			// if an error occured, there is a possibility if this error is caused by invalid characters found in 'label'
+			// if an error occurred, there is a possibility if this error is caused by invalid characters found in 'label'
 			foreach ($backup_history as $btime => $bdata) {
 				if (isset($bdata['label'])) {
 					// try removing invalid characters from 'label'
@@ -284,9 +284,9 @@ class UpdraftPlus_Backup_History {
 	 * @return Mixed - the database option
 	 */
 	public static function filter_updraft_backup_history() {
-		global $wpdb;
+		global $wpdb, $updraftplus;
 		$row = $wpdb->get_row($wpdb->prepare("SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", 'updraft_backup_history'));
-		if (is_object($row)) return maybe_unserialize($row->option_value);
+		if (is_object($row) && !empty($row->option_value)) return $updraftplus->unserialize($row->option_value);
 		return false;
 	}
 	
@@ -531,6 +531,7 @@ class UpdraftPlus_Backup_History {
 					'code' => 'foundforeign_'.md5($entry),
 					'desc' => $entry,
 					'method' => '',
+					// translators: %s: The description of the accepted foreign backup type.
 					'message' => sprintf(__('Backup created by: %s.', 'updraftplus'), $accept[$accepted_foreign]['desc'])
 				);
 			} elseif ('.zip' == strtolower(substr($entry, -4, 4)) || preg_match('/\.sql(\.(bz2|gz))?$/i', $entry)) {
@@ -582,7 +583,7 @@ class UpdraftPlus_Backup_History {
 				$backup_times_by_nonce[$nonce] = $btime;
 			}
 			if ($btime <= 100) continue;
-			$file_size = @filesize($updraft_dir.'/'.$entry);// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged
+			$file_size = @filesize($updraft_dir.'/'.$entry);// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged -- Silenced to suppress errors that may arise because of the function.
 
 			if (!isset($backup_nonces_by_filename[$entry])) {
 				$changes = true;
@@ -592,7 +593,7 @@ class UpdraftPlus_Backup_History {
 					$backup_history[$btime]['native'] = false;
 				} elseif ('db' == $type && !$accepted_foreign) {
 					// we now that multiple databases will add its index number after the 'db' (e.g. 'db1'), however, the $type == 'db' here has nothing to do with our multiple databases addon because this block of code inside the 'if (!isset($backup_nonces_by_filename[$entry]))' will never be executed if multiple databases is found to be in the backup history and that our backup file pattern matches with them, so this is not the place where we should check for our multiple databases backup file, this is instead the place for handling foreign databases (e.g. Backup Buddy and our other competitors). The $type were previously set to 'db' when its file was found to be a foreign database
-					list ($mess, $warn, $err, $info) = $updraftplus->analyse_db_file(false, array(), $updraft_dir.'/'.$entry, true);// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+					list ($mess, $warn, $err, $info) = $updraftplus->analyse_db_file(false, array(), $updraft_dir.'/'.$entry, true);// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Unused parameter is present because the method returns an array.
 					if (!empty($info['label'])) {
 						$backup_history[$btime]['label'] = $info['label'];
 					}
@@ -875,7 +876,7 @@ class UpdraftPlus_Backup_History {
 	 * @return void
 	 */
 	public static function preserve_backup_history() {
-		self::$backup_history_on_restore = get_site_option('updraft_backup_history');
+		self::$backup_history_on_restore = self::get_backup_history_option();
 	}
 
 	/**
@@ -884,7 +885,7 @@ class UpdraftPlus_Backup_History {
 	 * @return void
 	 */
 	public static function restore_backup_history_label() {
-		$backup_history = get_site_option('updraft_backup_history');
+		$backup_history = self::get_backup_history_option();
 		$saved_backup_history = self::$backup_history_on_restore;
 		$is_backup_history_changed = false;
 
@@ -902,5 +903,14 @@ class UpdraftPlus_Backup_History {
 		}
 
 		if ($is_backup_history_changed) self::save_history($backup_history, false);
+	}
+
+	/**
+	 * Get backup history by checking for existence of the Multisite addon
+	 *
+	 * @return Array - the array of backup histories.
+	 */
+	private static function get_backup_history_option() {
+		return UpdraftPlus_Options::get_updraft_option('updraft_backup_history');
 	}
 }

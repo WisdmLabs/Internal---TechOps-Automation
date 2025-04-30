@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit3e48e8c03c5b5a02f16696bf1a21546e
+class ComposerStaticInitd837a11b4d63ca15201a747f68ece96b
 {
     public static $prefixLengthsPsr4 = array (
         'K' => 
@@ -43,7 +43,10 @@ class ComposerStaticInit3e48e8c03c5b5a02f16696bf1a21546e
         'HCaptcha\\Admin\\Events\\FormsTable' => __DIR__ . '/../..' . '/src/php/Admin/Events/FormsTable.php',
         'HCaptcha\\Admin\\Events\\TableBase' => __DIR__ . '/../..' . '/src/php/Admin/Events/TableBase.php',
         'HCaptcha\\Admin\\Notifications' => __DIR__ . '/../..' . '/src/php/Admin/Notifications.php',
+        'HCaptcha\\Admin\\NotificationsBase' => __DIR__ . '/../..' . '/src/php/Admin/NotificationsBase.php',
         'HCaptcha\\Admin\\PluginStats' => __DIR__ . '/../..' . '/src/php/Admin/PluginStats.php',
+        'HCaptcha\\Admin\\Privacy' => __DIR__ . '/../..' . '/src/php/Admin/Privacy.php',
+        'HCaptcha\\Admin\\WhatsNew' => __DIR__ . '/../..' . '/src/php/Admin/WhatsNew.php',
         'HCaptcha\\Affiliates\\Login' => __DIR__ . '/../..' . '/src/php/Affiliates/Login.php',
         'HCaptcha\\Affiliates\\Register' => __DIR__ . '/../..' . '/src/php/Affiliates/Register.php',
         'HCaptcha\\Asgaros\\Base' => __DIR__ . '/../..' . '/src/php/Asgaros/Base.php',
@@ -96,6 +99,7 @@ class ComposerStaticInit3e48e8c03c5b5a02f16696bf1a21546e
         'HCaptcha\\EssentialAddons\\Login' => __DIR__ . '/../..' . '/src/php/EssentialAddons/Login.php',
         'HCaptcha\\EssentialAddons\\Register' => __DIR__ . '/../..' . '/src/php/EssentialAddons/Register.php',
         'HCaptcha\\EssentialBlocks\\Form' => __DIR__ . '/../..' . '/src/php/EssentialBlocks/Form.php',
+        'HCaptcha\\EventsManager\\Booking' => __DIR__ . '/../..' . '/src/php/EventsManager/Booking.php',
         'HCaptcha\\FluentForm\\Form' => __DIR__ . '/../..' . '/src/php/FluentForm/Form.php',
         'HCaptcha\\FormidableForms\\Form' => __DIR__ . '/../..' . '/src/php/FormidableForms/Form.php',
         'HCaptcha\\Forminator\\Form' => __DIR__ . '/../..' . '/src/php/Forminator/Form.php',
@@ -139,9 +143,11 @@ class ComposerStaticInit3e48e8c03c5b5a02f16696bf1a21546e
         'HCaptcha\\PaidMembershipsPro\\Checkout' => __DIR__ . '/../..' . '/src/php/PaidMembershipsPro/Checkout.php',
         'HCaptcha\\PaidMembershipsPro\\Login' => __DIR__ . '/../..' . '/src/php/PaidMembershipsPro/Login.php',
         'HCaptcha\\Passster\\Protect' => __DIR__ . '/../..' . '/src/php/Passster/Protect.php',
+        'HCaptcha\\PasswordProtected\\Protect' => __DIR__ . '/../..' . '/src/php/PasswordProtected/Protect.php',
         'HCaptcha\\ProfileBuilder\\Login' => __DIR__ . '/../..' . '/src/php/ProfileBuilder/Login.php',
         'HCaptcha\\ProfileBuilder\\LostPassword' => __DIR__ . '/../..' . '/src/php/ProfileBuilder/LostPassword.php',
         'HCaptcha\\ProfileBuilder\\Register' => __DIR__ . '/../..' . '/src/php/ProfileBuilder/Register.php',
+        'HCaptcha\\ProtectContent\\ProtectContent' => __DIR__ . '/../..' . '/src/php/ProtectContent/ProtectContent.php',
         'HCaptcha\\Quform\\Quform' => __DIR__ . '/../..' . '/src/php/Quform/Quform.php',
         'HCaptcha\\Scoper\\Scoper' => __DIR__ . '/../..' . '/.php-scoper/src/Scoper.php',
         'HCaptcha\\Sendinblue\\Sendinblue' => __DIR__ . '/../..' . '/src/php/Sendinblue/Sendinblue.php',
@@ -216,9 +222,9 @@ class ComposerStaticInit3e48e8c03c5b5a02f16696bf1a21546e
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit3e48e8c03c5b5a02f16696bf1a21546e::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit3e48e8c03c5b5a02f16696bf1a21546e::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit3e48e8c03c5b5a02f16696bf1a21546e::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitd837a11b4d63ca15201a747f68ece96b::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitd837a11b4d63ca15201a747f68ece96b::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitd837a11b4d63ca15201a747f68ece96b::$classMap;
 
         }, null, ClassLoader::class);
     }

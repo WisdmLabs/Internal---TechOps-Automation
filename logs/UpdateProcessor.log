@@ -1,0 +1,39 @@
+{"timestamp":"2025-04-30T06:17:25.965Z","level":"info","name":"UpdateProcessor","message":"Successfully read update report","details":{}}
+{"timestamp":"2025-04-30T06:17:25.967Z","level":"info","name":"UpdateProcessor","message":"Created necessary directories","details":{}}
+{"timestamp":"2025-04-30T06:17:25.968Z","level":"info","name":"UpdateProcessor","message":"Processing plugin update: bbpress","details":{}}
+{"timestamp":"2025-04-30T06:17:27.092Z","level":"info","name":"UpdateProcessor","message":"Downloaded plugin: bbpress","details":{}}
+{"timestamp":"2025-04-30T06:17:27.181Z","level":"info","name":"UpdateProcessor","message":"Extracted plugin: bbpress to bbpress","details":{}}
+{"timestamp":"2025-04-30T06:17:27.181Z","level":"info","name":"UpdateProcessor","message":"Processing plugin update: breeze","details":{}}
+{"timestamp":"2025-04-30T06:17:27.789Z","level":"info","name":"UpdateProcessor","message":"Downloaded plugin: breeze","details":{}}
+{"timestamp":"2025-04-30T06:17:27.884Z","level":"info","name":"UpdateProcessor","message":"Extracted plugin: breeze to breeze","details":{}}
+{"timestamp":"2025-04-30T06:17:27.885Z","level":"info","name":"UpdateProcessor","message":"Processing plugin update: contact-form-7","details":{}}
+{"timestamp":"2025-04-30T06:17:28.285Z","level":"info","name":"UpdateProcessor","message":"Downloaded plugin: contact-form-7","details":{}}
+{"timestamp":"2025-04-30T06:17:28.319Z","level":"info","name":"UpdateProcessor","message":"Extracted plugin: contact-form-7 to contact-form-7","details":{}}
+{"timestamp":"2025-04-30T06:17:28.319Z","level":"info","name":"UpdateProcessor","message":"Processing plugin update: hcaptcha-for-forms-and-more","details":{}}
+{"timestamp":"2025-04-30T06:17:30.327Z","level":"info","name":"UpdateProcessor","message":"Downloaded plugin: hcaptcha-for-forms-and-more","details":{}}
+{"timestamp":"2025-04-30T06:17:30.487Z","level":"info","name":"UpdateProcessor","message":"Extracted plugin: hcaptcha-for-forms-and-more to hcaptcha-for-forms-and-more","details":{}}
+{"timestamp":"2025-04-30T06:17:30.488Z","level":"info","name":"UpdateProcessor","message":"Processing plugin update: wp-maintenance-mode","details":{}}
+{"timestamp":"2025-04-30T06:17:31.160Z","level":"info","name":"UpdateProcessor","message":"Downloaded plugin: wp-maintenance-mode","details":{}}
+{"timestamp":"2025-04-30T06:17:31.280Z","level":"info","name":"UpdateProcessor","message":"Extracted plugin: wp-maintenance-mode to wp-maintenance-mode","details":{}}
+{"timestamp":"2025-04-30T06:17:31.282Z","level":"info","name":"UpdateProcessor","message":"Processing plugin update: otter-blocks","details":{}}
+{"timestamp":"2025-04-30T06:17:31.808Z","level":"info","name":"UpdateProcessor","message":"Downloaded plugin: otter-blocks","details":{}}
+{"timestamp":"2025-04-30T06:17:32.148Z","level":"info","name":"UpdateProcessor","message":"Extracted plugin: otter-blocks to otter-blocks","details":{}}
+{"timestamp":"2025-04-30T06:17:32.150Z","level":"info","name":"UpdateProcessor","message":"Processing plugin update: updraftplus","details":{}}
+{"timestamp":"2025-04-30T06:17:32.910Z","level":"info","name":"UpdateProcessor","message":"Downloaded plugin: updraftplus","details":{}}
+{"timestamp":"2025-04-30T06:17:33.313Z","level":"info","name":"UpdateProcessor","message":"Extracted plugin: updraftplus to updraftplus","details":{}}
+{"timestamp":"2025-04-30T06:17:33.315Z","level":"info","name":"UpdateProcessor","message":"Processing plugin update: wordfence","details":{}}
+{"timestamp":"2025-04-30T06:17:33.853Z","level":"info","name":"UpdateProcessor","message":"Downloaded plugin: wordfence","details":{}}
+{"timestamp":"2025-04-30T06:17:34.084Z","level":"info","name":"UpdateProcessor","message":"Extracted plugin: wordfence to wordfence","details":{}}
+{"timestamp":"2025-04-30T06:17:34.086Z","level":"info","name":"UpdateProcessor","message":"Processing plugin update: wp-security-audit-log","details":{}}
+{"timestamp":"2025-04-30T06:17:34.601Z","level":"info","name":"UpdateProcessor","message":"Downloaded plugin: wp-security-audit-log","details":{}}
+{"timestamp":"2025-04-30T06:17:34.742Z","level":"info","name":"UpdateProcessor","message":"Extracted plugin: wp-security-audit-log to wp-security-audit-log","details":{}}
+{"timestamp":"2025-04-30T06:17:34.743Z","level":"info","name":"UpdateProcessor","message":"Processing plugin update: wpforms-lite","details":{}}
+{"timestamp":"2025-04-30T06:17:35.342Z","level":"info","name":"UpdateProcessor","message":"Downloaded plugin: wpforms-lite","details":{}}
+{"timestamp":"2025-04-30T06:17:36.290Z","level":"info","name":"UpdateProcessor","message":"Extracted plugin: wpforms-lite to wpforms-lite","details":{}}
+{"timestamp":"2025-04-30T06:17:36.293Z","level":"info","name":"UpdateProcessor","message":"Processing plugin update: wordpress-seo","details":{}}
+{"timestamp":"2025-04-30T06:17:36.780Z","level":"info","name":"UpdateProcessor","message":"Downloaded plugin: wordpress-seo","details":{}}
+{"timestamp":"2025-04-30T06:17:37.105Z","level":"info","name":"UpdateProcessor","message":"Extracted plugin: wordpress-seo to wordpress-seo","details":{}}
+{"timestamp":"2025-04-30T06:17:37.107Z","level":"info","name":"UpdateProcessor","message":"Processing theme update: twentytwentyfive","details":{}}
+{"timestamp":"2025-04-30T06:17:38.636Z","level":"info","name":"UpdateProcessor","message":"Downloaded theme: twentytwentyfive","details":{}}
+{"timestamp":"2025-04-30T06:17:38.711Z","level":"info","name":"UpdateProcessor","message":"Extracted theme: twentytwentyfive to twentytwentyfive","details":{}}
+{"timestamp":"2025-04-30T06:17:38.713Z","level":"info","name":"UpdateProcessor","message":"Update processing completed","details":{}}

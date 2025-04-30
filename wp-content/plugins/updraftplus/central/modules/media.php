@@ -37,7 +37,7 @@ class UpdraftCentral_Media_Commands extends UpdraftCentral_Commands {
 	 *
 	 * link to udrpc_action main function in class UpdraftCentral_Listener
 	 */
-	public function _post_action($command, $data, $extra_info) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	public function _post_action($command, $data, $extra_info) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Unused parameter is present because the caller from UpdraftCentral_Listener class uses 3 arguments.
 		// Here, we're restoring to the current (default) blog before we switched
 		if ($this->switched) restore_current_blog();
 	}
@@ -118,7 +118,6 @@ class UpdraftCentral_Media_Commands extends UpdraftCentral_Commands {
 
 		$response = array(
 			'items' => $media_items,
-			'has_image_editor' => $this->has_image_editor(isset($media_items[0]) ? $media_items[0] : null),
 			'info' => $info,
 			'options' => array(
 				'date' => $this->get_date_options(),
@@ -265,6 +264,8 @@ class UpdraftCentral_Media_Commands extends UpdraftCentral_Commands {
 					'can_restore' => $can_restore,
 					'image_edit_overwrite' => $image_edit_overwrite
 				);
+
+				$media->has_image_editor = $this->has_image_editor($media);
 			}
 		}
 

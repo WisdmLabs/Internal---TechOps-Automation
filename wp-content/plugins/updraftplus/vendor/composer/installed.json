@@ -1,33 +1,76 @@
 {
     "packages": [
         {
-            "name": "components/jquery",
-            "version": "3.6.0",
-            "version_normalized": "3.6.0.0",
+            "name": "brumann/polyfill-unserialize",
+            "version": "v2.0.0",
+            "version_normalized": "2.0.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/components/jquery.git",
-                "reference": "6cf38ee1fd04b6adf8e7dda161283aa35be818c3"
+                "url": "https://github.com/dbrumann/polyfill-unserialize.git",
+                "reference": "46e5c18ee87d8a9b5765ef95468c1ac27bd107bf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/components/jquery/zipball/6cf38ee1fd04b6adf8e7dda161283aa35be818c3",
-                "reference": "6cf38ee1fd04b6adf8e7dda161283aa35be818c3",
+                "url": "https://api.github.com/repos/dbrumann/polyfill-unserialize/zipball/46e5c18ee87d8a9b5765ef95468c1ac27bd107bf",
+                "reference": "46e5c18ee87d8a9b5765ef95468c1ac27bd107bf",
                 "shasum": ""
             },
-            "time": "2021-03-20T19:13:42+00:00",
+            "require": {
+                "php": "^5.3|^7.0"
+            },
+            "time": "2020-07-24T10:16:53+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Brumann\\Polyfill\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Denis Brumann",
+                    "email": "denis.brumann@sensiolabs.de"
+                }
+            ],
+            "description": "Backports unserialize options introduced in PHP 7.0 to older PHP versions.",
+            "support": {
+                "issues": "https://github.com/dbrumann/polyfill-unserialize/issues",
+                "source": "https://github.com/dbrumann/polyfill-unserialize/tree/v2.0.0"
+            },
+            "install-path": "../brumann/polyfill-unserialize"
+        },
+        {
+            "name": "components/jquery",
+            "version": "v3.7.1",
+            "version_normalized": "3.7.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/components/jquery.git",
+                "reference": "8edc7785239bb8c2ad2b83302b856a1d61de60e7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/components/jquery/zipball/8edc7785239bb8c2ad2b83302b856a1d61de60e7",
+                "reference": "8edc7785239bb8c2ad2b83302b856a1d61de60e7",
+                "shasum": ""
+            },
+            "time": "2023-09-22T01:43:46+00:00",
             "type": "component",
             "extra": {
                 "component": {
-                    "scripts": [
-                        "jquery.js"
-                    ],
                     "files": [
                         "jquery.min.js",
                         "jquery.min.map",
                         "jquery.slim.js",
                         "jquery.slim.min.js",
                         "jquery.slim.min.map"
+                    ],
+                    "scripts": [
+                        "jquery.js"
                     ]
                 }
             },
@@ -318,17 +361,17 @@
         },
         {
             "name": "guzzlehttp/promises",
-            "version": "1.5.2",
-            "version_normalized": "1.5.2.0",
+            "version": "1.5.3",
+            "version_normalized": "1.5.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/promises.git",
-                "reference": "b94b2807d85443f9719887892882d0329d1e2598"
+                "reference": "67ab6e18aaa14d753cc148911d273f6e6cb6721e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/promises/zipball/b94b2807d85443f9719887892882d0329d1e2598",
-                "reference": "b94b2807d85443f9719887892882d0329d1e2598",
+                "url": "https://api.github.com/repos/guzzle/promises/zipball/67ab6e18aaa14d753cc148911d273f6e6cb6721e",
+                "reference": "67ab6e18aaa14d753cc148911d273f6e6cb6721e",
                 "shasum": ""
             },
             "require": {
@@ -337,13 +380,8 @@
             "require-dev": {
                 "symfony/phpunit-bridge": "^4.4 || ^5.1"
             },
-            "time": "2022-08-28T14:55:35+00:00",
+            "time": "2023-05-21T12:31:43+00:00",
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.5-dev"
-                }
-            },
             "installation-source": "dist",
             "autoload": {
                 "files": [
@@ -385,7 +423,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/promises/issues",
-                "source": "https://github.com/guzzle/promises/tree/1.5.2"
+                "source": "https://github.com/guzzle/promises/tree/1.5.3"
             },
             "funding": [
                 {
@@ -405,17 +443,17 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "1.9.0",
-            "version_normalized": "1.9.0.0",
+            "version": "1.9.1",
+            "version_normalized": "1.9.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "e98e3e6d4f86621a9b75f623996e6bbdeb4b9318"
+                "reference": "e4490cabc77465aaee90b20cfc9a770f8c04be6b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/e98e3e6d4f86621a9b75f623996e6bbdeb4b9318",
-                "reference": "e98e3e6d4f86621a9b75f623996e6bbdeb4b9318",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/e4490cabc77465aaee90b20cfc9a770f8c04be6b",
+                "reference": "e4490cabc77465aaee90b20cfc9a770f8c04be6b",
                 "shasum": ""
             },
             "require": {
@@ -433,13 +471,8 @@
             "suggest": {
                 "laminas/laminas-httphandlerrunner": "Emit PSR-7 responses"
             },
-            "time": "2022-06-20T21:43:03+00:00",
+            "time": "2023-04-17T16:00:37+00:00",
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.9-dev"
-                }
-            },
             "installation-source": "dist",
             "autoload": {
                 "files": [
@@ -498,7 +531,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/1.9.0"
+                "source": "https://github.com/guzzle/psr7/tree/1.9.1"
             },
             "funding": [
                 {
@@ -609,21 +642,21 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "1.0.20",
-            "version_normalized": "1.0.20.0",
+            "version": "2.0.48",
+            "version_normalized": "2.0.48.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "b3a606b90c47fb526cfb3a1664771cb8314a3434"
+                "reference": "eaa7be704b8b93a6913b69eb7f645a59d7731b61"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/b3a606b90c47fb526cfb3a1664771cb8314a3434",
-                "reference": "b3a606b90c47fb526cfb3a1664771cb8314a3434",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/eaa7be704b8b93a6913b69eb7f645a59d7731b61",
+                "reference": "eaa7be704b8b93a6913b69eb7f645a59d7731b61",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.0.0"
+                "php": ">=5.3.3"
             },
             "require-dev": {
                 "phing/phing": "~2.7",
@@ -632,29 +665,23 @@
             },
             "suggest": {
                 "ext-gmp": "Install the GMP (GNU Multiple Precision) extension in order to speed up arbitrary precision integer arithmetic operations.",
-                "ext-mcrypt": "Install the Mcrypt extension in order to speed up a wide variety of cryptographic operations.",
-                "pear-pear/PHP_Compat": "Install PHP_Compat to get phpseclib working on PHP < 5.0.0."
+                "ext-libsodium": "SSH2/SFTP can make use of some algorithms provided by the libsodium-php extension.",
+                "ext-mcrypt": "Install the Mcrypt extension in order to speed up a few other cryptographic operations.",
+                "ext-openssl": "Install the OpenSSL extension in order to speed up a wide variety of cryptographic operations.",
+                "ext-xml": "Install the XML extension to load XML formatted public keys."
             },
-            "time": "2021-12-28T06:26:23+00:00",
+            "time": "2024-12-14T21:03:54+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
                 "files": [
-                    "phpseclib/bootstrap.php",
-                    "phpseclib/Crypt/Random.php"
+                    "phpseclib/bootstrap.php"
                 ],
-                "psr-0": {
-                    "Net": "phpseclib/",
-                    "File": "phpseclib/",
-                    "Math": "phpseclib/",
-                    "Crypt": "phpseclib/",
-                    "System": "phpseclib/"
+                "psr-4": {
+                    "phpseclib\\": "phpseclib/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
-            "include-path": [
-                "phpseclib/"
-            ],
             "license": [
                 "MIT"
             ],
@@ -708,7 +735,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/1.0.20"
+                "source": "https://github.com/phpseclib/phpseclib/tree/2.0.48"
             },
             "funding": [
                 {
@@ -728,27 +755,27 @@
         },
         {
             "name": "psr/http-message",
-            "version": "1.0.1",
-            "version_normalized": "1.0.1.0",
+            "version": "1.1",
+            "version_normalized": "1.1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/http-message.git",
-                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363"
+                "reference": "cb6ce4845ce34a8ad9e68117c10ee90a29919eba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/http-message/zipball/f6561bf28d520154e4b0ec72be95418abe6d9363",
-                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/cb6ce4845ce34a8ad9e68117c10ee90a29919eba",
+                "reference": "cb6ce4845ce34a8ad9e68117c10ee90a29919eba",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.0"
+                "php": "^7.2 || ^8.0"
             },
-            "time": "2016-08-06T14:39:51+00:00",
+            "time": "2023-04-04T09:50:52+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0.x-dev"
+                    "dev-master": "1.1.x-dev"
                 }
             },
             "installation-source": "dist",
@@ -778,7 +805,7 @@
                 "response"
             ],
             "support": {
-                "source": "https://github.com/php-fig/http-message/tree/master"
+                "source": "https://github.com/php-fig/http-message/tree/1.1"
             },
             "install-path": "../psr/http-message"
         },
@@ -1044,12 +1071,12 @@
             "time": "2020-10-21T09:57:48+00:00",
             "type": "library",
             "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                },
                 "branch-alias": {
                     "dev-main": "1.19-dev"
-                },
-                "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
                 }
             },
             "installation-source": "dist",
@@ -1132,12 +1159,12 @@
             "time": "2020-10-23T09:01:57+00:00",
             "type": "library",
             "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                },
                 "branch-alias": {
                     "dev-main": "1.19-dev"
-                },
-                "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
                 }
             },
             "installation-source": "dist",
@@ -1219,12 +1246,12 @@
             "time": "2020-10-23T09:01:57+00:00",
             "type": "library",
             "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                },
                 "branch-alias": {
                     "dev-main": "1.19-dev"
-                },
-                "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
                 }
             },
             "installation-source": "dist",
@@ -1300,12 +1327,12 @@
             "time": "2020-10-23T09:01:57+00:00",
             "type": "library",
             "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                },
                 "branch-alias": {
                     "dev-main": "1.19-dev"
-                },
-                "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
                 }
             },
             "installation-source": "dist",
@@ -1382,12 +1409,12 @@
             "time": "2020-10-23T09:01:57+00:00",
             "type": "library",
             "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                },
                 "branch-alias": {
                     "dev-main": "1.19-dev"
-                },
-                "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
                 }
             },
             "installation-source": "dist",
@@ -1442,17 +1469,17 @@
         },
         {
             "name": "team-updraft/common-libs",
-            "version": "3.0.3",
-            "version_normalized": "3.0.3.0",
+            "version": "3.0.8",
+            "version_normalized": "3.0.8.0",
             "source": {
                 "type": "git",
-                "url": "https://source.updraftplus.com/team-updraft/common-libs.git",
-                "reference": "cd30bf3b65e2cadcea1cca01deb32f5cd21a0b63"
+                "url": "ssh://git@source.updraftplus.com:20022/team-updraft/common-libs.git",
+                "reference": "65081c07ed5ce99eca7ad40136d90d2f99edf51f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://source.updraftplus.com/api/v4/projects/28/packages/composer/archives/team-updraft/common-libs.zip?sha=cd30bf3b65e2cadcea1cca01deb32f5cd21a0b63",
-                "reference": "cd30bf3b65e2cadcea1cca01deb32f5cd21a0b63",
+                "url": "https://source.updraftplus.com/api/v4/projects/28/packages/composer/archives/team-updraft/common-libs.zip?sha=65081c07ed5ce99eca7ad40136d90d2f99edf51f",
+                "reference": "65081c07ed5ce99eca7ad40136d90d2f99edf51f",
                 "shasum": ""
             },
             "require-dev": {
@@ -1478,17 +1505,17 @@
         },
         {
             "name": "vakata/jstree",
-            "version": "3.3.15",
-            "version_normalized": "3.3.15.0",
+            "version": "3.3.17",
+            "version_normalized": "3.3.17.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vakata/jstree.git",
-                "reference": "8c1bcc87771f5be0b70cd49d6a7888707ebcc64e"
+                "reference": "6256df013ebd98aea138402d8ac96db3efe0c0da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vakata/jstree/zipball/8c1bcc87771f5be0b70cd49d6a7888707ebcc64e",
-                "reference": "8c1bcc87771f5be0b70cd49d6a7888707ebcc64e",
+                "url": "https://api.github.com/repos/vakata/jstree/zipball/6256df013ebd98aea138402d8ac96db3efe0c0da",
+                "reference": "6256df013ebd98aea138402d8ac96db3efe0c0da",
                 "shasum": ""
             },
             "require": {
@@ -1497,31 +1524,31 @@
             "suggest": {
                 "robloach/component-installer": "Allows installation of Components via Composer"
             },
-            "time": "2023-02-19T23:38:56+00:00",
+            "time": "2024-09-03T07:13:38+00:00",
             "type": "component",
             "extra": {
                 "component": {
-                    "scripts": [
-                        "dist/jstree.js"
-                    ],
-                    "styles": [
-                        "dist/themes/default/style.css"
-                    ],
-                    "images": [
-                        "dist/themes/default/32px.png",
-                        "dist/themes/default/40px.png",
-                        "dist/themes/default/throbber.gif"
-                    ],
                     "files": [
                         "dist/jstree.min.js",
                         "dist/themes/default/style.min.css",
                         "dist/themes/default/32px.png",
                         "dist/themes/default/40px.png",
                         "dist/themes/default/throbber.gif"
+                    ],
+                    "images": [
+                        "dist/themes/default/32px.png",
+                        "dist/themes/default/40px.png",
+                        "dist/themes/default/throbber.gif"
+                    ],
+                    "styles": [
+                        "dist/themes/default/style.css"
+                    ],
+                    "scripts": [
+                        "dist/jstree.js"
                     ]
                 }
             },
-            "installation-source": "source",
+            "installation-source": "dist",
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
@@ -1546,59 +1573,6 @@
                 }
             ],
             "install-path": "../vakata/jstree"
-        },
-        {
-            "name": "yahnis-elsts/plugin-update-checker",
-            "version": "v4.11",
-            "version_normalized": "4.11.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/YahnisElsts/plugin-update-checker.git",
-                "reference": "3155f2d3f1ca5e7ed3f25b256f020e370515af43"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/YahnisElsts/plugin-update-checker/zipball/3155f2d3f1ca5e7ed3f25b256f020e370515af43",
-                "reference": "3155f2d3f1ca5e7ed3f25b256f020e370515af43",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "php": ">=5.2.0"
-            },
-            "time": "2021-03-15T16:07:52+00:00",
-            "type": "library",
-            "installation-source": "source",
-            "autoload": {
-                "files": [
-                    "load-v4p11.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Yahnis Elsts",
-                    "email": "whiteshadow@w-shadow.com",
-                    "homepage": "http://w-shadow.com/",
-                    "role": "Developer"
-                }
-            ],
-            "description": "A custom update checker for WordPress plugins and themes. Useful if you can't host your plugin in the official WP repository but still want it to support automatic updates.",
-            "homepage": "https://github.com/YahnisElsts/plugin-update-checker/",
-            "keywords": [
-                "automatic updates",
-                "plugin updates",
-                "theme updates",
-                "wordpress"
-            ],
-            "support": {
-                "issues": "https://github.com/YahnisElsts/plugin-update-checker/issues",
-                "source": "https://github.com/YahnisElsts/plugin-update-checker/tree/v4.11"
-            },
-            "install-path": "../yahnis-elsts/plugin-update-checker"
         }
     ],
     "dev": false,

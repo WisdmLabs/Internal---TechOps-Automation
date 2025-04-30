@@ -4,9 +4,8 @@
 Plugin Name: UpdraftPlus - Backup/Restore
 Plugin URI: https://updraftplus.com
 Description: Backup and restore: take backups locally, or backup to Amazon S3, Dropbox, Google Drive, Rackspace, (S)FTP, WebDAV & email, on automatic schedules.
-Author: UpdraftPlus.Com, DavidAnderson
-Version: 2.23.3.26
-Update URI: https://updraftplus.com/
+Author: TeamUpdraft, DavidAnderson
+Version: 1.25.5
 Donate link: https://david.dw-perspective.org.uk/donate
 License: GPLv3 or later
 Text Domain: updraftplus
@@ -16,7 +15,7 @@ Author URI: https://updraftplus.com
 // @codingStandardsIgnoreEnd
 
 /*
-Portions copyright 2011-23 David Anderson
+Portions copyright 2011-25 David Anderson
 Portions copyright 2010 Paul Kehrer
 Other portions copyright as indicated by authors in the relevant files
 
@@ -37,10 +36,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 if (!defined('ABSPATH')) die('No direct access allowed');
 
-if ((isset($updraftplus) && is_object($updraftplus) && is_a($updraftplus, 'UpdraftPlus')) || function_exists('updraftplus_modify_cron_schedules')) return; // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable
+if ((isset($updraftplus) && is_object($updraftplus) && is_a($updraftplus, 'UpdraftPlus')) || function_exists('updraftplus_modify_cron_schedules')) return; // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable -- There is a possibility that the $updraftplus variable is already defined from previous process.
 
 define('UPDRAFTPLUS_DIR', dirname(__FILE__));
 define('UPDRAFTPLUS_URL', plugins_url('', __FILE__));
+define('UPDRAFTPLUS_PLUGIN_SLUG', plugin_basename(__FILE__));
 define('UPDRAFT_DEFAULT_OTHERS_EXCLUDE', 'upgrade,cache,updraft,backup*,*backups,mysql.sql,debug.log');
 define('UPDRAFT_DEFAULT_UPLOADS_EXCLUDE', 'backup*,*backups,backwpup*,wp-clone,snapshots');
 
@@ -86,7 +86,7 @@ if (!defined('UPDRAFTPLUS_BINZIP_OPTS')) {
 /**
  * A wrapper for (require|include)(_once)? that will first check for existence, and direct the user what to do (since the traditional PHP error messages aren't clear enough for all users)
  *
- * @param String $path the file path to check
+ * @param String $path   the file path to check
  * @param String $method the method to load the file
  */
 function updraft_try_include_file($path, $method = 'include') {
@@ -94,7 +94,7 @@ function updraft_try_include_file($path, $method = 'include') {
 	$file_to_include = UPDRAFTPLUS_DIR.'/'.$path;
 
 	if (!file_exists($file_to_include)) {
-		trigger_error(sprintf(__('The expected file %s is missing from your UpdraftPlus installation.', 'updraftplus').' '.__('Most likely, WordPress did not correctly unpack the plugin when installing it. You should de-install and then re-install the plugin (your settings and data will be retained).'), $file_to_include), E_USER_WARNING);
+		trigger_error(sprintf(__('The expected file %s is missing from your UpdraftPlus installation.', 'updraftplus').' '.__('Most likely, WordPress did not correctly unpack the plugin when installing it.', 'updraftplus').' '.__('You should de-install and then re-install the plugin (your settings and data will be retained).'), $file_to_include), E_USER_WARNING); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- These translatable text are not going to be presented on browser's page
 	}
 
 	if ('include' === $method) {
@@ -102,7 +102,7 @@ function updraft_try_include_file($path, $method = 'include') {
 	} elseif ('include_once' === $method) {
 		include_once($file_to_include);
 	} elseif ('require' === $method) {
-		require($file_to_include);
+		require($file_to_include); // phpcs:ignore PEAR.Files.IncludingFile.UseInclude -- File required intentionally.
 	} else {
 		require_once($file_to_include);
 	}
@@ -168,7 +168,7 @@ if (!function_exists('updraftplus_modify_cron_schedules')) :
  * @return array cron schedules which contains schedules of our own
  */
 function updraftplus_modify_cron_schedules($schedules) {
-	return array_merge($schedules, updraftplus_list_cron_schedules());
+		return array_merge($schedules, updraftplus_list_cron_schedules());
 }
 endif;
 // http://codex.wordpress.org/Plugin_API/Filter_Reference/cron_schedules. Raised priority because some plugins wrongly over-write all prior schedule changes (including BackupBuddy!)
@@ -213,7 +213,7 @@ if (is_dir(UPDRAFTPLUS_DIR.'/addons') && $dir_handle = opendir(UPDRAFTPLUS_DIR.'
 			unset($header);
 		}
 	}
-	@closedir($dir_handle);// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged
+	@closedir($dir_handle);// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged -- Silenced to suppress errors that may arise because of the function.
 }
 
 if (is_file(UPDRAFTPLUS_DIR.'/udaddons/updraftplus-addons.php')) updraft_try_include_file('udaddons/updraftplus-addons.php', 'require_once');
@@ -223,7 +223,7 @@ if (!file_exists(UPDRAFTPLUS_DIR.'/class-updraftplus.php') || !file_exists(UPDRA
 	 * Warn if they've not got the whole plugin - can happen if WP crashes (e.g. out of disk space) when upgrading the plugin
 	 */
 	function updraftplus_incomplete_install_warning() {
-		echo '<div class="updraftmessage error"><p><strong>'.__('Error', 'updraftplus').':</strong> '.__("You do not have UpdraftPlus completely installed - please de-install and install it again. Most likely, WordPress malfunctioned when copying the plugin files.", 'updraftplus').' <a href="https://updraftplus.com/faqs/wordpress-crashed-when-updating-updraftplus-what-can-i-do/">'.__('Go here for more information.', 'updraftplus').'</a></p></div>';
+		echo '<div class="updraftmessage error"><p><strong>'.esc_html(__('Error', 'updraftplus')).':</strong> '.esc_html(__('You do not have UpdraftPlus completely installed - please de-install and install it again.', 'updraftplus').' '.__('Most likely, WordPress malfunctioned when copying the plugin files.', 'updraftplus')).' <a href="https://updraftplus.com/faqs/wordpress-crashed-when-updating-updraftplus-what-can-i-do/">'.esc_html__('Go here for more information.', 'updraftplus').'</a></p></div>';
 	}
 	add_action('all_admin_notices', 'updraftplus_incomplete_install_warning');
 } else {
@@ -239,7 +239,7 @@ if (!file_exists(UPDRAFTPLUS_DIR.'/class-updraftplus.php') || !file_exists(UPDRA
 		if (!$updraftplus->memory_check($updraftplus->memory_check_current(WP_MAX_MEMORY_LIMIT))) {
 			$new = absint($updraftplus->memory_check_current(WP_MAX_MEMORY_LIMIT));
 			if ($new>32 && $new<100000) {
-				@ini_set('memory_limit', $new.'M');// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged
+				@ini_set('memory_limit', $new.'M');// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged -- Silenced to suppress errors that may arise because of the function.
 			}
 		}
 	}
