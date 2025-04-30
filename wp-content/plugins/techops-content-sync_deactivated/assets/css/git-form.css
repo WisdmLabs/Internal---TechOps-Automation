@@ -1,0 +1,160 @@
+.techops-git-form {
+    max-width: 800px;
+    margin: 20px 0;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.techops-git-form .form-row {
+    margin-bottom: 15px;
+}
+
+.techops-git-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.techops-git-form input[type="text"],
+.techops-git-form select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.techops-git-form .description {
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+    font-size: 13px;
+}
+
+.techops-git-form .progress-container {
+    margin: 15px 0;
+    display: none;
+}
+
+.techops-git-form .progress-bar {
+    height: 20px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.techops-git-form .progress-bar-inner {
+    height: 100%;
+    background: #0073aa;
+    width: 0;
+    transition: width 0.3s ease;
+}
+
+.techops-git-form .progress-text {
+    margin-top: 5px;
+    font-size: 13px;
+    color: #666;
+}
+
+.techops-git-form .status-message {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    display: none;
+}
+
+.techops-git-form .status-message.success {
+    background: #dff0d8;
+    border: 1px solid #d6e9c6;
+    color: #3c763d;
+}
+
+.techops-git-form .status-message.error {
+    background: #f2dede;
+    border: 1px solid #ebccd1;
+    color: #a94442;
+}
+
+.techops-git-form .history-section {
+    margin-top: 30px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+.techops-git-form .history-section h3 {
+    margin-bottom: 15px;
+}
+
+.techops-git-form .history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.techops-git-form .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.techops-git-form .history-item:last-child {
+    border-bottom: none;
+}
+
+.techops-git-form .history-info {
+    flex: 1;
+}
+
+.techops-git-form .history-info span {
+    margin-right: 15px;
+    color: #666;
+}
+
+.techops-git-form .history-info .repo-name {
+    font-weight: 600;
+    color: #23282d;
+}
+
+.techops-git-form .history-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.techops-git-form .history-actions button {
+    padding: 5px 10px;
+}
+
+.techops-git-form .history-actions .refresh {
+    background: #0073aa;
+    color: #fff;
+    border: none;
+}
+
+.techops-git-form .history-actions .delete {
+    background: #dc3232;
+    color: #fff;
+    border: none;
+}
+
+.techops-git-form .no-history {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 782px) {
+    .techops-git-form .history-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .techops-git-form .history-actions {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+} 

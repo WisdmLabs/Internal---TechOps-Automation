@@ -7,7 +7,10 @@ jQuery( document ).on( 'ajaxSuccess', function( event, xhr, settings ) {
 		return;
 	}
 
-	hCaptchaBindEvents();
+	const formId = params.get( 'form_id' );
+	const form = jQuery( 'input[name="form_id"][value="' + formId + '"]' ).closest( 'form' );
+
+	window.hCaptchaReset( form[ 0 ] );
 } );
 
 const hcaptchaElementorPro = function() {
@@ -28,7 +31,7 @@ const hcaptchaElementorPro = function() {
 		'frontend/element_ready/widget',
 		function( $scope ) {
 			if ( $scope[ 0 ].classList.contains( 'elementor-widget-form' ) ) {
-				// Elementor reinserts an element during editing, so we need to bind events again.
+				// Elementor reinserts element during editing, so we need to bind events again.
 				hCaptchaBindEvents();
 			}
 		}

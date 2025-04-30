@@ -1,0 +1,183 @@
+.techops-content-sync-wrap .card {
+    max-width: 100%;
+    margin-top: 20px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.techops-content-sync-wrap .card h2 {
+    margin-top: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.techops-content-sync-wrap .form-table th {
+    width: 200px;
+}
+
+.techops-content-sync-wrap .form-table td {
+    padding: 15px 10px;
+}
+
+.techops-content-sync-wrap .form-table input[type="url"],
+.techops-content-sync-wrap .form-table input[type="text"] {
+    width: 100%;
+    max-width: 400px;
+}
+
+.techops-content-sync-wrap .description {
+    margin-top: 5px;
+    color: #666;
+}
+
+.techops-content-sync-wrap #status-message {
+    margin-top: 15px;
+}
+
+.techops-content-sync-wrap .notice {
+    margin: 15px 0;
+}
+
+.techops-content-sync-wrap pre {
+    background: #f5f5f5;
+    padding: 10px;
+    overflow: auto;
+    max-height: 300px;
+}
+
+.techops-git-form {
+    max-width: 800px;
+    margin: 20px 0;
+}
+
+.form-row {
+    margin-bottom: 20px;
+}
+
+.form-row label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.form-row input[type="text"],
+.form-row select {
+    width: 100%;
+    max-width: 400px;
+}
+
+.description {
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+.progress-container {
+    display: none;
+    margin: 20px 0;
+}
+
+.progress-bar {
+    height: 20px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-inner {
+    width: 0;
+    height: 100%;
+    background-color: #2271b1;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.status-message {
+    margin: 20px 0;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.status-message.success {
+    background-color: #dff0d8;
+    color: #3c763d;
+    border: 1px solid #d6e9c6;
+}
+
+.status-message.error {
+    background-color: #f2dede;
+    color: #a94442;
+    border: 1px solid #ebccd1;
+}
+
+.history-section {
+    margin-top: 30px;
+}
+
+.history-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.history-list li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.history-list li:last-child {
+    border-bottom: none;
+}
+
+/* Logs Section Styles */
+.logs-section {
+    margin-top: 30px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.logs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+}
+
+.logs-header h3 {
+    margin: 0;
+}
+
+.logs-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.logs-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 15px;
+    background-color: #fff;
+}
+
+.log-entry {
+    font-family: monospace;
+    padding: 5px 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.no-logs {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+} 

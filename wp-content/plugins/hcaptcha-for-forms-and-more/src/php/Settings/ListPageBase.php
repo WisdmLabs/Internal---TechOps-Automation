@@ -295,7 +295,7 @@ abstract class ListPageBase extends PluginSettingsBase {
 			: [];
 		$date = isset( $_POST['date'] )
 			// We need filter_input here to keep the delimiter intact.
-			? sanitize_text_field( wp_unslash( $_POST['date'] ) )
+			? filter_input( INPUT_POST, 'date', FILTER_SANITIZE_FULL_SPECIAL_CHARS )
 			: '';
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
@@ -311,7 +311,8 @@ abstract class ListPageBase extends PluginSettingsBase {
 			if ( ! $this->delete_events( $args ) ) {
 				wp_send_json_error( __( 'Failed to delete the selected items.', 'hcaptcha-for-forms-and-more' ) );
 
-				return; // For testing purposes.
+				// For testing purposes.
+				return;
 			}
 
 			set_transient(
@@ -321,7 +322,8 @@ abstract class ListPageBase extends PluginSettingsBase {
 
 			wp_send_json_success();
 
-			return; // For testing purposes.
+			// For testing purposes.
+			return;
 		}
 
 		wp_send_json_error( __( 'Invalid bulk action.', 'hcaptcha-for-forms-and-more' ) );

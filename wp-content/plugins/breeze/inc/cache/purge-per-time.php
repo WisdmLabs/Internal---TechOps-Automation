@@ -26,18 +26,16 @@ class Breeze_PurgeCacheTime {
 	protected $varnishcache = 0;
 
 	public function __construct( $settings = null ) {
-		if ( is_array( $settings ) ) {
-			if ( array_key_exists( 'breeze-b-ttl', $settings ) && ! is_null( $settings['breeze-b-ttl'] ) ) {
-				$this->timettl = $settings['breeze-b-ttl'];
-			}
+		if ( isset( $settings['breeze-b-ttl'] ) ) {
+			$this->timettl = $settings['breeze-b-ttl'];
+		}
 
-			if ( isset( $settings['breeze-active'] ) ) {
-				$this->normalcache = (int) $settings['breeze-active'];
-			}
+		if ( isset( $settings['breeze-active'] ) ) {
+			$this->normalcache = (int) $settings['breeze-active'];
+		}
 
-			if ( isset( $settings['breeze-varnish-purge'] ) ) {
-				$this->varnishcache = (int) $settings['breeze-varnish-purge'];
-			}
+		if ( isset( $settings['breeze-varnish-purge'] ) ) {
+			$this->varnishcache = (int) $settings['breeze-varnish-purge'];
 		}
 
 		add_action( 'breeze_purge_cache', array( $this, 'schedule_varnish' ) );
@@ -66,21 +64,20 @@ class Breeze_PurgeCacheTime {
 
 		$timestamp = wp_next_scheduled( 'breeze_purge_cache' );
 
-		// If the timer exists and is set by the user to zero ( 0 ) then remove the cache.
-		if ( ! is_bool( $this->timettl ) && 0 === (int) $this->timettl ) {
-			wp_unschedule_event( $timestamp, 'breeze_purge_cache' );
-
-			return;
-		}
-
-		// If the next schedule does not exist, and we have custom value timer.
-		if ( ! $timestamp && $time ) {
+		if ( $time ) {
+			#error_log( 'Time: ' . $time );
 			wp_schedule_event( $time * 60, 'breeze_varnish_time', 'breeze_purge_cache' );
 
 			return;
 		}
 
-		// If the scedule does not exist and we use current time to run the event.
+		// Expire cache never
+		if ( isset( $this->timettl ) && (int) $this->timettl === 0 ) {
+			wp_unschedule_event( $timestamp, 'breeze_purge_cache' );
+
+			return;
+		}
+
 		if ( ! $timestamp ) {
 			wp_schedule_event( time(), 'breeze_varnish_time', 'breeze_purge_cache' );
 		}
@@ -129,15 +126,10 @@ class Breeze_PurgeCacheTime {
 	}
 }
 
-if ( ! class_exists( 'Breeze_Options_Reader' ) ) {
-	require_once( BREEZE_PLUGIN_DIR . 'inc/class-breeze-options-reader.php' );
-}
-
-
 //Enabled auto purge the varnish caching by time life
 $params = array(
 	'breeze-active'        => (int) Breeze_Options_Reader::get_option_value( 'breeze-active' ),
-	'breeze-b-ttl'         => Breeze_Options_Reader::get_option_value( 'breeze-b-ttl' ),
+	'breeze-b-ttl'         => (int) Breeze_Options_Reader::get_option_value( 'breeze-b-ttl' ),
 	'breeze-varnish-purge' => (int) Breeze_Options_Reader::get_option_value( 'auto-purge-varnish' ),
 );
 

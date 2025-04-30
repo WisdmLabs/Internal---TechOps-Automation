@@ -96,7 +96,7 @@ class Field extends GF_Field {
 		add_filter( 'gform_duplicate_field_link', [ $this, 'disable_duplication' ] );
 		add_action( 'admin_print_footer_scripts-' . self::EDITOR_SCREEN_ID, [ $this, 'enqueue_admin_script' ] );
 		add_action( 'admin_print_footer_scripts-' . self::SETTINGS_SCREEN_ID, [ $this, 'enqueue_admin_script' ] );
-		add_filter( 'hcap_print_hcaptcha_scripts', [ $this, 'print_hcaptcha_scripts' ], 0 );
+		add_action( 'hcap_print_hcaptcha_scripts', [ $this, 'print_hcaptcha_scripts' ] );
 	}
 
 	/**
@@ -319,8 +319,6 @@ class Field extends GF_Field {
 	 * @return bool
 	 */
 	public function print_hcaptcha_scripts( $status ): bool {
-		$status = (bool) $status;
-
 		if ( ! function_exists( 'get_current_screen' ) ) {
 			// @codeCoverageIgnoreStart
 			return $status;

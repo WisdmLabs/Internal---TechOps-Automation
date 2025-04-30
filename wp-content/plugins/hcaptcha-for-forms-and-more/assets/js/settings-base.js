@@ -59,30 +59,17 @@ const settingsBase = ( function( $ ) {
 			return;
 		}
 
-		// Try to find by id.
-		let $element = $( hash );
+		const $element = $( hash );
 
-		if ( ! $element.length ) {
-			// Try to find by name.
-			$element = $( `[name="hcaptcha_settings[${ hash.slice( 1 ) }]"]` );
-		}
-
-		if ( ! $element.length ) {
+		if ( ! $element ) {
 			return;
 		}
 
-		let $target = $element;
-
 		if ( $element.is( ':checkbox' ) ) {
-			$target = $element.closest( 'fieldset' );
+			$element.closest( 'fieldset' ).addClass( 'blink' );
+		} else {
+			$element.addClass( 'blink' );
 		}
-
-		$target.addClass( 'blink' )[ 0 ].scrollIntoView(
-			{
-				behavior: 'smooth',
-				block: 'center',
-			},
-		);
 	}
 
 	/**
@@ -148,8 +135,7 @@ const settingsBase = ( function( $ ) {
 	} );
 
 	setHeaderBarTop();
-
-	document.addEventListener( 'DOMContentLoaded', highLight );
+	highLight();
 
 	return app;
 }( jQuery ) );

@@ -4,7 +4,7 @@ Tags: cache,caching, performance, wp-cache, cdn
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.2.9
+Stable tag: 2.2.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -160,19 +160,9 @@ Using Gzip, Breeze compresses the request files, further reducing the size of th
 
 == Changelog ==
 
-= 2.2.9 =
-
-* Fix: PHP error no longer occurs when a new comment is submitted.
-* Enhancement: Breeze cache now automatically clears after one or more plugin updates to ensure accurate content rendering.
-
-= 2.2.8 =
-
-* Fix: The cron event breeze_purge_cache will now be created when activating the Breeze plugin.
-* Fix: The cron event breeze_purge_cache will now be removed from single site and multi-site upon Breeze plugin deactivation.
-
 = 2.2.7 =
 
-* Add: Breeze plugin cache now automatically purges when updating global Header/Footer in Elementor.
+* Add: Breeze plugin cache now automatically purges when updating global Header/Footer in Elementor
 
 = 2.2.6 =
 
