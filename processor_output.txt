@@ -2,36 +2,5 @@
 > wordpress-update-checker@1.0.0 process-updates
 > node scripts/update-processor.js
 
-[36m[INFO] Successfully read update report[0m
-[36m[INFO] Created necessary directories[0m
-[36m[INFO] Processing plugin update: bbpress[0m
-[36m[INFO] Downloaded plugin: bbpress[0m
-[36m[INFO] Extracted plugin: bbpress to bbpress[0m
-[36m[INFO] Processing plugin update: breeze[0m
-[36m[INFO] Downloaded plugin: breeze[0m
-[36m[INFO] Extracted plugin: breeze to breeze[0m
-[36m[INFO] Processing plugin update: contact-form-7[0m
-[36m[INFO] Downloaded plugin: contact-form-7[0m
-[36m[INFO] Extracted plugin: contact-form-7 to contact-form-7[0m
-[36m[INFO] Processing plugin update: hcaptcha-for-forms-and-more[0m
-[36m[INFO] Downloaded plugin: hcaptcha-for-forms-and-more[0m
-[36m[INFO] Extracted plugin: hcaptcha-for-forms-and-more to hcaptcha-for-forms-and-more[0m
-[36m[INFO] Processing plugin update: wp-maintenance-mode[0m
-[36m[INFO] Downloaded plugin: wp-maintenance-mode[0m
-[36m[INFO] Extracted plugin: wp-maintenance-mode to wp-maintenance-mode[0m
-[36m[INFO] Processing plugin update: otter-blocks[0m
-[36m[INFO] Downloaded plugin: otter-blocks[0m
-[36m[INFO] Extracted plugin: otter-blocks to otter-blocks[0m
-[36m[INFO] Processing plugin update: wordfence[0m
-[36m[INFO] Downloaded plugin: wordfence[0m
-[36m[INFO] Extracted plugin: wordfence to wordfence[0m
-[36m[INFO] Processing plugin update: wp-security-audit-log[0m
-[36m[INFO] Downloaded plugin: wp-security-audit-log[0m
-[36m[INFO] Extracted plugin: wp-security-audit-log to wp-security-audit-log[0m
-[36m[INFO] Processing plugin update: wordpress-seo[0m
-[36m[INFO] Downloaded plugin: wordpress-seo[0m
-[36m[INFO] Extracted plugin: wordpress-seo to wordpress-seo[0m
-[36m[INFO] Processing theme update: twentytwentyfive[0m
-[36m[INFO] Downloaded theme: twentytwentyfive[0m
-[36m[INFO] Extracted theme: twentytwentyfive to twentytwentyfive[0m
-[36m[INFO] Update processing completed[0m
+[31m[ERROR] Error reading update report: Unexpected token  in JSON at position 3310[0m
+[31m[ERROR] Error processing updates: Unexpected token  in JSON at position 3310[0m

@@ -31,3 +31,5 @@
 {"timestamp":"2025-04-17T17:54:51.070Z","level":"info","message":"Downloaded theme: twentytwentyfive","details":{}}
 {"timestamp":"2025-04-17T17:54:51.156Z","level":"info","message":"Extracted theme: twentytwentyfive to twentytwentyfive","details":{}}
 {"timestamp":"2025-04-17T17:54:51.164Z","level":"info","message":"Update processing completed","details":{}}
+{"timestamp":"2025-04-30T05:11:46.863Z","level":"error","message":"Error reading update report: Unexpected token \u001b in JSON at position 3310","details":{}}
+{"timestamp":"2025-04-30T05:11:46.865Z","level":"error","message":"Error processing updates: Unexpected token \u001b in JSON at position 3310","details":{}}
