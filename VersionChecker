@@ -44,3 +44,28 @@
 {"timestamp":"2025-04-30T05:07:08.600Z","level":"info","message":"Notice: Theme 'effectivenews' not found on WordPress.org. This might be a premium or custom developed theme.","details":{}}
 {"timestamp":"2025-04-30T05:07:08.600Z","level":"warn","message":"Could not fetch WordPress.org info for theme effectivenews","details":{}}
 {"timestamp":"2025-04-30T05:07:09.539Z","level":"info","message":"Saved updates report to updates.json","details":{}}
+{"timestamp":"2025-04-30T05:26:06.111Z","level":"info","message":"Fetching current versions from WordPress site...","details":{}}
+{"timestamp":"2025-04-30T05:26:10.371Z","level":"info","message":"Saved current versions to versions.json","details":{}}
+{"timestamp":"2025-04-30T05:26:10.371Z","level":"info","message":"Checking plugin updates...","details":{}}
+{"timestamp":"2025-04-30T05:26:13.497Z","level":"info","message":"Notice: Plugin 'hello.php' not found on WordPress.org. This might be a premium or custom developed plugin.","details":{}}
+{"timestamp":"2025-04-30T05:26:13.497Z","level":"warn","message":"Could not fetch WordPress.org info for plugin hello.php","details":{}}
+{"timestamp":"2025-04-30T05:26:13.677Z","level":"info","message":"Notice: Plugin 'googleanalytics.php' not found on WordPress.org. This might be a premium or custom developed plugin.","details":{}}
+{"timestamp":"2025-04-30T05:26:13.677Z","level":"warn","message":"Could not fetch WordPress.org info for plugin googleanalytics.php","details":{}}
+{"timestamp":"2025-04-30T05:26:14.421Z","level":"info","message":"Notice: Plugin 'object-cache-pro' not found on WordPress.org. This might be a premium or custom developed plugin.","details":{}}
+{"timestamp":"2025-04-30T05:26:14.421Z","level":"warn","message":"Could not fetch WordPress.org info for plugin object-cache-pro","details":{}}
+{"timestamp":"2025-04-30T05:26:15.172Z","level":"info","message":"Notice: Plugin 'td-cloud-library' not found on WordPress.org. This might be a premium or custom developed plugin.","details":{}}
+{"timestamp":"2025-04-30T05:26:15.172Z","level":"warn","message":"Could not fetch WordPress.org info for plugin td-cloud-library","details":{}}
+{"timestamp":"2025-04-30T05:26:15.350Z","level":"info","message":"Notice: Plugin 'td-composer' not found on WordPress.org. This might be a premium or custom developed plugin.","details":{}}
+{"timestamp":"2025-04-30T05:26:15.350Z","level":"warn","message":"Could not fetch WordPress.org info for plugin td-composer","details":{}}
+{"timestamp":"2025-04-30T05:26:15.534Z","level":"info","message":"Notice: Plugin 'techops-content-sync' not found on WordPress.org. This might be a premium or custom developed plugin.","details":{}}
+{"timestamp":"2025-04-30T05:26:15.534Z","level":"warn","message":"Could not fetch WordPress.org info for plugin techops-content-sync","details":{}}
+{"timestamp":"2025-04-30T05:26:15.719Z","level":"info","message":"Notice: Plugin 'techops-content-sync-deact' not found on WordPress.org. This might be a premium or custom developed plugin.","details":{}}
+{"timestamp":"2025-04-30T05:26:15.720Z","level":"warn","message":"Could not fetch WordPress.org info for plugin techops-content-sync-deact","details":{}}
+{"timestamp":"2025-04-30T05:26:15.901Z","level":"info","message":"Notice: Plugin 'techops-content-sync_deactivated' not found on WordPress.org. This might be a premium or custom developed plugin.","details":{}}
+{"timestamp":"2025-04-30T05:26:15.901Z","level":"warn","message":"Could not fetch WordPress.org info for plugin techops-content-sync_deactivated","details":{}}
+{"timestamp":"2025-04-30T05:26:17.161Z","level":"info","message":"Checking theme updates...","details":{}}
+{"timestamp":"2025-04-30T05:26:17.339Z","level":"info","message":"Notice: Theme 'Newspaper' not found on WordPress.org. This might be a premium or custom developed theme.","details":{}}
+{"timestamp":"2025-04-30T05:26:17.340Z","level":"warn","message":"Could not fetch WordPress.org info for theme Newspaper","details":{}}
+{"timestamp":"2025-04-30T05:26:17.520Z","level":"info","message":"Notice: Theme 'effectivenews' not found on WordPress.org. This might be a premium or custom developed theme.","details":{}}
+{"timestamp":"2025-04-30T05:26:17.520Z","level":"warn","message":"Could not fetch WordPress.org info for theme effectivenews","details":{}}
+{"timestamp":"2025-04-30T05:26:18.463Z","level":"info","message":"Saved updates report to updates.json","details":{}}

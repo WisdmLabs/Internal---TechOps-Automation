@@ -34,3 +34,15 @@
 {"timestamp":"2025-04-30T05:06:58.055Z","level":"info","message":"Checking all updates...","details":{}}
 {"timestamp":"2025-04-30T05:07:09.539Z","level":"info","message":"Update check completed. Report:","details":{}}
 {"timestamp":"2025-04-30T05:07:10.331Z","level":"info","message":"Created issue #50","details":{}}
+{"timestamp":"2025-04-30T05:26:06.105Z","level":"info","message":"Current working directory: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation","details":{}}
+{"timestamp":"2025-04-30T05:26:06.106Z","level":"info","message":"Config directory path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/config","details":{}}
+{"timestamp":"2025-04-30T05:26:06.106Z","level":"info","message":"Versions file path: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/config/versions.json","details":{}}
+{"timestamp":"2025-04-30T05:26:06.108Z","level":"info","message":"Directory exists: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation","details":{}}
+{"timestamp":"2025-04-30T05:26:06.110Z","level":"info","message":"Write permissions verified for: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation","details":{}}
+{"timestamp":"2025-04-30T05:26:06.110Z","level":"info","message":"Config directory exists","details":{}}
+{"timestamp":"2025-04-30T05:26:06.110Z","level":"info","message":"Directory exists: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/config","details":{}}
+{"timestamp":"2025-04-30T05:26:06.110Z","level":"info","message":"Write permissions verified for: /home/runner/work/Internal---TechOps-Automation/Internal---TechOps-Automation/config","details":{}}
+{"timestamp":"2025-04-30T05:26:06.111Z","level":"info","message":"Successfully read versions file","details":{}}
+{"timestamp":"2025-04-30T05:26:06.111Z","level":"info","message":"Checking all updates...","details":{}}
+{"timestamp":"2025-04-30T05:26:18.463Z","level":"info","message":"Update check completed. Report:","details":{}}
+{"timestamp":"2025-04-30T05:26:19.059Z","level":"info","message":"Created issue #55","details":{}}
