@@ -222,10 +222,31 @@ async function main() {
         const checkType = process.env.CHECK_TYPE || 'all';
         const updates = await checker.checkUpdates(checkType);
         
-        // Output only the JSON to stdout
-        console.log(JSON.stringify(updates, null, 2));
+        // Ensure the updates object is valid
+        if (!updates || typeof updates !== 'object') {
+            throw new Error('Invalid updates object generated');
+        }
+        
+        // Validate required properties
+        if (!updates.plugins || !updates.themes || !updates.timestamp) {
+            throw new Error('Missing required properties in updates object');
+        }
+        
+        // Test JSON stringification before output
+        try {
+            JSON.stringify(updates, null, 2);
+        } catch (e) {
+            throw new Error(`Failed to stringify updates object: ${e.message}`);
+        }
+        
+        // Output only the JSON to stdout, ensuring no other output
+        process.stdout.write(JSON.stringify(updates, null, 2));
     } catch (error) {
-        console.error('Error running update checker:', error);
+        // Write error to stderr
+        process.stderr.write(`Error running update checker: ${error.message}\n`);
+        if (error.stack) {
+            process.stderr.write(`${error.stack}\n`);
+        }
         process.exit(1);
     }
 }

@@ -55,17 +55,26 @@ jobs:
           CHECK_TYPE: ${{ github.event.inputs.check_type || 'all' }}
         run: |
           # Run the update check and ensure only JSON is written to the file
-          # Redirect stdout to updates.json and stderr to the console
-          node scripts/check-updates.js 2>&1 > updates.json || {
+          # Redirect stderr to a log file and stdout to updates.json
+          node scripts/check-updates.js 2>check-updates.log >updates.json || {
             echo "Error: Failed to generate updates report"
+            cat check-updates.log
             exit 1
           }
           
           # Validate the JSON file
           if ! jq empty updates.json 2>/dev/null; then
             echo "Error: Generated file is not valid JSON"
+            echo "Content of updates.json:"
+            cat updates.json
+            echo "Log output:"
+            cat check-updates.log
+            rm check-updates.log
             exit 1
           fi
+          
+          # Clean up log file if everything succeeded
+          rm check-updates.log
 
       - name: Check for changes
         id: check-changes
