@@ -22,7 +22,7 @@
       "type": "plugin",
       "slug": "hcaptcha-for-forms-and-more",
       "from": "4.11.0",
-      "to": "4.12.0"
+      "to": "4.13.0"
     },
     {
       "type": "plugin",
@@ -38,6 +38,12 @@
     },
     {
       "type": "plugin",
+      "slug": "updraftplus",
+      "from": "2.23.3.26",
+      "to": "1.25.5"
+    },
+    {
+      "type": "plugin",
       "slug": "wordfence",
       "from": "8.0.3",
       "to": "8.0.5"
@@ -50,9 +56,15 @@
     },
     {
       "type": "plugin",
+      "slug": "wpforms-lite",
+      "from": "1.9.4.2",
+      "to": "1.9.5.1"
+    },
+    {
+      "type": "plugin",
       "slug": "wordpress-seo",
       "from": "24.6",
-      "to": "24.9"
+      "to": "25.0"
     },
     {
       "type": "theme",
@@ -95,6 +107,11 @@
     },
     {
       "type": "plugin",
+      "slug": "google-analytics-for-wordpress",
+      "reason": "No update available"
+    },
+    {
+      "type": "plugin",
       "slug": "limit-login-attempts-reloaded",
       "reason": "No update available"
     },
@@ -106,16 +123,6 @@
     {
       "type": "plugin",
       "slug": "stop-emails",
-      "reason": "No update available"
-    },
-    {
-      "type": "plugin",
-      "slug": "updraftplus",
-      "reason": "No update available"
-    },
-    {
-      "type": "plugin",
-      "slug": "wpforms-lite",
       "reason": "No update available"
     },
     {

@@ -12,6 +12,12 @@ class UpdraftPlus_BackupModule_insufficientphp extends UpdraftPlus_BackupModule 
 
 	private $method;
 
+	private $desc;
+
+	private $image;
+
+	private $error_msg_trans;
+
 	public function __construct($method, $desc, $php, $image = null) {
 		$this->method = $method;
 		$this->desc = $desc;
@@ -34,7 +40,7 @@ class UpdraftPlus_BackupModule_insufficientphp extends UpdraftPlus_BackupModule 
 	 * @param  array $backup_array An array backups
 	 * @return Array
 	 */
-	public function backup($backup_array) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	public function backup($backup_array) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Unused variable is present because the function to perform backup for specific storage is not exist.
 		return $this->log_error();
 	}
 
@@ -72,7 +78,7 @@ class UpdraftPlus_BackupModule_insufficientphp extends UpdraftPlus_BackupModule 
 	 * @param  String $match THis will specify which match is used for the SQL but by default it is set to 'backup_' unless specified
 	 * @return Array
 	 */
-	public function listfiles($match = 'backup_') {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	public function listfiles($match = 'backup_') {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Unused variable is present because the function to perform listfiles for specific storage is not exist.
 		return new WP_Error('insufficient_php', $this->error_msg_trans);
 	}
 
@@ -84,7 +90,7 @@ class UpdraftPlus_BackupModule_insufficientphp extends UpdraftPlus_BackupModule 
 	 * @param  array   $sizeinfo This is the size info on the file.
 	 * @return Array
 	 */
-	public function delete($files, $data = false, $sizeinfo = array()) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	public function delete($files, $data = false, $sizeinfo = array()) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Unused variable is present because the function to perform delete for specific storage is not exist.
 		return $this->log_error();
 	}
 
@@ -95,7 +101,7 @@ class UpdraftPlus_BackupModule_insufficientphp extends UpdraftPlus_BackupModule 
 	 * @param  String $file List of files
 	 * @return Array
 	 */
-	public function download($file) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	public function download($file) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Unused variable is present because the function to perform download for specific storage is not exist.
 		return $this->log_error();
 	}
 
@@ -111,14 +117,14 @@ class UpdraftPlus_BackupModule_insufficientphp extends UpdraftPlus_BackupModule 
 		ob_start();
 		$this->extra_config();
 		?>
-		<tr class="updraftplusmethod <?php echo $this->method;?>">
-			<th><?php echo htmlspecialchars($this->desc);?>:</th>
+		<tr class="updraftplusmethod <?php echo esc_attr($this->method);?>">
+			<th><?php echo esc_html($this->desc);?>:</th>
 			<td>
 				<em>
-					<?php echo (!empty($this->image)) ? '<p><img src="'.UPDRAFTPLUS_URL.'/images/'.$this->image.'"></p>' : ''; ?>
-					<?php echo htmlspecialchars($this->error_msg_trans);?>
-					<?php echo htmlspecialchars(__('You will need to ask your web hosting company to upgrade.', 'updraftplus'));?>
-					<?php echo sprintf(__('Your %s version: %s.', 'updraftplus'), 'PHP', phpversion());?>
+					<?php echo (!empty($this->image)) ? '<p><img src="'.esc_url(UPDRAFTPLUS_URL.'/images/'.$this->image).'"></p>' : ''; ?>
+					<?php echo esc_html($this->error_msg_trans);?>
+					<?php esc_html_e('You will need to ask your web hosting company to upgrade.', 'updraftplus');?>
+					<?php echo esc_html(sprintf(__('Your %s version: %s.', 'updraftplus'), 'PHP', phpversion()));?>
 				</em>
 			</td>
 		</tr>

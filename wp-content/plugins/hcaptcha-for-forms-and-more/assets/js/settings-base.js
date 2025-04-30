@@ -26,10 +26,14 @@ const settingsBase = ( function( $ ) {
 	const msgSelector = '#hcaptcha-message';
 	let $message = $( msgSelector );
 
+	/**
+	 * Set header bar top position.
+	 */
 	function setHeaderBarTop() {
 		const isAbsolute = adminBar ? window.getComputedStyle( adminBar ).position === 'absolute' : true;
 		const adminBarHeight = ( adminBar && ! isAbsolute ) ? adminBar.offsetHeight : 0;
 		const tabsHeight = tabs ? tabs.offsetHeight : 0;
+
 		// The -1 to put header bar a bit under tabs. It is a precaution when heights are in fractional pixels.
 		const totalHeight = adminBarHeight + tabsHeight - 1;
 
@@ -53,23 +57,80 @@ const settingsBase = ( function( $ ) {
 			return;
 		}
 
-		const hash = window.location.hash;
+		const hash = window.location.hash.slice( 1 );
 
 		if ( ! hash ) {
 			return;
 		}
 
-		const $element = $( hash );
+		// Try to find by id.
+		let element = document.getElementById( hash );
 
-		if ( ! $element ) {
+		if ( ! element ) {
+			element = document.querySelector( `[name="hcaptcha_settings[${ hash }]"]` );
+		}
+
+		if ( ! element ) {
 			return;
 		}
 
-		if ( $element.is( ':checkbox' ) ) {
-			$element.closest( 'fieldset' ).addClass( 'blink' );
-		} else {
-			$element.addClass( 'blink' );
+		let target = element;
+
+		if ( element?.type === 'checkbox' ) {
+			target = element.closest( 'fieldset' );
 		}
+
+		const table = target.closest( 'table' );
+		let sectionHeader = null;
+
+		let prev = table?.previousElementSibling;
+
+		while ( prev ) {
+			if ( prev.tagName.toLowerCase() === 'h3' ) {
+				sectionHeader = prev;
+
+				break;
+			}
+
+			prev = prev.previousElementSibling;
+		}
+
+		if ( sectionHeader && sectionHeader.classList.contains( 'closed' ) ) {
+			setTimeout( function() {
+				sectionHeader.click();
+			}, 100 );
+		}
+
+		setTimeout( function() {
+			target.classList.add( 'blink' );
+			target.scrollIntoView(
+				{
+					behavior: 'smooth',
+					block: 'center',
+				},
+			);
+		}, 200 );
+	}
+
+	/**
+	 * Setup lightbox.
+	 */
+	function setupLightBox() {
+		// Lightbox for images.
+		$( document ).on( 'click', '.hcaptcha-lightbox', function( e ) {
+			e.preventDefault();
+
+			const imgSrc = $( this ).attr( 'href' );
+
+			$( '#hcaptcha-lightbox-img' ).attr( 'src', imgSrc );
+			$( '#hcaptcha-lightbox-modal' ).css( 'display', 'flex' );
+		} );
+
+		// Close lightbox by click on the background.
+		$( '#hcaptcha-lightbox-modal' ).on( 'click', function() {
+			$( this ).css( 'display', 'none' );
+			$( '#hcaptcha-lightbox-img' ).attr( 'src', '' );
+		} );
 	}
 
 	/**
@@ -135,7 +196,10 @@ const settingsBase = ( function( $ ) {
 	} );
 
 	setHeaderBarTop();
+
 	highLight();
+
+	setupLightBox();
 
 	return app;
 }( jQuery ) );

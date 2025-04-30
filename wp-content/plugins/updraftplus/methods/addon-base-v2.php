@@ -33,6 +33,13 @@ abstract class UpdraftPlus_RemoteStorage_Addons_Base_v2 extends UpdraftPlus_Back
 
 	private $chunked;
 
+	/**
+	 * Decides whether to print the test button
+	 *
+	 * @var Boolean
+	 */
+	protected $test_button;
+
 	public function __construct($method, $description, $chunked = true, $test_button = true) {
 
 		$this->method = $method;
@@ -63,7 +70,7 @@ abstract class UpdraftPlus_RemoteStorage_Addons_Base_v2 extends UpdraftPlus_Back
 	protected function required_configuration_keys() {
 	}
 
-	public function upload_files($ret, $backup_array) {// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+	public function upload_files($ret, $backup_array) {// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Unused parameter is present because the caller from this class uses 2 arguments.
 
 		global $updraftplus;
 
@@ -106,9 +113,9 @@ abstract class UpdraftPlus_RemoteStorage_Addons_Base_v2 extends UpdraftPlus_Back
    /**
 	* This function lists the files found in the configured storage location
 	*
-	* @param  String $match a substring to require
+	* @param String $match a substring to require
 	*
-	* @return Array - each file is represented by an array with entries 'name' and (optional) 'size'
+	* @return Array|WP_Error - each file is represented by an array with entries 'name' and (optional) 'size'
 	*/
 	public function listfiles($match = 'backup_') {
 
@@ -136,8 +143,8 @@ abstract class UpdraftPlus_RemoteStorage_Addons_Base_v2 extends UpdraftPlus_Back
 	/**
 	 * This function handles bootstrapping and calling the remote methods delete function
 	 *
-	 * @param Boolean $ret       - A boolean value
-	 * @param Array   $files     - An array of files to delete.
+	 * @param Boolean $ret   - A boolean value
+	 * @param Array   $files - An array of files to delete.
 	 *
 	 * @return - On success returns true, false or WordPress Error on failure
 	 */
@@ -326,7 +333,7 @@ abstract class UpdraftPlus_RemoteStorage_Addons_Base_v2 extends UpdraftPlus_Back
 
 		foreach ($required_test_parameters as $param => $descrip) {
 			if (empty($posted_settings[$param])) {
-				printf(__("Failure: No %s was given.", 'updraftplus'), $descrip)."\n";
+				echo esc_html(sprintf(__("Failure: No %s was given.", 'updraftplus'), $descrip))."\n";
 				return;
 			}
 		}
@@ -334,9 +341,9 @@ abstract class UpdraftPlus_RemoteStorage_Addons_Base_v2 extends UpdraftPlus_Back
 		$storage = $this->bootstrap($posted_settings);
 		
 		if (is_wp_error($storage)) {
-			echo __("Failed", 'updraftplus').": ";
+			echo esc_html__("Failed", 'updraftplus').": ";
 			foreach ($storage->get_error_messages() as $msg) {
-				echo "$msg\n";
+				echo esc_html($msg) .'\n';
 			}
 			return;
 		}
@@ -348,10 +355,10 @@ abstract class UpdraftPlus_RemoteStorage_Addons_Base_v2 extends UpdraftPlus_Back
 		$data = (is_array($test_results) && isset($test_results['data'])) ? $test_results['data'] : null;
 		
 		if ((is_array($test_results) && $test_results['result']) || (!is_array($test_results) && $test_results)) {
-			_e('Success', 'updraftplus');
+			esc_html_e('Success', 'updraftplus');
 			$this->do_credentials_test_deletefile($testfile, $posted_settings);
 		} else {
-			_e("Failed: We were not able to place a file in that directory - please check your credentials.", 'updraftplus');
+			esc_html_e("Failed: We were not able to place a file in that directory - please check your credentials.", 'updraftplus');
 		}
 
 		return $data;

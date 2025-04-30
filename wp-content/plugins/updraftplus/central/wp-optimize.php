@@ -37,11 +37,7 @@ class WP_Optimize_Host extends UpdraftCentral_Host {
 	 */
 	public function __construct() {
 		parent::__construct();
-
-		// Load wp-optimize translations
-		if (defined('UPDRAFTCENTRAL_CLIENT_DIR') && file_exists(UPDRAFTCENTRAL_CLIENT_DIR.'/translations-central.php')) {
-			$this->translations = include_once(UPDRAFTCENTRAL_CLIENT_DIR.'/translations-central.php');
-		}
+		add_action('updraftplus_load_translations_for_udcentral', array($this, 'load_updraftplus_translations'));
 	}
 
 	/**
@@ -126,13 +122,23 @@ class WP_Optimize_Host extends UpdraftCentral_Host {
 	 *
 	 * @return void
 	 */
-	public function log($line, $level = 'notice', $uniq_id = false) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	public function log($line, $level = 'notice', $uniq_id = false) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Unused parameter is present because the the abstract UpdraftCentral_Host class uses 3 arguments.
 		global $wp_optimize;
 
 		if ($wp_optimize) {
 			if (is_callable(array($wp_optimize, 'log'))) {
 				call_user_func(array($wp_optimize, 'log'), $line);
 			}
+		}
+	}
+
+	/**
+	 * Load translations which are based on UpdraftPlus domain text
+	 */
+	public function load_updraftplus_translations() {
+		// Load wp-optimize translations
+		if (defined('UPDRAFTCENTRAL_CLIENT_DIR') && file_exists(UPDRAFTCENTRAL_CLIENT_DIR.'/translations-central.php')) {
+			$this->translations = include(UPDRAFTCENTRAL_CLIENT_DIR.'/translations-central.php');
 		}
 	}
 

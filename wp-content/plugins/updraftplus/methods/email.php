@@ -27,7 +27,7 @@ class UpdraftPlus_BackupModule_email extends UpdraftPlus_BackupModule {
 			if (file_exists($fullpath) && filesize($fullpath) > UPDRAFTPLUS_WARN_EMAIL_SIZE) {
 				$size_in_mb_of_big_file = round(filesize($fullpath)/1048576, 1);
 				$toobig_hash = md5($file);
-				$this->log($file.': '.sprintf(__('This backup archive is %s MB in size - the attempt to send this via email is likely to fail (few email servers allow attachments of this size). If so, you should switch to using a different remote storage method.', 'updraftplus'), $size_in_mb_of_big_file), 'warning', 'toobigforemail_'.$toobig_hash);
+				$this->log($file.': '.sprintf(__('This backup archive is %s MB in size - the attempt to send this via email is likely to fail (few email servers allow attachments of this size).', 'updraftplus'), $size_in_mb_of_big_file).' '.__('If so, you should switch to using a different remote storage method.', 'updraftplus'), 'warning', 'toobigforemail_'.$toobig_hash);
 			}
 
 			$any_attempted = false;
@@ -103,22 +103,29 @@ class UpdraftPlus_BackupModule_email extends UpdraftPlus_BackupModule {
 		global $updraftplus;
 		?>
 		<tr class="updraftplusmethod email">
-			<th><?php _e('Note:', 'updraftplus');?></th>
+			<th><?php esc_html_e('Email:', 'updraftplus');?></th>
 			<td><?php
 
 				$used = apply_filters('updraftplus_email_whichaddresses',
 					sprintf(__("Your site's admin email address (%s) will be used.", 'updraftplus'), get_bloginfo('admin_email').' - <a href="'.esc_attr(admin_url('options-general.php')).'">'.__("configure it here", 'updraftplus').'</a>').
-					' <a href="'.$updraftplus->get_url('premium').'" target="_blank">'.__('For more options, use Premium', 'updraftplus').'</a>'
+					' <a href="'.$updraftplus->get_url('premium_email').'" target="_blank">'.__('For more options, use Premium', 'updraftplus').'</a>'
 				);
 
-				echo $used.' '.sprintf(__('Be aware that mail servers tend to have size limits; typically around %s MB; backups larger than any limits will likely not arrive.', 'updraftplus'), '10-20');
+				$allowed_html = array(
+					'a' => array(
+						'href'   => array(),
+						'target' => array(),
+					)
+				);
+
+				echo wp_kses($used.' '.sprintf(__('Be aware that mail servers tend to have size limits; typically around %s MB; backups larger than any limits will likely not arrive.', 'updraftplus'), '10-20'), $allowed_html);
 				?>
 			</td>
 		</tr>
 		<?php
 	}
 
-	public function delete($files, $data = null, $sizeinfo = array()) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	public function delete($files, $data = null, $sizeinfo = array()) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Unused parameter is present because the caller uses 3 arguments.
 		return true;
 	}
 }

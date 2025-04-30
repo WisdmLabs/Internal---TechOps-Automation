@@ -16,7 +16,7 @@
  * get_object_to_stream() and put_object() take an open filehandle
  * argument for streaming data out of or into Cloud Files.
  *
- * Requres PHP 5.x (for Exceptions and OO syntax)
+ * Requires PHP 5.x (for Exceptions and OO syntax)
  *
  * See COPYING for license information.
  *
@@ -145,7 +145,7 @@ class UpdraftPlus_CF_Http
         $this->response_reason = NULL;
 
         # Curl connections array - since there is no way to "re-set" the
-        # connection paramaters for a cURL handle, we keep an array of
+        # connection parameters for a cURL handle, we keep an array of
         # the unique use-cases and funnel all of those same type
         # requests through the appropriate curl connection.
         #
@@ -212,7 +212,7 @@ class UpdraftPlus_CF_Http
         }
         if (!file_exists($this->cabundle_path)) {
             throw new IOException("Could not use CA bundle: "
-                . $this->cabundle_path);
+                . $this->cabundle_path); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The escaping should be happening when the exception is printed
         }
         return;
     }
@@ -1495,14 +1495,14 @@ class UpdraftPlus_CF_Http
                         }
                     }
                     if (!$result) throw new SyntaxException(sprintf(
-                        "Header name %s is not allowed", $k));
+                        "Header name %s is not allowed", $k)); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The escaping should be happening when the exception is printed
                 }
 
                 $k = $rule['prefix'] . $k;
                 if (strlen($k) > MAX_HEADER_NAME_LEN || strlen($v) > MAX_HEADER_VALUE_LEN)
                     throw new SyntaxException(sprintf(
                         "Header %s exceeds maximum length: %d/%d",
-                            $k, strlen($k), strlen($v)));
+                            $k, strlen($k), strlen($v))); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The escaping should be happening when the exception is printed
 
                 $hdrs[$k] = $v;
             }

@@ -1,5 +1,5 @@
 <?php
-
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 /**
  * Dropbox API base class
  * @author Ben Tadiar <ben@handcraftedbyben.co.uk>
@@ -203,16 +203,23 @@ class UpdraftPlus_Dropbox_API {
             }   
         } catch (Exception $e) {
             $responseCheck = json_decode($e->getMessage());
-            if (isset($responseCheck) && strpos($responseCheck[0] , 'incorrect_offset') !== false) {
+            if (empty($responseCheck)) {
+                throw $e;
+            } else {
+                
+                $extract_message = (is_object($responseCheck[0]) && isset($responseCheck[0]->{'.tag'})) ? $responseCheck[0]->{'.tag'} : $responseCheck[0];
+                
+                if (strpos($extract_message, 'incorrect_offset') !== false) {
 				$expected_offset = $responseCheck[1];
 				throw new Exception('Submitted input out of alignment: got ['.$params['cursor']['offset'].'] expected ['.$expected_offset.']');
 				
 //                 $params['cursor']['offset'] = $responseCheck[1];
 //                 $response = $this->append_upload($params, $last_call);
-            } elseif (isset($responseCheck) && strpos($responseCheck[0], 'closed') !== false) {
-                throw new Exception("Upload with upload_id {$params['cursor']['session_id']} already completed");
-            } else {
-                throw $e;
+                } elseif (strpos($extract_message, 'closed') !== false) {
+                    throw new Exception("Upload with upload_id {$params['cursor']['session_id']} already completed");
+                } elseif (strpos($extract_message, 'too_many_requests') !== false) {
+                    throw new Exception("Dropbox API error: too_many_requests");
+                }
             }
         }
         return $response;
@@ -287,6 +294,7 @@ class UpdraftPlus_Dropbox_API {
             'query' => $query,
             'options' => array(
                 'path' => $path,
+                'filename_only' => true,
                 'max_results' => ($limit < 1) ? 1 : (($limit > 1000) ? 1000 : (int) $limit),
             ),
             'api_v2' => true,
@@ -401,3 +409,4 @@ class UpdraftPlus_Dropbox_API {
         return $this->normalisePath($path);
     }
 }
+// phpcs:enable
