@@ -36,6 +36,10 @@
       "currentVersion": "2.4.9",
       "normalizedVersion": "2.4.9"
     },
+    "google-analytics-for-wordpress": {
+      "currentVersion": "9.4.1",
+      "normalizedVersion": "9.4.1"
+    },
     "hello.php": {
       "currentVersion": "1.7.2",
       "normalizedVersion": "1.7.2"
@@ -81,6 +85,14 @@
       "normalizedVersion": "0.0.0"
     },
     "techops-content-sync": {
+      "currentVersion": "1.0.0",
+      "normalizedVersion": "1.0.0"
+    },
+    "techops-content-sync-deact": {
+      "currentVersion": "1.0.0",
+      "normalizedVersion": "1.0.0"
+    },
+    "techops-content-sync_deactivated": {
       "currentVersion": "1.0.0",
       "normalizedVersion": "1.0.0"
     },
