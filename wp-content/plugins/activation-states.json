@@ -1,6 +1,10 @@
 {
   "plugins": [
     {
+      "slug": "techops-content-sync_deactivated",
+      "active": false
+    },
+    {
       "slug": "akismet",
       "active": false
     },
@@ -71,10 +75,6 @@
     {
       "slug": "td-composer",
       "active": true
-    },
-    {
-      "slug": "techops-content-sync_deactivated",
-      "active": false
     },
     {
       "slug": "techops-content-sync-deact",

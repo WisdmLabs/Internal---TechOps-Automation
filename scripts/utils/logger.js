@@ -2,22 +2,26 @@ const fs = require('fs');
 const path = require('path');
 
 class Logger {
-    constructor(logFile) {
-        this.logFile = logFile;
+    constructor(name, options = {}) {
+        this.name = name;
+        this.stream = options.stream || process.stdout;
+        this.logDir = path.join(process.cwd(), 'logs');
+        this.logFile = path.join(this.logDir, `${name}.log`);
         this.ensureLogDirectory();
     }
 
     ensureLogDirectory() {
-        const logDir = path.dirname(this.logFile);
-        if (!fs.existsSync(logDir)) {
-            fs.mkdirSync(logDir, { recursive: true });
+        if (!fs.existsSync(this.logDir)) {
+            fs.mkdirSync(this.logDir, { recursive: true });
         }
     }
 
     log(level, message, details = {}) {
+        const timestamp = new Date().toISOString();
         const logEntry = {
-            timestamp: new Date().toISOString(),
+            timestamp,
             level,
+            name: this.name,
             message,
             details
         };
@@ -37,9 +41,10 @@ class Logger {
         };
         const reset = '\x1b[0m';
 
-        console.log(`${colors[level] || ''}[${level.toUpperCase()}] ${message}${reset}`);
+        // Write to specified stream instead of console.log
+        this.stream.write(`${colors[level] || ''}[${level.toUpperCase()}] ${message}${reset}\n`);
         if (Object.keys(details).length > 0) {
-            console.log(JSON.stringify(details, null, 2));
+            this.stream.write(JSON.stringify(details, null, 2) + '\n');
         }
     }
 

@@ -19,11 +19,16 @@ class UpdateProcessor {
         try {
             const reportPath = path.join(process.cwd(), 'updates.json');
             const reportContent = await fs.readFile(reportPath, 'utf8');
-            this.updateReport = JSON.parse(reportContent);
-            this.logger.info('Successfully read update report');
+            try {
+                this.updateReport = JSON.parse(reportContent);
+                this.logger.info('Successfully read update report');
+            } catch (parseError) {
+                this.logger.error(`Error parsing update report: ${parseError.message}`);
+                process.exit(1);
+            }
         } catch (error) {
             this.logger.error(`Error reading update report: ${error.message}`);
-            throw error;
+            process.exit(1);
         }
     }
 
@@ -35,7 +40,7 @@ class UpdateProcessor {
             this.logger.info('Created necessary directories');
         } catch (error) {
             this.logger.error(`Error creating directories: ${error.message}`);
-            throw error;
+            process.exit(1);
         }
     }
 
@@ -141,6 +146,11 @@ class UpdateProcessor {
                 failed: [],
                 skipped: []
             };
+
+            if (!this.updateReport || !this.updateReport.plugins) {
+                this.logger.error('Invalid update report structure');
+                process.exit(1);
+            }
 
             if (updateType === 'all' || updateType === 'plugins') {
                 for (const [slug, info] of Object.entries(this.updateReport.plugins)) {

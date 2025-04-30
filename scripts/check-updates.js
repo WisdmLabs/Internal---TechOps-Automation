@@ -8,13 +8,14 @@ const fs = require('fs').promises;
 
 class UpdateChecker {
     constructor() {
-        this.logger = new Logger('UpdateChecker');
+        this.logger = new Logger('UpdateChecker', { stream: process.stderr });
         this.versionChecker = new VersionChecker();
         
         // Get environment variables
         const githubToken = process.env.GITHUB_TOKEN;
         if (!githubToken) {
             this.logger.error('Missing required environment variable: GITHUB_TOKEN');
+            process.exit(1);
         }
         
         this.octokit = new Octokit({
@@ -163,28 +164,34 @@ class UpdateChecker {
             const versions = await this.loadVersions();
             const updates = {
                 plugins: {},
-                themes: {}
+                themes: {},
+                timestamp: new Date().toISOString()
             };
 
             if (checkType === 'all' || checkType === 'plugins') {
                 for (const [slug, version] of Object.entries(versions.plugins)) {
                     const updateInfo = await this.versionChecker.checkPluginUpdates(slug, version);
-                    if (updateInfo && updateInfo.hasUpdate) {
-                        updates.plugins[slug] = updateInfo;
-                    }
+                    updates.plugins[slug] = updateInfo || {
+                        currentVersion: version,
+                        latestVersion: version,
+                        hasUpdate: false
+                    };
                 }
             }
 
             if (checkType === 'all' || checkType === 'themes') {
                 for (const [slug, version] of Object.entries(versions.themes)) {
                     const updateInfo = await this.versionChecker.checkThemeUpdates(slug, version);
-                    if (updateInfo && updateInfo.hasUpdate) {
-                        updates.themes[slug] = updateInfo;
-                    }
+                    updates.themes[slug] = updateInfo || {
+                        currentVersion: version,
+                        latestVersion: version,
+                        hasUpdate: false
+                    };
                 }
             }
 
-            const hasUpdates = Object.keys(updates.plugins).length > 0 || Object.keys(updates.themes).length > 0;
+            const hasUpdates = Object.values(updates.plugins).some(p => p.hasUpdate) || 
+                             Object.values(updates.themes).some(t => t.hasUpdate);
             
             if (hasUpdates) {
                 if (!process.env.GITHUB_REPOSITORY) {
@@ -202,7 +209,7 @@ class UpdateChecker {
 
             return updates;
         } catch (error) {
-            this.logger.error(`Error checking all updates: ${error.message}`);
+            this.logger.error(`Error checking updates: ${error.message}`);
             throw error;
         }
     }
@@ -213,60 +220,40 @@ async function main() {
     try {
         const checker = new UpdateChecker();
         const checkType = process.env.CHECK_TYPE || 'all';
+        const updates = await checker.checkUpdates(checkType);
         
-        // Get current versions from WordPress site
-        const versions = await checker.loadVersions();
-        
-        // Check updates based on type
-        let updates = { plugins: {}, themes: {} };
-        
-        if (checkType === 'plugins') {
-            checker.logger.info('Checking only plugin updates...');
-            for (const [slug, version] of Object.entries(versions.plugins)) {
-                const updateInfo = await checker.versionChecker.checkPluginUpdates(slug, version);
-                if (updateInfo) {
-                    updates.plugins[slug] = updateInfo;
-                }
-            }
-        } else if (checkType === 'themes') {
-            checker.logger.info('Checking only theme updates...');
-            for (const [slug, version] of Object.entries(versions.themes)) {
-                const updateInfo = await checker.versionChecker.checkThemeUpdates(slug, version);
-                if (updateInfo) {
-                    updates.themes[slug] = updateInfo;
-                }
-            }
-        } else {
-            checker.logger.info('Checking all updates...');
-            updates = await checker.versionChecker.checkAllUpdates();
+        // Ensure the updates object is valid
+        if (!updates || typeof updates !== 'object') {
+            throw new Error('Invalid updates object generated');
         }
-
-        // Print the report
-        checker.logger.info('Update check completed. Report:');
-        console.log(JSON.stringify(updates, null, 2));
-
-        // Create GitHub issue if updates found
-        const hasUpdates = Object.keys(updates.plugins).length > 0 || Object.keys(updates.themes).length > 0;
-        if (hasUpdates) {
-            if (!process.env.GITHUB_REPOSITORY) {
-                checker.logger.error('Missing GITHUB_REPOSITORY environment variable');
-                return;
-            }
-            
-            const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
-            const issueBody = await checker.generateIssueBody(updates);
-            const title = `WordPress Updates Available - ${new Date().toISOString().split('T')[0]}`;
-            await checker.createGitHubIssue(checker.octokit, owner, repo, title, issueBody);
-        } else {
-            checker.logger.info('No updates available');
+        
+        // Validate required properties
+        if (!updates.plugins || !updates.themes || !updates.timestamp) {
+            throw new Error('Missing required properties in updates object');
         }
+        
+        // Test JSON stringification before output
+        try {
+            JSON.stringify(updates, null, 2);
+        } catch (e) {
+            throw new Error(`Failed to stringify updates object: ${e.message}`);
+        }
+        
+        // Output only the JSON to stdout, ensuring no other output
+        process.stdout.write(JSON.stringify(updates, null, 2));
     } catch (error) {
-        console.error('Error running update check:', error);
+        // Write error to stderr
+        process.stderr.write(`Error running update checker: ${error.message}\n`);
+        if (error.stack) {
+            process.stderr.write(`${error.stack}\n`);
+        }
         process.exit(1);
     }
 }
 
 // Run the main function
-main();
+if (require.main === module) {
+    main();
+}
 
 module.exports = UpdateChecker; 
