@@ -65,6 +65,11 @@ class General extends PluginSettingsBase {
 	public const SECTION_ENTERPRISE = 'enterprise';
 
 	/**
+	 * Content section id.
+	 */
+	public const SECTION_CONTENT = 'content';
+
+	/**
 	 * Other section id.
 	 */
 	public const SECTION_OTHER = 'other';
@@ -500,6 +505,21 @@ class General extends PluginSettingsBase {
 				'default' => Main::VERIFY_HOST,
 				'helper'  => __( 'See Enterprise docs.', 'hcaptcha-for-forms-and-more' ),
 			],
+			'protect_content'      => [
+				'label'   => __( 'Content Settings', 'hcaptcha-for-forms-and-more' ),
+				'type'    => 'checkbox',
+				'section' => self::SECTION_CONTENT,
+				'options' => [
+					'on' => __( 'Protect Content', 'hcaptcha-for-forms-and-more' ),
+				],
+				'helper'  => __( 'Protect site content from bots with hCaptcha.', 'hcaptcha-for-forms-and-more' ),
+			],
+			'protected_urls'       => [
+				'label'   => __( 'Protected URLs', 'hcaptcha-for-forms-and-more' ),
+				'type'    => 'textarea',
+				'section' => self::SECTION_CONTENT,
+				'helper'  => __( 'Protect content of listed URLs. Please specify one URL per line. You may use regular expressions.', 'hcaptcha-for-forms-and-more' ),
+			],
 			'off_when_logged_in'   => [
 				'label'   => __( 'Other Settings', 'hcaptcha-for-forms-and-more' ),
 				'type'    => 'checkbox',
@@ -524,6 +544,15 @@ class General extends PluginSettingsBase {
 					'on' => __( 'Hide Login Errors', 'hcaptcha-for-forms-and-more' ),
 				],
 				'helper'  => __( 'Avoid specifying errors like "invalid username" or "invalid password" to limit information exposure to attackers.', 'hcaptcha-for-forms-and-more' ),
+			],
+			'cleanup_on_uninstall' => [
+				'type'    => 'checkbox',
+				'section' => self::SECTION_OTHER,
+				'options' => [
+					'on' => __( 'Remove Data on Uninstall', 'hcaptcha-for-forms-and-more' ),
+				],
+				'default' => '',
+				'helper'  => __( 'When enabled, all plugin data will be removed when uninstalling the plugin.', 'hcaptcha-for-forms-and-more' ),
 			],
 			self::NETWORK_WIDE     => [
 				'type'    => 'checkbox',
@@ -674,6 +703,9 @@ class General extends PluginSettingsBase {
 				break;
 			case self::SECTION_ENTERPRISE:
 				$this->print_section_header( $arguments['id'], __( 'Enterprise', 'hcaptcha-for-forms-and-more' ) );
+				break;
+			case self::SECTION_CONTENT:
+				$this->print_section_header( $arguments['id'], __( 'Content', 'hcaptcha-for-forms-and-more' ) );
 				break;
 			case self::SECTION_OTHER:
 				$this->print_section_header( $arguments['id'], __( 'Other', 'hcaptcha-for-forms-and-more' ) );
@@ -907,9 +939,11 @@ class General extends PluginSettingsBase {
 		$this->update_option( 'license', $license );
 
 		// Nonce is checked by check_ajax_referer() in run_checks().
-		$hcaptcha_response =
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			isset( $_POST['h-captcha-response'] ) ? filter_var( wp_unslash( $_POST['h-captcha-response'] ), FILTER_SANITIZE_FULL_SPECIAL_CHARS ) : '';
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
+		$hcaptcha_response = isset( $_POST['h-captcha-response'] )
+			? filter_var( wp_unslash( $_POST['h-captcha-response'] ), FILTER_SANITIZE_FULL_SPECIAL_CHARS )
+			: '';
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$result = hcaptcha_request_verify( $hcaptcha_response );
 
@@ -918,7 +952,7 @@ class General extends PluginSettingsBase {
 		}
 
 		wp_send_json_success(
-			esc_html__( 'Site config is valid.', 'hcaptcha-for-forms-and-more' )
+			esc_html__( 'Site config is valid. Save your changes.', 'hcaptcha-for-forms-and-more' )
 		);
 	}
 
@@ -926,7 +960,6 @@ class General extends PluginSettingsBase {
 	 * Ajax action to toggle a section.
 	 *
 	 * @return void
-	 * @noinspection PhpUnusedParameterInspection
 	 */
 	public function toggle_section(): void {
 		$this->run_checks( self::TOGGLE_SECTION_ACTION );
@@ -934,8 +967,9 @@ class General extends PluginSettingsBase {
 		// Nonce is checked by check_ajax_referer() in run_checks().
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		$section = isset( $_POST['section'] ) ? sanitize_text_field( wp_unslash( $_POST['section'] ) ) : '';
-		$status  =
-			isset( $_POST['status'] ) ? filter_input( INPUT_POST, 'status', FILTER_VALIDATE_BOOLEAN ) : false;
+		$status  = isset( $_POST['status'] )
+			? filter_input( INPUT_POST, 'status', FILTER_VALIDATE_BOOLEAN )
+			: false;
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$user    = wp_get_current_user();
@@ -943,6 +977,8 @@ class General extends PluginSettingsBase {
 
 		if ( ! $user_id ) {
 			wp_send_json_error( esc_html__( 'Cannot save section status.', 'hcaptcha-for-forms-and-more' ) );
+
+			return; // For testing purposes.
 		}
 
 		$hcaptcha_user_settings = array_filter(
@@ -1013,11 +1049,13 @@ class General extends PluginSettingsBase {
 			if ( is_array( $value ) ) {
 				$result[] = [ implode( '--', $level ) => '' ];
 				$result[] = $this->flatten_array( $value );
+
 				array_pop( $level );
 				continue;
 			}
 
 			$result[] = [ implode( '--', $level ) => $value ];
+
 			array_pop( $level );
 		}
 

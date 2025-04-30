@@ -584,7 +584,16 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 			require_once($resolver);
 		}
 
-		if (class_exists('WP_Theme_JSON_Resolver') && WP_Theme_JSON_Resolver::theme_has_support()) {
+		$theme_has_support = false;
+		if (function_exists('wp_theme_has_theme_json')) {
+			$theme_has_support = wp_theme_has_theme_json();
+		} else {
+			if (class_exists('WP_Theme_JSON_Resolver')) {
+				$theme_has_support = WP_Theme_JSON_Resolver::theme_has_support();
+			}
+		}
+
+		if (class_exists('WP_Theme_JSON_Resolver') && $theme_has_support) {
 			$theme_json = ABSPATH.WPINC.'/class-wp-theme-json.php';
 			if (!class_exists('WP_Theme_JSON') && file_exists($theme_json)) require_once($theme_json);
 
@@ -1062,7 +1071,7 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 				$editor = get_userdata($editor_id);
 				if (!$editor) {
 					// The user with lock does not exist. This can happen if you created a backup or clone
-					// where you excluded the users table during the proces and you restore this backup to
+					// where you excluded the users table during the process and you restore this backup to
 					// a different site or the user was deleted or removed more recently. Thus, we will
 					// release the lock so that other users with the right permission can edit the post.
 					delete_post_meta($post->ID, '_edit_lock');
@@ -1387,14 +1396,14 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 		if (!empty($params['password'])) {
 			if (!empty($params['sticky'])) {
 				return $this->_generic_error_response('post_save_failed', array(
-					'message' => __('A post can not be sticky and have a password.'),
+					'message' => __('A post can not be sticky and have a password.'),// phpcs:ignore WordPress.WP.I18n.MissingArgDomain -- The string exists within the WordPress core.
 					'args' => $params
 				));
 			}
 
 			if (!isset($params['sticky']) && is_sticky($post->ID)) {
 				return $this->_generic_error_response('post_save_failed', array(
-					'message' => __('A sticky post can not be password protected.'),
+					'message' => __('A sticky post can not be password protected.'),// phpcs:ignore WordPress.WP.I18n.MissingArgDomain -- The string exists within the WordPress core.
 					'args' => $params
 				));
 			}
@@ -1403,7 +1412,7 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 		if (!empty($params['sticky'])) {
 			if (!isset($params['password']) && post_password_required($post->ID)) {
 				return $this->_generic_error_response('post_save_failed', array(
-					'message' => __('A password protected post can not be set to sticky.'),
+					'message' => __('A password protected post can not be set to sticky.'),// phpcs:ignore WordPress.WP.I18n.MissingArgDomain -- The string exists within the WordPress core.
 					'args' => $params
 				));
 			}

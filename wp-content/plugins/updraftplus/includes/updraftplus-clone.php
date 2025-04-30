@@ -18,7 +18,7 @@ class UpdraftPlus_Clone extends UpdraftPlus_Login {
 		switch ($code) {
 			case 'generic':
 			default:
-				return __('An error has occurred while processing your request. The server might be busy or you have lost your connection to the internet at the time of the request. Please try again later.', 'updraftplus');
+				return __('An error has occurred while processing your request.', 'updraftplus').' '.__('The server might be busy or you have lost your connection to the internet at the time of the request.', 'updraftplus').' '.__('Please try again later.', 'updraftplus');
 				break;
 		}
 	}
@@ -53,7 +53,7 @@ class UpdraftPlus_Clone extends UpdraftPlus_Login {
 	}
 
 	/**
-	 * Executes login or registration process. Connects and sends request to the UpdraftPlus clone
+	 * Executes login or registration process. Connects and sends request to the UpdraftClone
 	 * and returns the response coming from the server
 	 *
 	 * @internal
@@ -93,7 +93,7 @@ class UpdraftPlus_Clone extends UpdraftPlus_Login {
 	}
 
 	/**
-	 * Executes the create clone process. Connects and sends request to the UpdraftPlus clone and returns the response coming from the server
+	 * Executes the create clone process. Connects and sends request to the UpdraftClone and returns the response coming from the server
 	 *
 	 * @internal
 	 * @param array $data - The submitted form data
@@ -104,6 +104,7 @@ class UpdraftPlus_Clone extends UpdraftPlus_Login {
 		
 		$action = 'updraftplus_clone_create';
 		if (empty($data['site_url'])) $data['site_url'] = trailingslashit(network_site_url());
+		// translators: %s: site URL with trailing slash
 		if (empty($data['label'])) $data['label'] = sprintf(__('Clone of %s', 'updraftplus'), trailingslashit(network_site_url()));
 		if (empty($data['install_info']['table_prefix'])) $data['install_info']['table_prefix'] = $table_prefix;
 		$subdirectory = parse_url(network_site_url(), PHP_URL_PATH);
@@ -127,7 +128,7 @@ class UpdraftPlus_Clone extends UpdraftPlus_Login {
 	}
 
 	/**
-	 * Executes the clone status process. Connects and sends request to the UpdraftPlus clone and returns the response coming from the server
+	 * Executes the clone status process. Connects and sends request to the UpdraftClone and returns the response coming from the server
 	 *
 	 * @internal
 	 * @param array $data - The submitted form data
@@ -144,7 +145,7 @@ class UpdraftPlus_Clone extends UpdraftPlus_Login {
 	}
 
 	/**
-	 * Executes the clone info poll. Connects and sends request to the UpdraftPlus clone and returns the response coming from the server
+	 * Executes the clone info poll. Connects and sends request to the UpdraftClone and returns the response coming from the server
 	 *
 	 * @internal
 	 * @param array $data - The submitted form data
@@ -181,7 +182,7 @@ class UpdraftPlus_Clone extends UpdraftPlus_Login {
 	}
 
 	/**
-	 * Executes the clone failed delete process. Connects and sends request to the UpdraftPlus clone and returns the response coming from the server
+	 * Executes the clone failed delete process. Connects and sends request to the UpdraftClone and returns the response coming from the server
 	 *
 	 * @internal
 	 * @param array $data - The submitted form data

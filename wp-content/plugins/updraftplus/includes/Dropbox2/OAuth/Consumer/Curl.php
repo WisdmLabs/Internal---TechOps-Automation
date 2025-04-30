@@ -1,5 +1,5 @@
 <?php
-
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 /**
 * OAuth consumer using PHP cURL
 * @author Ben Tadiar <ben@handcraftedbyben.co.uk>
@@ -9,7 +9,49 @@
 */
 
 class Dropbox_Curl extends Dropbox_ConsumerAbstract
-{    
+{
+	/**
+	 * Dropbox consumer key
+	 * @var String
+	 */
+	protected $consumerKey;
+
+	/**
+	 * Dropbox oauth2_id
+	 * @var String
+	 */
+	protected $oauth2_id;
+
+	/**
+	 * Dropbox consumer secret
+	 * @var String
+	 */
+	protected $consumerSecret;
+
+	/**
+	 * Dropbox storage object
+	 * @var \Dropbox\OAuth\Consumer\StorageInterface|Dropbox_StorageInterface
+	 */
+	protected $storage;
+
+	/**
+	 * Not used anywhere but it is set
+	 * @var Callable|Null
+	 */
+	protected $callback;
+
+	/**
+	 * Callback URL
+	 * @var String|null
+	 */
+	protected $callbackhome;
+
+	/**
+	 * Dropbox storage instance id
+	 * @var String
+	 */
+	protected $instance_id;
+
     /**
      * Default cURL options
      * @var array
@@ -194,10 +236,11 @@ class Dropbox_Curl extends Dropbox_ConsumerAbstract
                 // Dropbox returns error messages inconsistently...
                 if (!empty($response['body']->error) && $response['body']->error instanceof stdClass) {
                     $array = array_values((array) $response['body']->error);
-                    //Dropbox API v2 only throws 409 errors if this error is a incorrect_offset then we need the entire error array not just the message. PHP Exception messages have to be a string so JSON encode the array.
-                    if (strpos($array[0] , 'incorrect_offset') !== false) {
+                    // Dropbox API v2 only throws 409 errors if this error is a incorrect_offset then we need the entire error array not just the message. PHP Exception messages have to be a string so JSON encode the array.
+                    $extract_message = (is_object($array[0]) && isset($array[0]->{'.tag'})) ? $array[0]->{'.tag'} : $array[0];
+                    if (strpos($extract_message, 'incorrect_offset') !== false) {
                         $message = json_encode($array);
-                    } elseif (strpos($array[0] , 'lookup_failed') !== false ) {
+                    } elseif (strpos($extract_message, 'lookup_failed') !== false ) {
                         // re-structure the array so it is correctly formatted for API
                         // Note: Dropbox v2 returns different errors at different stages hence this fix
                         $correctOffset = array(
@@ -208,13 +251,24 @@ class Dropbox_Curl extends Dropbox_ConsumerAbstract
 
                         $message = json_encode($correctOffset);
                     } else {
-                        $message = $array[0];
+                        $message = '';
+                        $property = 'error';
+                        $resp = $response['body'];
+                        while (isset($resp->$property)) {
+                            if (is_string($resp->$property)) $message .= $resp->$property.'/';
+                            if (!is_object($resp->$property) || empty($resp->$property->{'.tag'})) break;
+                            $property = $resp->$property->{'.tag'};
+                            $message .= $property.'/';
+                            $resp = $response['body']->error;
+                        }
                     }
                 } elseif (!empty($response['body']->error)) {
                     $message = $response['body']->error;
                 } elseif (is_string($response['body'])) {
 					// 31 Mar 2017 - This case has been found to exist; though the docs imply that there's always an 'error' property and that what is returned in JSON, we found a case of this being returned just as a simple string, but detectable via an HTTP 400: Error in call to API function "files/upload_session/append_v2": HTTP header "Dropbox-API-Arg": cursor.offset: expected integer, got string
 					$message = $response['body'];
+                } elseif (!empty($response['body']->error_summary)) {
+                    $message = $response['body']->error_summary;
                 } else {
 					$message = "HTTP bad response code: $code";
                 }
@@ -305,3 +359,4 @@ class Dropbox_Curl extends Dropbox_ConsumerAbstract
        return $this->lastResponse;
      }
 }
+// phpcs:enable

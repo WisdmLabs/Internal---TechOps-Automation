@@ -22,12 +22,18 @@
 [36m[INFO] Processing plugin update: otter-blocks[0m
 [36m[INFO] Downloaded plugin: otter-blocks[0m
 [36m[INFO] Extracted plugin: otter-blocks to otter-blocks[0m
+[36m[INFO] Processing plugin update: updraftplus[0m
+[36m[INFO] Downloaded plugin: updraftplus[0m
+[36m[INFO] Extracted plugin: updraftplus to updraftplus[0m
 [36m[INFO] Processing plugin update: wordfence[0m
 [36m[INFO] Downloaded plugin: wordfence[0m
 [36m[INFO] Extracted plugin: wordfence to wordfence[0m
 [36m[INFO] Processing plugin update: wp-security-audit-log[0m
 [36m[INFO] Downloaded plugin: wp-security-audit-log[0m
 [36m[INFO] Extracted plugin: wp-security-audit-log to wp-security-audit-log[0m
+[36m[INFO] Processing plugin update: wpforms-lite[0m
+[36m[INFO] Downloaded plugin: wpforms-lite[0m
+[36m[INFO] Extracted plugin: wpforms-lite to wpforms-lite[0m
 [36m[INFO] Processing plugin update: wordpress-seo[0m
 [36m[INFO] Downloaded plugin: wordpress-seo[0m
 [36m[INFO] Extracted plugin: wordpress-seo to wordpress-seo[0m
